@@ -1,0 +1,13 @@
+_cache/
+dist/
+dist-newstyle/
+site
+*.hi
+*.o
+*.aux
+*.hp
+*.prof
+*.eventlog
+.ghc.environment.*
+cabal.project.local
+cabal.project.local~
