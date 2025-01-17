@@ -1,64 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>My Hakyll Blog - Home</title>
-        <link rel="stylesheet" href="./css/default.css" />
-    </head>
-    <body>
-        <header>
-            <div class="logo">
-                <a href="./">My Hakyll Blog</a>
-            </div>
-            <nav>
-                <a href="./">Home</a>
-                <a href="./about.html">About</a>
-                <a href="./contact.html">Contact</a>
-                <a href="./archive.html">Archive</a>
-            </nav>
-        </header>
-
-        <main role="main">
-            <h1>Home</h1>
-            <h2>Welcome</h2>
-
-<img src="./images/haskell-logo.png" style="float: right; margin: 10px;" />
-
-<p>Welcome to my blog!</p>
-
-<p>I've reproduced a list of recent posts here for your reading pleasure:</p>
-
-<h2>Posts</h2>
-<ul>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nbos.ca</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 4rem;
+            line-height: 1.4;
+        }
+        .post-entry {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .post-entry a {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+        .post-title {
+            color: #000;
+            font-size: 1.5rem;
+            margin: 0;
+            margin-bottom: 0.2rem;
+        }
+        .post-date {
+            color: #999;
+            font-size: 0.9rem;
+            margin: 0;
+            margin-bottom: 0.2rem;
+        }
+        .post-preview {
+            color: #444;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
     
-        <li>
-            <a href="./posts/2015-12-07-tu-quoque.html">Tu Quoque</a> - December  7, 2015
-        </li>
+    <div class="post-entry">
+        <a href="./quoque.html"></a>
+        <h2 class="post-title">Tu Quoque</h2>
+        <div class="post-date">December  7, 2015</div>
+        <div class="post-preview"><p>Vestibulum leo turpis, dignissim quis ultrices sit amet, iaculis ac ligula. Pellentesque tristique, velit eget scelerisque scelerisque, est dolor ultrices arcu, quis ullamcorper justo arcu luctus mauris. Integer congue molestie nisi id posuere. Fusce pellentesque gravida tempus. Integer viverra tortor nec eros mollis quis convallis sem laoreet. Nulla id libero ac erat varius laoreet. Proin sed est est. Curabitur lacinia...</div>
+    </div>
     
-        <li>
-            <a href="./posts/2015-11-28-carpe-diem.html">Carpe Diem</a> - November 28, 2015
-        </li>
+    <div class="post-entry">
+        <a href="./carpe-diem.html"></a>
+        <h2 class="post-title">Carpe Diem</h2>
+        <div class="post-date">November 28, 2015</div>
+        <div class="post-preview"><p>Fusce tortor quam, egestas in posuere quis, porttitor vel turpis. Donec vulputate porttitor augue at rhoncus. Proin iaculis consectetur sagittis. Curabitur venenatis turpis sit amet purus tristique nec posuere risus laoreet. Nullam nisi sem, dapibus id semper id, egestas vel arcu. Morbi porttitor ipsum placerat erat consequat sed consequat purus feugiat. Donec auctor elit ut risus mattis facilisis. Lorem ipsum...</div>
+    </div>
     
-        <li>
-            <a href="./posts/2015-10-07-rosa-rosa-rosam.html">Rosa Rosa Rosam</a> - October  7, 2015
-        </li>
+    <div class="post-entry">
+        <a href="./rosa-rosa-rosam.html"></a>
+        <h2 class="post-title">Rosa Rosa Rosam</h2>
+        <div class="post-date">October  7, 2015</div>
+        <div class="post-preview"><p>Suspendisse pharetra ullamcorper sem et auctor. Suspendisse vitae tellus eu turpis dignissim gravida ut ut tortor. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi aliquam sapien quis nisl sodales non aliquet nisl iaculis. Curabitur fermentum orci vel sapien pellentesque id condimentum metus vehicula. Curabitur turpis purus, scelerisque at interdum quis, placerat sit amet tortor. Aliquam...</div>
+    </div>
     
-        <li>
-            <a href="./posts/2015-08-12-spqr.html">S.P.Q.R.</a> - August 12, 2015
-        </li>
+    <div class="post-entry">
+        <a href="./spqr.html"></a>
+        <h2 class="post-title">S.P.Q.R.</h2>
+        <div class="post-date">August 12, 2015</div>
+        <div class="post-preview"><p>Mauris in lorem nisl. Maecenas tempus facilisis ante, eget viverra nisl tincidunt et. Donec turpis lectus, mattis ac malesuada a, accumsan eu libero. Morbi condimentum, tortor et tincidunt ullamcorper, sem quam pretium nulla, id convallis lectus libero nec turpis. Proin dapibus nisi id est sodales nec ultrices tortor pellentesque. Vivamus vel nisi ac lacus sollicitudin vulputate ac ut ligula. Nullam...</div>
+    </div>
     
-</ul>
-
-
-<p>…or you can find more in the <a href="./archive.html">archives</a>.</p>
-
-        </main>
-
-        <footer>
-            Site proudly generated by
-            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
-        </footer>
-    </body>
+</body>
 </html>

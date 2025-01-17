@@ -1,7 +1,7 @@
-site:
+docs:
 	cabal run site build
 
-watch:
+watch: docs
 	cabal run site watch
 
 clean:
