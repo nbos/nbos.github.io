@@ -6,6 +6,8 @@ import Data.Ord (comparing)
 import Data.Time.Clock
 import Data.Time.Format
 import Hakyll
+import Text.HTML.TagSoup
+import Hakyll.Web.Html (withTagList, isExternal)
 
 configuration :: Configuration
 configuration = defaultConfiguration {destinationDirectory = "docs"}
@@ -18,6 +20,7 @@ main = hakyllWith configuration $ do
       pandocCompiler
         >>= saveSnapshot "content" -- Save the content snapshot
         >>= loadAndApplyTemplate "templates/post.html" postCtx
+        >>= externalLinksInNewTabs
         >>= relativizeUrls
 
   create ["index.html"] $ do
@@ -34,15 +37,52 @@ main = hakyllWith configuration $ do
 
   match "templates/*" $ compile templateBodyCompiler
 
+  match "css/*" $ do
+    route idRoute
+    compile compressCssCompiler
+
+  match "CNAME" $ do
+    create ["CNAME"] $ do
+      route idRoute
+      compile $ makeItem ("nbos.ca" :: String)
+
+  -- -- TODO: fix SVG
+  -- match "images/tess.svg" $ do
+  --   route $ constRoute "favicon.svg"
+  --   compile copyFileCompiler
+
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
     `mappend` excerptField
     `mappend` defaultContext
 
--- Add this function
 excerptField :: Context String
 excerptField = field "preview" $ \item -> do
-  body <- loadSnapshot (itemIdentifier item) "content"
-  let content = unwords . take 60 . words $ itemBody body -- Takes first 60 words
-  return $ content ++ "..."
+    body <- loadSnapshot (itemIdentifier item) "content"
+    let content = itemBody body
+        excerpt = unwords $ take 60 $ words content
+    return $ excerpt ++ "..."
+
+-- TODO: this is a dressed up String -> String function
+externalLinksInNewTabs :: Item String -> Compiler (Item String)
+externalLinksInNewTabs item = return $ fmap addExternalAttributes item
+  where
+    addExternalAttributes :: String -> String
+    addExternalAttributes = withTagList modifyExternalLinks
+
+    modifyExternalLinks :: [Tag String] -> [Tag String]
+    modifyExternalLinks = map modifyTag
+
+    modifyTag :: Tag String -> Tag String
+    modifyTag tag@(TagOpen "a" attrs) =
+        case lookup "href" attrs of
+            Just url | isExternal url ->
+                TagOpen "a" (updateAttributes attrs)
+            _ -> tag
+    modifyTag tag = tag
+
+    updateAttributes :: [(String, String)] -> [(String, String)]
+    updateAttributes attrs =
+        ("target", "_blank") : ("rel", "noopener") :
+        filter (\(name, _) -> name /= "target" && name /= "rel") attrs
