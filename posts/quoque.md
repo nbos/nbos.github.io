@@ -22,6 +22,39 @@ massa id consequat viverra, nulla ante tristique est, a faucibus nisi
 enim nec dui. Donec metus ligula, condimentum at porttitor eget,
 lobortis at quam.
 
+```rust
+fn main() {
+    let value = 456;
+    let mut x = 1;
+    let y = loop {
+        x *= 10;
+        if x > value {
+            break x / 10;
+        }
+    };
+    println!("largest gpower of ten that is smaller than or equal to value: {y}");
+
+    let mut up = 1;
+    'outer: loop {
+        let mut down = 120;
+        loop {
+            if up > 100 {
+                break 'outer;
+            }
+
+            if down < 4 {
+                break;
+            }
+
+            down /= 2;
+            up += 1;
+            println!("up: {up}, down: {down}");
+        }
+        up *= 2;
+    }
+}
+```
+
 Aenean vel libero in magna ultricies congue in a odio. Donec faucibus rutrum
 ornare. Fusce dictum eleifend fermentum. Vestibulum vel nibh a metus porttitor
 rhoncus. Pellentesque id quam neque, eget molestie arcu. Integer in elit vel

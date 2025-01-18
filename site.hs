@@ -8,6 +8,8 @@ import Data.Time.Format
 import Hakyll
 import Text.HTML.TagSoup
 import Hakyll.Web.Html (withTagList, isExternal)
+import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
+import Text.Pandoc.Options (ReaderOptions (..), WriterOptions (..))
 
 configuration :: Configuration
 configuration = defaultConfiguration {destinationDirectory = "docs"}
@@ -17,7 +19,7 @@ main = hakyllWith configuration $ do
   match "posts/*.md" $ do
     route $ gsubRoute "posts/" (const "") `composeRoutes` setExtension "html"
     compile $ do
-      pandocCompiler
+      pandocCompiler'
         >>= saveSnapshot "content" -- Save the content snapshot
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= externalLinksInNewTabs
@@ -41,10 +43,13 @@ main = hakyllWith configuration $ do
     route idRoute
     compile compressCssCompiler
 
-  match "CNAME" $ do
-    create ["CNAME"] $ do
-      route idRoute
-      compile $ makeItem ("nbos.ca" :: String)
+  create ["css/syntax.css"] $ do
+    route idRoute
+    compile $ makeItem $ styleToCss pandocCodeStyle
+
+  create ["CNAME"] $ do
+    route idRoute
+    compile $ makeItem ("nbos.ca" :: String)
 
   -- match "images/tess.svg" $ do
   --   route $ constRoute "favicon.svg"
@@ -85,3 +90,11 @@ externalLinksInNewTabs item = return $ fmap addExternalAttributes item
     updateAttributes attrs =
         ("target", "_blank") : ("rel", "noopener") :
         filter (\(name, _) -> name /= "target" && name /= "rel") attrs
+
+pandocCodeStyle :: Style
+pandocCodeStyle = pygments
+
+pandocCompiler' :: Compiler (Item String)
+pandocCompiler' = pandocCompilerWith
+    defaultHakyllReaderOptions
+    defaultHakyllWriterOptions { writerHighlightStyle = Just pandocCodeStyle }
