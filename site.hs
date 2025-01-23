@@ -9,7 +9,7 @@ import Hakyll
 import Text.HTML.TagSoup
 import Hakyll.Web.Html (withTagList, isExternal)
 import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
-import Text.Pandoc.Options (ReaderOptions (..), WriterOptions (..))
+import Text.Pandoc.Options
 
 configuration :: Configuration
 configuration = defaultConfiguration {destinationDirectory = "docs"}
@@ -96,5 +96,12 @@ pandocCodeStyle = pygments
 
 pandocCompiler' :: Compiler (Item String)
 pandocCompiler' = pandocCompilerWith
-    defaultHakyllReaderOptions
-    defaultHakyllWriterOptions { writerHighlightStyle = Just pandocCodeStyle }
+  defaultHakyllReaderOptions{ readerExtensions = readerExtensions defaultHakyllReaderOptions
+                                                 <> extensionsFromList [ Ext_tex_math_single_backslash,
+                                                                         Ext_tex_math_double_backslash,
+                                                                         Ext_tex_math_dollars,
+                                                                         Ext_latex_macros ]
+                            }
+
+  defaultHakyllWriterOptions{ writerHighlightStyle = Just pandocCodeStyle,
+                              writerHTMLMathMethod = MathJax "" }
