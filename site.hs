@@ -51,6 +51,10 @@ main = hakyllWith configuration $ do
     route idRoute
     compile $ makeItem ("nbos.ca" :: String)
 
+  match "images/*" $ do
+    route idRoute
+    compile copyFileCompiler
+
   -- match "images/tess.svg" $ do
   --   route $ constRoute "favicon.svg"
   --   compile copyFileCompiler
