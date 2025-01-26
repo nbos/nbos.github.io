@@ -1,4 +1,4 @@
-docs:
+docs: clean
 	cabal run site build
 
 watch: docs
