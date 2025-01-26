@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preliminary: Arithmetic Coding</title>
+    <!-- <link rel="icon" type="image/svg+xml" href="favicon.svg"> -->
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+    <h1 class="post-title">Preliminary: Arithmetic Coding</h1>
+    <div class="post-metadata">
+        Posted on January 26, 2025 by Nathaniel Bos
+    </div>
+    <div class="post-content">
+        <p>I find that information theory, a core discipline of computer science,
+is given relatively little attention in a computer science
+degree. Although Hamming and Shannon are likely to be mentioned at some
+point, the only attribution to the field I remember having to study were
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Huffman_coding">Huffman trees</a>, which are
+nice, but just one of the many approximations of the true entropy
+encoding algorithm: <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arithmetic_coding">arithmetic
+coding</a> (a.k.a. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Range_coding">range
+coding</a>). It isn’t
+particularly more complex, yet it holds more theoretical significance
+because it always encodes messages to the theoretically minimum code
+length (which is also just called the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content"><em>information
+content</em></a> of the
+data) with respect to a probabilistic model.</p>
+<p>Here is my take on an explanation.</p>
+<h2 id="encoding-a-symbol">Encoding a Symbol</h2>
+<p>Given an alphabet of symbols and a model of their probabilities, place
+them in the manner of a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">CDF</a> of
+a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
+distribution</a>:</p>
+<p><img src="./images/cat-cdf.png" /></p>
+<p>Now, the code for a symbol is simply the base expansion (for a given
+base, here we use 2 for binary) of the fraction <span class="math inline">\(0 \le r \lt 1\)</span> whose
+<strong>range</strong> (the interval between that number and its successor in the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unit_in_the_last_place">ULP</a>) falls
+entirely within the <strong>interval</strong> of the desired symbol. In practice, you
+can split your space in however many equal parts of your base:</p>
+<p><img src="./images/bin0.png" /></p>
+<p>and continuously split until a code’s range falls well within the
+interval of the symbol to encode:</p>
+<p><img src="./images/bin2.png" /></p>
+<p>For instance, the code <span style="color: red">101</span> above
+(corresponding to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Binary_number#Fractions">binary
+fractional</a>
+0.<span style="color: red">101</span>) falls between both bounds of the
+symbol <span style="color: blue"><strong>&amp;</strong></span>, then that terminates the
+algorithm. The decoder will know what symbol was encoded by using the
+same distribution and finding the symbol whose interval the number falls
+under.</p>
+<h2 id="encoding-a-message">Encoding a Message</h2>
+<p>The beauty of arithmetic coding is the optimality you get by recursively
+applying the above principle for each symbol inside the interval of the
+previous symbol. It’s best explained graphically:</p>
+<p><img src="./images/arith-que.png" /></p>
+<p>By nesting distributions within each other, every string of symbols
+(however long) corresponds to an interval (however small) and a code. An
+effective arithmetic coding algorithm continuously “zooms” into the 0-1
+interval, maintaining good precision and producing 0s and 1s (or
+symbols, when decoding) depending on where it “goes”.</p>
+<h2 id="adaptive-coding">Adaptive Coding</h2>
+<p>Smart models update their probabilities given previous observations,
+which directly translates in better (shorter) codes in arithmetic
+coding. For instance, instead of a single categorical distribution like
+we’ve been using so far based on the relative frequencies of letters in
+English, you get much better probabilities for English strings by
+considering the probabilities of symbols <em>given</em> the previous symbol,
+i.e. a <strong>conditional</strong> (or equivalently a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bigram">bigram</a> model). Furthermore a
+3-gram model would model English even better and so on…</p>
+<p>For instance, even though <strong>Q</strong> is a relatively rare letter in English
+(and therefore its unconditional code relatively long), it is almost
+always followed by a <span style="color: blue"><strong>U</strong></span>, in which
+case, it is almost always followed by a vowel, so given a code for <strong>Q</strong>
+and a good conditional model, the code for <strong>Q<span style="color:
+blue">U</span><span style="color:
+#00EF19">E</span></strong> would not be much longer because it takes a significant
+amount of space within <strong>Q</strong>’s interval:</p>
+<p><img src="./images/cond-que.png" /></p>
+<p>For longer messages, it plays out a bit like the game-like accessibility
+input method <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dasher_(software)">Dasher</a>,
+which lets a user enter text by navigating the nested space of symbols
+with a mouse when using a keyboard is not convenient. The program uses a
+language model that scales the relative sizes of the intervals depending
+on their probability. (Here is a <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=nr3s4613DX8">longer
+version</a> if you liked
+that).</p>
+<p><img src="./images/dasher.gif" /></p>
+<h2 id="code-length">Code Length</h2>
+<p>The geometric representation of probability works especially because it
+stays consistent across levels: “inserting” a probability distribution
+within a symbol’s interval has the same effect as scaling it by the
+probability of that symbol. Ultimately, the probability of a message is
+the product of the probabilities of all its symbols (i.e. the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chain_rule_(probability)">chain
+rule</a>) and is
+equal to the width it takes on the original unit space:</p>
+<p><span class="math display">\[P(\texttt{&quot;Hello&quot;}) = P(\texttt{&quot;H&quot;})
+	\cdot P(\texttt{&quot;e&quot;} | \texttt{&quot;H&quot;})
+	\cdot P(\texttt{&quot;l&quot;} | \texttt{&quot;He&quot;})\\
+	\cdot P(\texttt{&quot;l&quot;} | \texttt{&quot;Hel&quot;})
+	\cdot P(\texttt{&quot;o&quot;} | \texttt{&quot;Hell&quot;})\]</span></p>
+<p>Since a code scales the working range with each additional bit, the
+<strong>length of the code</strong> for a message is the number of times the unit
+space has to be halved in order to fit in the message’s interval, or</p>
+<p><span class="math display">\[L(\texttt{&quot;Hello&quot;}) = \left\lceil\log_{\frac{1}{2}}(P(\texttt{&quot;Hello&quot;}))\right\rceil\]</span></p>
+<p>which is just a rounded up version of the more usual representation of
+<strong><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
+content</a></strong> (in bits):</p>
+<p><span class="math display">\[\begin{align}I(A) &amp;= -\log_{2}(P(A))\\
+I(\texttt{&quot;Hello&quot;}) &amp;= -\log_{2}(P(\texttt{&quot;Hello&quot;}))\end{align}\]</span></p>
+<p>and since the logarithm of a product is the sum of the logarithms, we
+get the information theoretic “chain rule” where the information of a
+message is the sum of the information of the symbols, which makes sense
+as the length of a code for e.g. a fixed width or bit-aligned coding
+scheme is the sum of the lengths of the codes of the symbols.</p>
+<p>Finally, this gives us the intuition for why arithmetic encoding is
+<strong>optimal</strong> compared to a bit-aligned code like Huffman codes. Since in
+a Huffman tree symbols get assigned a constant code, the best it can
+provide is codes for symbols as long as their individual information
+content rounded up. So the length of a whole message would be:</p>
+<p><span class="math display">\[L_\textrm{Huff}(A) = \sum_{k=1}^{n}\left\lceil I \left(A_{k}\,{\Bigg |}\,\bigcap_{j=1}^{k-1}A_{j}\right)\right\rceil\]</span></p>
+<p>Whereas arithmetic coding only has to round at the last bit:</p>
+<p><span class="math display">\[L_\textrm{Arith}(A) = \left\lceil\sum_{k=1}^{n} I \left(A_{k}\,{\Bigg |}\,\bigcap_{j=1}^{k-1}A_{j}\right)\right\rceil\]</span></p>
+<p>So in general, <span class="math display">\[L_\textrm{Arith}(A) \le L_\textrm{Huff}(A)\]</span> and they
+are only ever equal when <em>all</em> the relative probabilities in the model
+happen to be exact multiples of the base e.g. (0.5, 0.25, 0.125,
+etc. for binary).</p>
+<h2 id="eom">EOM</h2>
+<p>A caveat to the above length calculations is that some strings could be
+un-encodable if the probability of any symbol after the last happens to
+be more than <span class="math inline">\(1/\)</span>base, as the working range might drop within the
+interval of further nested symbols after encoding the last symbol
+without adding more code, leading to a code corresponding to more than
+one possible message.</p>
+<p>The fail-safe solution to this, typically included in specifications of
+arithmetic encoding, is either to add an
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/End_of_message">EOM</a> symbol that signals
+the end of the string or prepend some <strong>fixed-length size parameter</strong>
+and have the decoding algorithm count to know when to stop decoding.</p>
+<p>In either method, the added length to the code is on the order of
+<span class="math inline">\(\log(L)\)</span> which is usually insignificant compared to <span class="math inline">\(L\)</span> unless when
+encoding very small messages.</p>
+    </div>
+    <a href="./" class="return-link">← Return to Index</a>
+</body>
+</html>
