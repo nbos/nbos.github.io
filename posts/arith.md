@@ -112,11 +112,11 @@ the product of the probabilities of all its symbols (i.e. the [chain
 rule](https://en.wikipedia.org/wiki/Chain_rule_(probability))) and is
 equal to the width it takes on the original unit space:
 
-$$P(\texttt{"Hello"}) = P(\texttt{"H"})
+$$\begin{align}P(\texttt{"Hello"}) =\ &P(\texttt{"H"})
 	\cdot P(\texttt{"e"} | \texttt{"H"})
 	\cdot P(\texttt{"l"} | \texttt{"He"})\\
-	\cdot P(\texttt{"l"} | \texttt{"Hel"})
-	\cdot P(\texttt{"o"} | \texttt{"Hell"})$$
+	&\cdot P(\texttt{"l"} | \texttt{"Hel"})
+	\cdot P(\texttt{"o"} | \texttt{"Hell"})\end{align}$$
 
 Since a code scales the working range with each additional bit, the
 **length of the code** for a message is the number of times the unit

@@ -101,11 +101,11 @@ probability of that symbol. Ultimately, the probability of a message is
 the product of the probabilities of all its symbols (i.e. the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chain_rule_(probability)">chain
 rule</a>) and is
 equal to the width it takes on the original unit space:</p>
-<p><span class="math display">\[P(\texttt{&quot;Hello&quot;}) = P(\texttt{&quot;H&quot;})
+<p><span class="math display">\[\begin{align}P(\texttt{&quot;Hello&quot;}) =\ &amp;P(\texttt{&quot;H&quot;})
 	\cdot P(\texttt{&quot;e&quot;} | \texttt{&quot;H&quot;})
 	\cdot P(\texttt{&quot;l&quot;} | \texttt{&quot;He&quot;})\\
-	\cdot P(\texttt{&quot;l&quot;} | \texttt{&quot;Hel&quot;})
-	\cdot P(\texttt{&quot;o&quot;} | \texttt{&quot;Hell&quot;})\]</span></p>
+	&amp;\cdot P(\texttt{&quot;l&quot;} | \texttt{&quot;Hel&quot;})
+	\cdot P(\texttt{&quot;o&quot;} | \texttt{&quot;Hell&quot;})\end{align}\]</span></p>
 <p>Since a code scales the working range with each additional bit, the
 <strong>length of the code</strong> for a message is the number of times the unit
 space has to be halved in order to fit in the message’s interval, or</p>
