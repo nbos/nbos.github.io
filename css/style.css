@@ -10,6 +10,17 @@ pre code {
     font-size: 13px; /* ~80 chars given our width */
 }
 
+code {
+    background-color: #F0F0F0; /* Light gray background */
+    border: 1px solid #EEE; /* Light border similar to GitHub */
+    border-radius: 6px; /* Rounded corners */
+    /*padding: 0.1em 0.1em; /* Spacing around the text */
+    font-size: 90%; /* Slightly smaller font size */
+    font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; /* Monospace font */
+    color: #333; /* Neutral text color */
+    white-space: nowrap; /* Keep text on one line */
+}
+
 a {
     color: #666;
     text-decoration: underline;
