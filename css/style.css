@@ -10,15 +10,28 @@ pre code {
     font-size: 13px; /* ~80 chars given our width */
 }
 
-code {
+/* inlined code */
+:not(pre) code {
     background-color: #F0F0F0; /* Light gray background */
     border: 1px solid #EEE; /* Light border similar to GitHub */
     border-radius: 6px; /* Rounded corners */
-    /*padding: 0.1em 0.1em; /* Spacing around the text */
+    padding: 0.05em 0.2em; /* Spacing around the text */
     font-size: 90%; /* Slightly smaller font size */
     font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; /* Monospace font */
     color: #333; /* Neutral text color */
     white-space: nowrap; /* Keep text on one line */
+}
+
+/* reset for code blocks */
+pre > code {
+    background-color: transparent; /* Reset background */
+    border: none; /* Remove border */
+    border-radius: 0;
+    padding: 0;
+    font-size: 14px;
+    white-space: pre; /* Preserve formatting */
+    display: block;
+    overflow-x: auto;
 }
 
 a {

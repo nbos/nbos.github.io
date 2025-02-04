@@ -75,10 +75,7 @@ externalLinksInNewTabs :: Item String -> Compiler (Item String)
 externalLinksInNewTabs item = return $ fmap addExternalAttributes item
   where
     addExternalAttributes :: String -> String
-    addExternalAttributes = withTagList modifyExternalLinks
-
-    modifyExternalLinks :: [Tag String] -> [Tag String]
-    modifyExternalLinks = map modifyTag
+    addExternalAttributes = withTagList (map modifyTag)
 
     modifyTag :: Tag String -> Tag String
     modifyTag tag@(TagOpen "a" attrs) =
