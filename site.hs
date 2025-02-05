@@ -1,15 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.List (sortBy)
-import Data.Monoid (mappend)
-import Data.Ord (comparing)
-import Data.Time.Clock
-import Data.Time.Format
-import Hakyll
-import Text.HTML.TagSoup
-import Hakyll.Web.Html (withTagList, isExternal)
-import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
+import Data.Char (isAlphaNum)
+import Text.HTML.TagSoup (Tag(TagOpen), parseTags, innerText)
 import Text.Pandoc.Options
+import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
+
+import Hakyll
 
 configuration :: Configuration
 configuration = defaultConfiguration {destinationDirectory = "docs"}
@@ -56,19 +52,21 @@ main = hakyllWith configuration $ do
         route $ gsubRoute "resources/" (const "")
         compile copyFileCompiler
 
-
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
     `mappend` excerptField
     `mappend` defaultContext
 
+trimEnd :: String -> String
+trimEnd = reverse . dropWhile (not . isAlphaNum) . reverse
+
 excerptField :: Context String
 excerptField = field "preview" $ \item -> do
     body <- loadSnapshot (itemIdentifier item) "content"
     let content = itemBody body
-        excerpt = unwords $ take 60 $ words content
-    return $ excerpt ++ "..."
+        excerpt = unwords $ take 50 $ words $ innerText $ parseTags content
+    return $ trimEnd excerpt ++ "..."
 
 -- TODO: this is a dressed up String -> String function
 externalLinksInNewTabs :: Item String -> Compiler (Item String)

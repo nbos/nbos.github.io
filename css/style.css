@@ -58,8 +58,20 @@ img {
 /* Index page post entries */
 .post-entry {
     position: relative;
-    margin-bottom: 1.2rem;
+    margin-bottom: 2rem;
     overflow: hidden;
+    padding-bottom: 2rem;
+}
+
+/* Separators */
+.post-entry:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 33%; /* Start at 33% from left */
+    width: 33%; /* Make line 33% of container width */
+    height: 1px; /* Thin line */
+    background-color: #cccccc; /* Light grey color */
 }
 
 .post-entry > a {
