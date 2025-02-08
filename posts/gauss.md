@@ -237,11 +237,13 @@ Furthermore, we can model all right tail calculations by using the
 left's and exploit the symmetry of the Gaussian PDF. This leaves us with
 two almost linear curves.
 
-Fortunately, we are not the first to reach this point of the journey and
-[`scipy`](https://github.com/scipy/scipy) has well documented, precise
-polynomial approximations of the log-CDF
-([`log_ndtr`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.log_ndtr.html))
+Fortunately, we are not the first to reach this point of the
+journey. SciPy has well documented and precise polynomial approximations
+of the log-CDF
+[`log_ndtr`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.log_ndtr.html)
+([source](https://github.com/scipy/scipy/blob/ab84560b96cf5816be0015b0ee3a41cef708f675/scipy/special/xsf/stats.h#L84))
 and quantile-exp
-([`ndtri_exp`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.ndtri_exp.html)). Which
-makes feasible our precise interpolations on the probability mass of the
-Gaussian, at least for now.
+[`ndtri_exp`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.ndtri_exp.html)
+([source](https://github.com/scipy/scipy/blob/ab84560b96cf5816be0015b0ee3a41cef708f675/scipy/special/_ndtri_exp.pxd#L163)). This
+affords us the precise interpolations on the probability mass of the
+Gaussian we require, at least for now.
