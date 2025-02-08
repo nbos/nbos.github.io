@@ -2,7 +2,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 650px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
     line-height: 1.4;
 }
 
@@ -49,10 +49,10 @@ a:hover {
 }
 
 img {
-    max-width: 65%;
-    height: auto;
-    display: block;
-    margin: 2rem auto;
+  max-width: 70%;
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Center align block images */
+  margin: 2rem auto; /* Center the image vertically */
 }
 
 /* Index page post entries */

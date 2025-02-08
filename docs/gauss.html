@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encoding Numbers with Gaussians</title>
+    <link rel="icon" type="image/svg+xml" href="images/tess.svg">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <h1 class="post-title">Encoding Numbers with Gaussians</h1>
+    <div class="post-metadata">
+        Posted on February  8, 2025 by Nathaniel Bos
+    </div>
+    <div class="post-content">
+        <p>Arithmetic codes are pretty useful for compression. You can find a
+number of implementations of the algorithm online, some work with static
+models, some adaptive. Often, an abstract interface is defined so users
+can call the algorithm with your own model implementation. It makes
+sense for the algorithm to interface with a user-defined model through a
+vector of probabilities of the next-symbols, but one can find this
+limiting if trying to model <strong>very large domains</strong> like those of
+numbers.</p>
+<p>In arithmetic codes, you usually think of the 1D space addressable by
+codes as divided between next-symbols based on their relative
+probabilities:</p>
+<p><img src="images/alphabet-wide.png" /></p>
+<p>But nothing in the spirit of the technique prevents you from
+partitioning the space in <strong>infinitely</strong> many bins to make use of
+continuous probability distributions, as long as each bin can be
+assigned a <strong>finite</strong> code/interval and vice versa.</p>
+<p>For instance, a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>:</p>
+<p><img src="images/gauss-cat-wide.png" /></p>
+<p>An implementation of arithmetic coding that works with <em>any</em> model would
+have to be more abstract than what you typically find online. The
+usually included logic for resolving the categorical CDF (i.e. the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quantile_function">quantile function</a>) is
+replaced with an abstract interface for any <em>distribution</em> that can
+repeatedly <em>truncate</em> at given <em>cumulative probabilities</em> until a
+specific <em>bin</em> is resolved. Here is my implementation in Rust:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/nbos/cont-arith-code">Source (GitHub)</a></li>
+<li><a href="doc/cont_arith_code/index.html">Documentation</a></li>
+</ul>
+<p>We use this algorithm to verify the ability of Gaussian distributions to
+encode values compactly.</p>
+<h2 id="why-not-gaussians">Why (not) Gaussians</h2>
+<p>Why this kind of distribution in the first place? The short answer is
+that (A) there aren’t that many other good options and (B) it turns out
+they have a bunch of neat properties that make them special. A short
+list would include the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Central_limit_theorem">central limit
+theorem</a>, the fact
+that they have <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_entropy_probability_distribution#Other_examples">maximum
+entropy</a>
+given mean and variance, that they are closed under
+<a target="_blank" rel="noopener" href="http://www.lucamartino.altervista.org/2003-003.pdf">intersection</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Conditional_distributions">conditioning</a>,
+all while generalizing to <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multivariate_normal_distribution">multiple
+dimensions</a>.</p>
+<p>So where might things go wrong? For our present purposes it would be
+sufficient to demonstrate that a Gaussian <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">Maximum Likelihood Estimation
+(MLE)</a> of a
+dataset can exhibit, for the bins corresponding to each number within
+the set:</p>
+<ol type="1">
+<li><p>sufficiently high likelihood (so that the codes are reasonably
+small), and</p></li>
+<li><p>a computable interval derived through successive truncations of the
+probability distribution.</p></li>
+</ol>
+<p>Of course you can break both of these conditions if you select a small
+enough bin size, so we assume only a reasonable limit to the amount of
+precision per number (e.g. on the order of e.g. 32 or 64 bits).</p>
+<p>We first address the potential theoretical limitation (1) and follow
+with the implementation details (2).</p>
+<h2 id="worst-likelihood-analysis">Worst Likelihood Analysis</h2>
+<p>Which distribution of data produces the lowest likelihoods in its
+Gaussian MLE? Presumably, those that are the most dissimilar from the
+bell shape of the Gaussian PDF, in particular where you end up with data
+far off in the tails. Since the mapping from datasets to the Gaussian
+MLE has scale, location and count invariance, there are only a few
+corner cases to examine:</p>
+<p><img src="images/gauss-mle-corner-cases.png" /></p>
+<p>The <strong>unimodal case</strong> is not problematic for our uses as long as you
+implement the logic to handle it. It is a “degenerate” Gaussian,
+(a.k.a. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dirac_delta_function">Dirac
+delta</a>) with zero
+variance, infinite probability density at the mode and zero probability
+everywhere else, but that just means the code length for each value is
+zero and only the message length has to be encoded.</p>
+<p>The <strong>bimodal case</strong> is hardly an issue either and has significant
+probability density at the two modes no matter how “separated” you make
+them.</p>
+<p>The <strong>outlier case</strong> is the only one where the likelihood of a datapoint
+can fall really low. If all but one point have non-significant variance
+around a point, the probability density at that outlier point can be
+prohibitively low. So how bad can it get?</p>
+<h3 id="outlier-likelihood">Outlier Likelihood</h3>
+<p>The Gaussian MLE of a set of <span class="math inline">\(n\)</span> values <span class="math inline">\(\{x_0, x_1, x_2, ...\}\)</span> has the
+parameters:</p>
+<p><span class="math display">\[\mu = \frac{\sum x}{n} ~~~~~~~~~~~~ \sigma^2 = \frac{\sum (x - \mu)^2}{n}\]</span></p>
+<p>Another formulation of variance (which also happens to be the more
+numerically stable) is:</p>
+<p><span class="math display">\[\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}\]</span></p>
+<p>or even:</p>
+<p><span class="math display">\[\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_1} -
+\frac{(s_1)^2}{(s_0)^2}\]</span></p>
+<p>where the only parameters are sums of the values raised to a power:</p>
+<p><span class="math display">\[s_i = \sum{x^i}\]</span></p>
+<p>With this formulation we can model the probability density at the
+outlier by setting the majority at <span class="math inline">\(0\)</span> and the outlier at <span class="math inline">\(1\)</span> (by
+invariance, this is representative of any outlier case modulo a constant
+factor):</p>
+<p><span class="math display">\[\begin{array}{|l|c|c|c|}
+\hline
+\text{Population} &amp; s_0 &amp; s_1 &amp; s_2 \\
+\hline
+\{0,1\} &amp; 2 &amp; 1 &amp; 1 \\
+\hline
+\{0,0,1\} &amp; 3 &amp; 1 &amp; 1 \\
+\hline
+\{0,0,0,1\} &amp; 4 &amp; 1 &amp; 1 \\
+\hline
+\{0,0,...,0,1\} &amp; n &amp; 1 &amp; 1 \\
+\hline
+\end{array}\]</span></p>
+<p>Then we have <span class="math inline">\(s_1 = s_2 = 1\)</span>. We substitute <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma^2\)</span> in the
+PDF to get a function of <span class="math inline">\(n\)</span>:</p>
+<p><span class="math display">\[\begin{align}\mathrm{pdf}(x) &amp;= \frac {1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\
+\mathrm{pdf}(1) &amp;= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} \end{align}\]</span></p>
+<p>Which looks like</p>
+<p><img src="images/pdf1.png" /></p>
+<p>which drops pretty quickly (exponentially quickly), but code length only grows
+in one over the logarithm of the probability so:</p>
+<p><img src="images/neglnpdf1.png" /></p>
+<p>Which is a pretty unambiguous <span class="math inline">\(0.5n\)</span> towards infinity.</p>
+<p>So it looks like the code length of the outlier of a Gaussian only grows
+in <span class="math inline">\(O(n)\)</span> of the size of the data set, which is only as bad as the
+performance of the uniform distribution of fixed-length codes.</p>
+<p>Now, a full account of the performance of the distribution also has to
+take into account the code lengths of non-outliers, although we only
+expect their likelihood to grow (and their code length to shrink) with
+increasing <span class="math inline">\(n\)</span>. For completeness, computing the sum of code lengths
+using proper probability intervals (not density) on the CDF, with bin
+size of <span class="math inline">\(0.2\)</span>, in base 2 (bits), we show the total code length only
+grows sub-linearly w.r.t. <span class="math inline">\(n\)</span> in this outlier “worst case”:</p>
+<p><img src="images/outliercasecodelength.png" /></p>
+<p>where computations past <span class="math inline">\(n = 80\)</span> fail because of underflow of the
+default CDF function in <code>numpy</code>, which is understandable as this places
+our sampled value <span class="math inline">\(1\)</span> at over <span class="math inline">\(80\)</span> standard deviations off the mean.</p>
+<h2 id="numerically-stable-functions">Numerically Stable Functions</h2>
+<p>The quantile function for Gaussians is continuous, one-to-one, monotone
+and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
+\mapsto \infty\)</span>.</p>
+<p><img src="images/cdfquantile.png" /></p>
+<p>For our application, what’s important is that <em>repeatedly splitting</em> in
+half an interval of the probability mass down to any symbol to encode
+happens with <em>constant progress</em> (i.e. the middle of any interval cannot
+be equal to either boundaries) and no overflow to any infinity. This
+reflects on the CDF and quantile by requiring the following: any two
+bounds <span class="math inline">\(a,b\)</span> such that <span class="math inline">\(0&lt;a&lt;b&lt;1\)</span> and where both bounds are not already
+within the bounds of a symbol, then the middle point <code>quantile(cdf(a) + 0.5*(cdf(b) - cdf(a)))</code> must be strictly greater than <code>a</code> and strictly
+less than <code>b</code>. If it is not, encoding becomes impossible.</p>
+<p>An easy measure to ensure progress might be to fall back to <em>linear</em>
+interpolation whenever the call to the quantile function runs out of
+precision, assuming local linearity. While this is a reasonable
+approximation in the central bulk of the distribution, it fails in the
+tails.</p>
+<p>To see why, consider the PDF and its derivative:</p>
+<p><img src="images/pdfdiff.png" /></p>
+<p>While both flatten out at the tails, for any given interval in the
+tails, the relative difference becomes greater the further away you move
+from the center. To see this, normalize the derivative to the value of
+the function:</p>
+<p><img src="images/pdfdiffnorm.png" /></p>
+<p>That is, the tails may be <em>absolutely</em> flat, but they become
+<em>relatively</em> steeper the further away you go. Another way to demonstrate
+this is by blowing up the PDF at different scales (here, successive
+factors of 10):</p>
+<p><img src="images/pdfscales.png" /></p>
+<p>which makes it clear we cannot rely on any “flatness” in the tails. We
+are forced to find an analytic or at least numeric solution.</p>
+<h3 id="the-right-way">The Right Way</h3>
+<p>Like is usually the case in probability, the solution to numerical
+instability is found in the log-domain. This gives us two analogous
+functions with more manageable shapes:</p>
+<p><img src="images/logcdfquantileexp.png" /></p>
+<p>Furthermore, we can model all right tail calculations by using the
+left’s and exploit the symmetry of the Gaussian PDF. This leaves us with
+two almost linear curves.</p>
+<p>Fortunately, we are not the first to reach this point of the journey and
+<a target="_blank" rel="noopener" href="https://github.com/scipy/scipy"><code>scipy</code></a> has well documented, precise
+polynomial approximations of the log-CDF
+(<a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.log_ndtr.html"><code>log_ndtr</code></a>)
+and quantile-exp
+(<a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.ndtri_exp.html"><code>ndtri_exp</code></a>). Which
+makes feasible our precise interpolations on the probability mass of the
+Gaussian, at least for now.</p>
+    </div>
+    <a href="./" class="return-link">← Return to Index</a>
+</body>
+</html>

@@ -8,7 +8,10 @@ import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
 import Hakyll
 
 configuration :: Configuration
-configuration = defaultConfiguration {destinationDirectory = "docs"}
+configuration = defaultConfiguration
+  { destinationDirectory = "docs"
+  , previewHost = "0.0.0.0"
+  }
 
 main :: IO ()
 main = hakyllWith configuration $ do
