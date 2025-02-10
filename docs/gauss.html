@@ -106,7 +106,7 @@ parameters:</p>
 numerically stable) is:</p>
 <p><span class="math display">\[\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}\]</span></p>
 <p>or even:</p>
-<p><span class="math display">\[\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_1} -
+<p><span class="math display">\[\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
 \frac{(s_1)^2}{(s_0)^2}\]</span></p>
 <p>where the only parameters are sums of the values raised to a power:</p>
 <p><span class="math display">\[s_i = \sum{x^i}\]</span></p>
@@ -173,8 +173,8 @@ tails.</p>
 <p><img src="images/pdfdiff.png" /></p>
 <p>While both flatten out at the tails, for any given interval in the
 tails, the relative difference becomes greater the further away you move
-from the center. To see this, normalize the derivative to the value of
-the function:</p>
+from the center. To see this, normalize the (absolute) derivative to the
+value of the function:</p>
 <p><img src="images/pdfdiffnorm.png" /></p>
 <p>That is, the tails may be <em>absolutely</em> flat, but they become
 <em>relatively</em> steeper the further away you go. Another way to demonstrate
@@ -185,8 +185,10 @@ factors of 10):</p>
 are forced to find an analytic or at least numeric solution.</p>
 <h3 id="the-right-way">The Right Way</h3>
 <p>Like is usually the case in probability, the solution to numerical
-instability is found in the log-domain. This gives us two analogous
-functions with more manageable shapes:</p>
+instability is found in the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Log_probability">log-domain</a>. This gives
+us two analogous functions for the cumulative probability with more
+manageable shapes:</p>
 <p><img src="images/logcdfquantileexp.png" /></p>
 <p>Furthermore, we can model all right tail calculations by using the
 left’s and exploit the symmetry of the Gaussian PDF. This leaves us with

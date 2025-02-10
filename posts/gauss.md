@@ -119,7 +119,7 @@ $$\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}$$
 
 or even:
 
-$$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_1} -
+$$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
 \frac{(s_1)^2}{(s_0)^2}$$
 
 where the only parameters are sums of the values raised to a power:
@@ -210,8 +210,8 @@ To see why, consider the PDF and its derivative:
 
 While both flatten out at the tails, for any given interval in the
 tails, the relative difference becomes greater the further away you move
-from the center. To see this, normalize the derivative to the value of
-the function:
+from the center. To see this, normalize the (absolute) derivative to the
+value of the function:
 
 ![](images/pdfdiffnorm.png)
 
@@ -228,8 +228,10 @@ are forced to find an analytic or at least numeric solution.
 ### The Right Way
 
 Like is usually the case in probability, the solution to numerical
-instability is found in the log-domain. This gives us two analogous
-functions with more manageable shapes:
+instability is found in the
+[log-domain](https://en.wikipedia.org/wiki/Log_probability). This gives
+us two analogous functions for the cumulative probability with more
+manageable shapes:
 
 ![](images/logcdfquantileexp.png)
 
