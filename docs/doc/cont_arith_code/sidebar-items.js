@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["distribution"],"struct":["Decoder","Decoder8","Encoder","Encoder8"],"trait":["Model","TruncatedDistribution","UnivariateDistribution"],"type":["Index"]};
+window.SIDEBAR_ITEMS = {"mod":["distribution"],"struct":["Decoder","Decoder8","Encoder","Encoder8","Sample","Samples"],"trait":["Model","TruncatedDistribution","UnivariateDistribution"],"type":["Index"]};

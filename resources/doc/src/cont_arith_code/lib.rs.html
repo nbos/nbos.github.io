@@ -319,13 +319,92 @@
 <a href="#319" id="319">319</a>
 <a href="#320" id="320">320</a>
 <a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
 </pre></div><pre class="rust"><code><span class="kw">mod </span>map;
 <span class="kw">mod </span>special;
 <span class="kw">pub mod </span>distribution;
 
+<span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::mem;
 <span class="kw">use </span>std::io::{<span class="self">self</span>,Write};
 <span class="kw">use </span>std::iter::Iterator;
+<span class="kw">use </span>std::cmp::Ordering;
 
 <span class="doccomment">/// Models produce distributions and consume their resolutions (as
 /// `i64`s) until a value `T` pops out. Used by both Encoder and Decoder
@@ -363,8 +442,55 @@
 }
 
 <span class="doccomment">/// A univariate distribution that can be truncated.
-</span><span class="kw">pub trait </span>UnivariateDistribution {
+</span><span class="kw">pub trait </span>UnivariateDistribution: Debug {
     <span class="kw">fn </span>truncated(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>TruncatedDistribution&gt;;
+    <span class="comment">// fn info(&amp;self, s: Index) -&gt; f64;
+</span>}
+
+<span class="doccomment">/// A single sample from a distribution
+</span><span class="kw">pub struct </span>Sample&lt;D,T&gt; {
+    <span class="kw">pub </span>distr: D,
+    <span class="kw">pub </span>resolve: Box&lt;<span class="kw">dyn </span>FnMut(Index) -&gt; T&gt;
+}
+
+<span class="kw">impl</span>&lt;D: UnivariateDistribution + Clone + <span class="lifetime">'static</span>,
+     T&gt; Model&lt;T&gt; <span class="kw">for </span>Sample&lt;D,T&gt; {
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: Index) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
+	<span class="prelude-val">Some</span>((<span class="self">self</span>.resolve)(s)) <span class="comment">// always produce
+    </span>}
+    <span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt; {
+	Box::new(<span class="self">self</span>.distr.clone())
+    }
+}
+
+<span class="doccomment">/// A vector of values from a distribution. MLE for best results. The
+/// model is static and therefore not optimal (values don't get removed
+/// from the distribution, so like a bag "with replacement")
+</span><span class="kw">pub struct </span>Samples&lt;D,T&gt; {
+    <span class="kw">pub </span>count: usize,
+    <span class="kw">pub </span>vec: Vec&lt;T&gt;,
+    <span class="kw">pub </span>sampl: Sample&lt;D,T&gt;
+}
+
+<span class="kw">impl</span>&lt;D,T&gt; Samples&lt;D,T&gt; {
+    <span class="doccomment">/// Construction
+    </span><span class="kw">pub fn </span>repeatedly(sampl: Sample&lt;D,T&gt;, count: usize) -&gt; <span class="self">Self </span>{
+	Samples{ count, vec: Vec::new(), sampl }
+    }
+}
+
+<span class="kw">impl</span>&lt;D: UnivariateDistribution + Clone + <span class="lifetime">'static</span>,
+     T&gt; Model&lt;Vec&lt;T&gt;&gt; <span class="kw">for </span>Samples&lt;D,T&gt; {
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: Index) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;T&gt;&gt; {
+	<span class="kw">let </span>val = (<span class="self">self</span>.sampl.resolve)(s); <span class="comment">// always produces
+	</span><span class="self">self</span>.vec.push(val);
+	<span class="self">self</span>.count -= <span class="number">1</span>;
+	<span class="kw">if </span><span class="self">self</span>.count == <span class="number">0 </span>{ <span class="prelude-val">Some</span>(std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.vec)) }
+	<span class="kw">else </span>{ <span class="prelude-val">None </span>}
+    }
+    <span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt; {
+	Box::new(<span class="self">self</span>.sampl.distr.clone())
+    }
 }
 
 <span class="doccomment">/// Bins of a univariate distribution are indexed by `i64`s
@@ -372,11 +498,14 @@
 
 <span class="doccomment">/// A univariate distribution with a truncated probability mass between
 /// a lower- and upper-bound.
-</span><span class="kw">pub trait </span>TruncatedDistribution {
+</span><span class="kw">pub trait </span>TruncatedDistribution: Debug {
     <span class="doccomment">/// Quantile (inverse CDF) and decompose of the remaining
-    /// probability mass. Returns whole index (i64) and remainder (f64
-    /// $\in$ [0-1]) whose sum has the given cummulative probability in
-    /// the truncated CDF.
+    /// probability mass. Given `cp` $\in$ [0-1), returns the symbol
+    /// index (`s: i64`) in which it falls as well as the fraction
+    /// (`s_rem: f64` $\in$ [0-1)) achieved towards symbol `s+1` in the
+    /// cumulative probability assigned to `s`. Indexes must increase
+    /// monotonically w.r.t. `cp`, and `s_rem` must increase linearly
+    /// w.r.t. `cp` inside each `s`.
     </span><span class="kw">fn </span>quantile(<span class="kw-2">&amp;</span><span class="self">self</span>, cp: f64) -&gt; (Index, f64); <span class="comment">// returns (s, s_rem)
     </span><span class="doccomment">/// Split the remaining probability mass with the given bit
     /// (false:0:left :: true:1:right) at the given cummulative
@@ -413,11 +542,14 @@
 	    tail: Box::new(
 		atoms.map(<span class="kw">move </span>|s| {
 		    <span class="kw">let </span>udistr = model.next_distr();
-		    <span class="kw">let </span>tdistr = udistr.truncated();
+		    <span class="comment">// println!("{:.2} bits for {} in {:?}",
+		    // 	     udistr.info(s), s, udistr);
+		    </span><span class="kw">let </span>tdistr = udistr.truncated();
 		    model.push(s); <span class="comment">// update
 		    </span>(s,tdistr)
-		})
-	    )
+		}) <span class="comment">// filtering out resolved for 0 info special case
+		   </span>.filter(|(<span class="kw">_</span>,tdistr)| !tdistr.is_resolved()) <span class="comment">// (hacky)
+	    </span>)
 	}
     }
 }
@@ -428,36 +560,58 @@
 
 	<span class="kw">let </span><span class="kw-2">mut </span>stack = Vec::new(); <span class="comment">// recursive call stack
 	</span><span class="kw">let </span><span class="kw-2">mut </span>cp = <span class="number">0.5</span>; <span class="comment">// a bit will split the distribution in half
-	</span><span class="kw">let </span><span class="kw-2">mut </span>res = <span class="prelude-val">None</span>;
+	</span><span class="kw">let </span><span class="kw-2">mut </span>mbit = <span class="prelude-val">None</span>;
 
 	<span class="kw">let </span><span class="kw-2">mut </span>head_iter = mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.head).into_iter();
 	<span class="kw">while let </span><span class="prelude-val">Some</span>((target, distr)) =
 	    head_iter.next().or_else(|| <span class="self">self</span>.tail.next()) <span class="comment">// chain head + tail
 	</span>{
-	    <span class="kw">let </span>(s, s_rem) = distr.quantile(cp);
+	    <span class="comment">// compute cursor position
+	    </span><span class="kw">let </span>(s, s_rem) = distr.quantile(cp);
 	    stack.push((target, distr, cp, s, s_rem));
 
-	    <span class="kw">if </span>s != target {
-		res = <span class="prelude-val">Some</span>(target &gt; s); <span class="comment">// 0:false :: 1:true
-		</span><span class="kw">break
+	    <span class="kw">match </span>s.cmp(<span class="kw-2">&amp;</span>target) {
+		Ordering::Less =&gt; {
+		    mbit = <span class="prelude-val">Some</span>(<span class="bool-val">true</span>); <span class="comment">// 1
+		    </span><span class="kw">break
+		</span>}
 
-	    </span>} <span class="kw">else if </span>s_rem == <span class="number">0.0 </span>{ <span class="comment">// edge case
-		</span>res = <span class="prelude-val">Some</span>(<span class="bool-val">true</span>);
-		<span class="kw">break
+		Ordering::Equal =&gt; {
+		    <span class="kw">if </span>s_rem &gt; <span class="number">0.0 </span>{
+			<span class="comment">// next cp is where cp falls within s/target
+			</span>cp = s_rem;
+			<span class="comment">// bit not determined, check w/ next distr
+			</span><span class="kw">continue
 
-	    </span>} <span class="kw">else </span>{
-		cp = s_rem; <span class="comment">// next cp is where cp falls within s/target
-		// continue
-	    </span>}
+		    </span>} <span class="kw">else </span>{ <span class="comment">// edge case
+			</span><span class="macro">debug_assert!</span>(s_rem == <span class="number">0.0</span>);
+			mbit = <span class="prelude-val">Some</span>(<span class="bool-val">true</span>); <span class="comment">// 1
+			</span><span class="kw">break
+		    </span>}
+		}
+
+		Ordering::Greater =&gt; {
+		    mbit = <span class="prelude-val">Some</span>(<span class="bool-val">false</span>); <span class="comment">// 0
+		    </span><span class="kw">break
+		</span>}
+	    }
 	}
 
 	<span class="kw">if </span>stack.is_empty() { <span class="kw">return </span><span class="prelude-val">None </span>} <span class="comment">// end
-	</span><span class="kw">let </span>bit = res.unwrap_or(cp &lt; <span class="number">0.5</span>); <span class="comment">// None iff end of data
+	</span><span class="kw">let </span>bit = mbit.unwrap_or(
+	    <span class="comment">// case: the cursor fell all the way to the end though all
+	    // the remaining symbols in their distributions and we have
+	    // to select the largest interval between left/right
 
-	// split distributions on the stack
-	</span><span class="kw">for </span>(target, <span class="kw-2">mut </span>cat, cp, s, s_rem) <span class="kw">in </span>stack {
-	    cat.truncate(cp, s, s_rem, bit);
-	    <span class="kw">if </span>!cat.is_resolved() { <span class="self">self</span>.head.push((target,cat)) }
+	    // if cp is the correct projection of s_rem's through all
+	    // distributions, then it's just
+	    </span>cp &lt; <span class="number">0.5
+	</span>);
+
+	<span class="comment">// split distributions on the stack
+	</span><span class="kw">for </span>(target, <span class="kw-2">mut </span>distr, cp, s, s_rem) <span class="kw">in </span>stack {
+	    distr.truncate(cp, s, s_rem, bit);
+	    <span class="kw">if </span>!distr.is_resolved() { <span class="self">self</span>.head.push((target,distr)) }
 	}
 
 	<span class="comment">// append distributions that weren't reached

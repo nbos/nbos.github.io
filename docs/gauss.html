@@ -94,7 +94,7 @@ zero and only the message length has to be encoded.</p>
 <p>The <strong>bimodal case</strong> is hardly an issue either and has significant
 probability density at the two modes no matter how “separated” you make
 them.</p>
-<p>The <strong>outlier case</strong> is the only one where the likelihood of a datapoint
+<p>The <strong>outlier case</strong> is the only one where the likelihood of a data-point
 can fall really low. If all but one point have non-significant variance
 around a point, the probability density at that outlier point can be
 prohibitively low. So how bad can it get?</p>
@@ -191,8 +191,8 @@ us two analogous functions for the cumulative probability with more
 manageable shapes:</p>
 <p><img src="images/logcdfquantileexp.png" /></p>
 <p>Furthermore, we can model all right tail calculations by using the
-left’s and exploit the symmetry of the Gaussian PDF. This leaves us with
-two almost linear curves.</p>
+left’s and avoid all asymptotes by exploiting the symmetry of the
+Gaussian PDF. This leaves us with two almost linear curves.</p>
 <p>Fortunately, we are not the first to reach this point of the
 journey. SciPy has well documented and precise polynomial approximations
 of the log-CDF

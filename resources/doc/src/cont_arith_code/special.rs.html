@@ -415,10 +415,14 @@
 <a href="#415" id="415">415</a>
 <a href="#416" id="416">416</a>
 <a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::f64::consts::<span class="kw-2">*</span>;
+
+<span class="kw">use </span>libm::expm1;
 <span class="kw">use </span>errorfunctions::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// Copied from `scipy/scipy/special/_faddeeva.cxx` which is their
+<span class="doccomment">/// Copied from `scipy/scipy/special/xsf/stats.h` which is their
 /// definition of `logcdf` for `norm` (standard normal):
 ///
 /// "Log of the CDF of the normal distribution for double x.
@@ -798,7 +802,7 @@
 </span><span class="kw">pub fn </span>ndtri_exp(y: f64) -&gt; f64 {
     <span class="kw">if </span>y &lt; -f64::MAX { f64::NEG_INFINITY }
     <span class="kw">else if </span>y &lt; -<span class="number">2.0 </span>{ ndtri_exp_small_y(y) }
-    <span class="kw">else if </span>y &gt; LOG1P_MEXP_MTWO { -ndtri(-libm::expm1(y)) }
+    <span class="kw">else if </span>y &gt; LOG1P_MEXP_MTWO { -ndtri(-expm1(y)) }
     <span class="kw">else </span>{ ndtri(y.exp()) }
 }
 
@@ -829,7 +833,7 @@
     <span class="kw">if </span>x &lt; LOGHALF {
 	(-x.exp()).ln_1p()
     } <span class="kw">else </span>{
-	(-libm::expm1(x)).ln()
+	(-expm1(x)).ln()
     }
 }
 </code></pre></div></section></main></body></html>

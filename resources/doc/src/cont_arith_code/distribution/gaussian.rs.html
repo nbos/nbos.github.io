@@ -418,9 +418,124 @@
 <a href="#418" id="418">418</a>
 <a href="#419" id="419">419</a>
 <a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
+<a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::f64::consts::<span class="kw-2">*</span>;
 
+<span class="kw">use </span>libm::erf;
 <span class="kw">use </span>logaddexp::LogAddExp;
+<span class="kw">use </span>statrs::function::erf::erf_inv;
 
 <span class="kw">use crate</span>::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::special;
@@ -457,7 +572,8 @@
 				 special::log_ndtr(hi));
     <span class="kw">if </span>lp &gt; f64::NEG_INFINITY { lp }
     <span class="kw">else </span>{ <span class="comment">// ran out of precision
-	// linear approximation (assume locally uniform)
+	</span><span class="macro">eprintln!</span>(<span class="string">"\x1b[31mRan out of precision on Gaussian tail\x1b[0m"</span>);
+	<span class="comment">// linear approximation (assume locally uniform)
 	</span><span class="kw">let </span>lpd = log_pdf((lo + hi) * <span class="number">0.5</span>); <span class="comment">// take PD at midpoint
 	</span><span class="kw">let </span>ln_delta = (hi - lo).ln();
 	lpd + ln_delta <span class="comment">// height * width
@@ -466,7 +582,7 @@
 
 <span class="doccomment">/// Quantile of the standard normal
 </span><span class="kw">pub fn </span>quantile(cp: f64) -&gt; f64 {
-    SQRT_2 * statrs::function::erf::erf_inv(<span class="number">2.0 </span>* cp - <span class="number">1.0</span>)
+    SQRT_2 * erf_inv(<span class="number">2.0 </span>* cp - <span class="number">1.0</span>)
 }
 
 <span class="doccomment">/// Quantile-exp (inverse of the log-CDF) of the standard normal
@@ -497,7 +613,7 @@
 
 <span class="comment">////////////////////////////// PARAMETRIZED //////////////////////////////
 
-</span><span class="attr">#[derive(Debug,Copy,Clone,PartialEq,PartialOrd)]
+</span><span class="attr">#[derive(Copy,Clone,PartialEq,PartialOrd)]
 </span><span class="doccomment">/// Numerically stable Gaussian distribution
 </span><span class="kw">pub struct </span>Gaussian {
     <span class="doccomment">/// Number of values
@@ -514,12 +630,22 @@
     </span><span class="kw">pub </span>stdev: f64
 }
 
+<span class="kw">impl </span>std::fmt::Debug <span class="kw">for </span>Gaussian {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="macro">write!</span>(
+            f,
+            <span class="string">"Gaussian {{ μ: {}, σ: {} }} ({}, {}, {})"</span>,
+            <span class="self">self</span>.mean, <span class="self">self</span>.stdev, <span class="self">self</span>.s0, <span class="self">self</span>.s1, <span class="self">self</span>.s2
+        )
+    }
+}
+
 <span class="kw">impl </span>Gaussian {
     <span class="kw">pub fn </span>variance(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; f64 {
 	<span class="self">self</span>.stdev * <span class="self">self</span>.stdev
     }
 
-    <span class="kw">pub fn </span>from_sums(s0: usize, s1: i64, s2: u128, ddof: u8) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>from_sums(s0: usize, s1: i64, s2: u128, ddof: u8) -&gt; <span class="self">Self </span>{
 	<span class="kw">if </span>s0 == <span class="number">0 </span>{
 	    <span class="macro">debug_assert!</span>(s1 == <span class="number">0 </span>&amp;&amp; s2 == <span class="number">0</span>);
 	    <span class="macro">panic!</span>(<span class="string">"Empty Gaussian distribution undefined"</span>)
@@ -539,10 +665,10 @@
         }
     }
 
-    <span class="doccomment">/// One pass fit of a Gaussian to given data, given the desired
-    /// delta-degree-of-freedom (0 if data is the whole population, 1 if
-    /// data is a sample)
-    </span><span class="kw">pub fn </span>from_values&lt;I&gt;(data: I, ddof: u8) -&gt; <span class="self">Self
+    <span class="doccomment">/// One pass fit (Max Likelihood Estimation) of a Gaussian to given
+    /// data, given the desired delta-degree-of-freedom (0 if data is
+    /// the whole population, 1 if data is a sample)
+    </span><span class="kw">pub fn </span>mle&lt;I&gt;(data: I, ddof: u8) -&gt; <span class="self">Self
     </span><span class="kw">where </span>I: Iterator&lt;Item=i64&gt;
     {
 	<span class="kw">let </span><span class="kw-2">mut </span>s0 = <span class="number">0usize</span>;
@@ -572,7 +698,7 @@
 	<span class="kw">if </span><span class="self">self</span>.stdev &gt; <span class="number">0.0 </span>{
 	    <span class="kw">let </span>delta = x - <span class="self">self</span>.mean;
 	    <span class="kw">let </span>denom = <span class="self">self</span>.stdev * SQRT_2;
-	    (<span class="number">0.5</span>) * (<span class="number">1.0 </span>+ libm::erf(delta/denom))
+	    (<span class="number">0.5</span>) * (<span class="number">1.0 </span>+ erf(delta/denom))
 	} <span class="kw">else if </span>x &gt;= <span class="self">self</span>.mean {
 	    <span class="number">1.0
 	</span>} <span class="kw">else </span>{
@@ -604,7 +730,7 @@
 	    <span class="kw">let </span>lo_z = (lo - <span class="self">self</span>.mean) * precision;
 	    <span class="kw">let </span>hi_z = (hi - <span class="self">self</span>.mean) * precision;
 	    log_probability(lo_z,hi_z)
-	} <span class="kw">else if </span>lo &lt; <span class="self">self</span>.mean &amp;&amp; hi &gt;= <span class="self">self</span>.mean {
+	} <span class="kw">else if </span>lo &lt;= <span class="self">self</span>.mean &amp;&amp; hi &gt;= <span class="self">self</span>.mean {
 	    <span class="number">0.0 </span><span class="comment">// log(1)
 	</span>} <span class="kw">else </span>{
 	    f64::NEG_INFINITY <span class="comment">// log(0)
@@ -640,15 +766,14 @@
     /// PDF of the gaussian between two points. Does the computation in
     /// log-scale so we're numerically stable in the tails
     </span><span class="kw">pub fn </span>lerp(<span class="kw-2">&amp;</span><span class="self">self</span>, lo: f64, hi: f64, cp: f64) -&gt; f64 {
-	<span class="kw">if </span><span class="self">self</span>.stdev &gt; <span class="number">0.0 </span>{ <span class="comment">// not degenerate
+	<span class="kw">if </span><span class="self">self</span>.stdev &lt;= <span class="number">0.0 </span>{
+	    <span class="self">self</span>.mean
+	} <span class="kw">else </span>{ <span class="comment">// not degenerate
 	    </span><span class="kw">let </span>precision = <span class="self">self</span>.stdev.recip();
 	    <span class="kw">let </span>lo_z = (lo - <span class="self">self</span>.mean) * precision;
 	    <span class="kw">let </span>hi_z = (hi - <span class="self">self</span>.mean) * precision;
 	    <span class="kw">let </span>res_z = lerp(lo_z,hi_z,cp);
 	    res_z * <span class="self">self</span>.stdev + <span class="self">self</span>.mean
-	} <span class="kw">else </span>{
-	    <span class="macro">debug_assert!</span>(lo &lt;= <span class="self">self</span>.mean &amp;&amp; hi &gt;= <span class="self">self</span>.mean);
-	    <span class="self">self</span>.mean
 	}
     }
 
@@ -668,59 +793,77 @@
 	g.mean += d;
 	g
     }
+
+    <span class="doccomment">/// Count the information (bits) of a given index in the Gaussian,
+    /// i.e. the log-probability of the +/-0.5 interval around an
+    /// integer, in base 2
+    </span><span class="kw">pub fn </span>bits(<span class="kw-2">&amp;</span><span class="self">self</span>, s: Index) -&gt; f64 {
+	<span class="kw">let </span>res = -<span class="self">self</span>.log_probability(s <span class="kw">as </span>f64 - <span class="number">0.5</span>, s <span class="kw">as </span>f64 + <span class="number">0.5</span>)
+	    / std::f64::consts::LN_2;
+	<span class="kw">if </span>res == <span class="number">0.0 </span>{ <span class="number">0.0 </span>} <span class="kw">else </span>{ res } <span class="comment">// -0.0
+    </span>}
 }
 
 <span class="kw">impl </span>UnivariateDistribution <span class="kw">for </span>Gaussian {
     <span class="kw">fn </span>truncated(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>TruncatedDistribution&gt; {
-	<span class="kw">let </span>gaussian = <span class="self">self</span>.clone().translate(<span class="number">0.5</span>); <span class="comment">// see NOTE below
-	</span><span class="kw">let </span>lo = i64::MIN;
-	<span class="kw">let </span>one = <span class="number">0.0</span>; <span class="comment">// log(1)
-	</span><span class="kw">let </span>zero = f64::NEG_INFINITY;
-	<span class="kw">let </span><span class="kw-2">mut </span>bins = <span class="comment">// new() trims 0 and 2 off
-	    </span>TruncatedCategorical::new(<span class="macro">vec!</span>[one]);
-	bins.ln_ps = <span class="macro">vec!</span>[zero,one,zero];
-	<span class="kw">let </span>hi = i64::MAX;
-	<span class="kw">let </span>ln_prob = <span class="number">0.0</span>; <span class="comment">// log(1);
-	</span>Box::new(TruncatedGaussian{ gaussian, lo, bins, hi, ln_prob })
-    }
-}
+	<span class="kw">let </span><span class="kw-2">mut </span>bins = TruncatedCategorical::new(<span class="macro">vec!</span>[<span class="number">0.0</span>]);
+	<span class="comment">// new() trims 0 and 2 off, so we have to manually:
+	</span>bins.ln_ps = <span class="macro">vec!</span>[f64::NEG_INFINITY,
+			  <span class="number">0.0</span>,
+			  f64::NEG_INFINITY];
+	<span class="kw">let </span>lo;
+	<span class="kw">let </span>hi;
+	<span class="kw">if </span><span class="self">self</span>.stdev &lt;= <span class="number">0.0 </span>{
+	    lo = <span class="self">self</span>.s1; <span class="comment">// (already resolved)
+	    </span>hi = <span class="self">self</span>.s1;
+	} <span class="kw">else </span>{ <span class="comment">// bounds at infinity
+	    </span>lo = i64::MIN;
+	    hi = i64::MAX;
+	}
 
-<span class="kw">impl </span>Model&lt;i64&gt; <span class="kw">for </span>Gaussian {
-    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: i64) -&gt; <span class="prelude-ty">Option</span>&lt;i64&gt; {
-	<span class="prelude-val">Some</span>(s)
-    }
-    <span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt; {
-	Box::new(<span class="kw-2">*</span><span class="self">self</span>)
+	<span class="kw">let </span>ln_prob = <span class="number">0.0</span>; <span class="comment">// log(1);
+	</span>Box::new(TruncatedGaussian{ gaussian: <span class="self">self</span>.clone(),
+				    lo, bins, hi, ln_prob })
     }
 }
 
 <span class="attr">#[derive(Debug,Clone,PartialEq,PartialOrd)]
 </span><span class="kw">pub struct </span>TruncatedGaussian {
-    <span class="kw">pub </span>gaussian: Gaussian, <span class="comment">// prior distribution over the numbers (see NOTE)
-    </span><span class="kw">pub </span>lo: i64, <span class="comment">// floored lower-bound
+    <span class="kw">pub </span>gaussian: Gaussian, <span class="comment">// prior distribution over the numbers
+    </span><span class="kw">pub </span>lo: i64, <span class="comment">// integer nearest to lower-bound
     </span><span class="kw">pub </span>bins: TruncatedCategorical, <span class="comment">// [lo_crem, mid, hi_rem] cat. distr.
-    </span><span class="kw">pub </span>hi: i64, <span class="comment">// floored upper-bound
+    </span><span class="kw">pub </span>hi: i64, <span class="comment">// integer nearest to upper-bound
     </span><span class="kw">pub </span>ln_prob: f64, <span class="comment">// log-probability of all bins
 </span>}
 
-<span class="comment">// NOTE: For the whole implementation of truncated_gaussian, the bins
-// are the widths of whole numbers so [0.0, 1.0), [1.0, 2.0), etc. Since
-// this disagrees with how we fit a gaussian to values (we would have to
-// add 0.5 to each value of the sample to get a mle), we add 0.5 to the
-// mean whenever converting into a truncated_gaussian, so gaussians fit
-// as you would expect and we can call gaussian::log_probability as you
-// would expect, etc.
-</span><span class="kw">impl </span>TruncatedDistribution <span class="kw">for </span>TruncatedGaussian {
+<span class="kw">impl </span>TruncatedDistribution <span class="kw">for </span>TruncatedGaussian {
     <span class="kw">fn </span>quantile(<span class="kw-2">&amp;</span><span class="self">self</span>, cp: f64) -&gt; (i64, f64) {
-	<span class="kw">let </span>(case, case_split) = <span class="self">self</span>.bins.quantile(cp);
-	<span class="kw">if      </span>case == <span class="number">0 </span>{ (<span class="self">self</span>.lo, case_split) }
-	<span class="kw">else if </span>case == <span class="number">2 </span>{ (<span class="self">self</span>.hi, case_split) }
-	<span class="kw">else </span>{ <span class="comment">// mid
-	    </span><span class="macro">assert!</span>(case == <span class="number">1</span>);
-	    <span class="kw">let </span>lo = (<span class="self">self</span>.lo + <span class="number">1</span>) <span class="kw">as </span>f64;
-	    <span class="kw">let </span>hi = <span class="self">self</span>.hi <span class="kw">as </span>f64;
-	    <span class="kw">let </span>lerp = <span class="self">self</span>.gaussian.lerp(lo,hi,case_split);
-	    <span class="kw">let </span>(<span class="kw-2">mut </span>s, <span class="kw-2">mut </span>s_rem) = floor_rem(lerp);
+
+	<span class="comment">// degen case:
+	</span><span class="kw">if </span><span class="self">self</span>.gaussian.stdev &lt;= <span class="number">0.0 </span>{
+	    <span class="kw">return </span>(<span class="self">self</span>.gaussian.mean.round() <span class="kw">as </span>i64, <span class="number">0.5</span>)
+	}
+
+	<span class="comment">// normal case:
+	</span><span class="kw">let </span>(case, case_cp) = <span class="self">self</span>.bins.quantile(cp);
+	<span class="kw">if      </span>case == <span class="number">0 </span>{ (<span class="self">self</span>.lo, case_cp) }
+	<span class="kw">else if </span>case == <span class="number">2 </span>{ (<span class="self">self</span>.hi, case_cp) }
+	<span class="kw">else </span>{ <span class="comment">// midle bin
+	    </span><span class="macro">debug_assert!</span>(case == <span class="number">1</span>);
+	    <span class="kw">let </span>lo = <span class="self">self</span>.lo <span class="kw">as </span>f64 + <span class="number">0.5</span>;
+	    <span class="kw">let </span>hi = <span class="self">self</span>.hi <span class="kw">as </span>f64 - <span class="number">0.5</span>;
+	    <span class="kw">let </span>lerp = <span class="self">self</span>.gaussian.lerp(lo,hi,case_cp);
+	    <span class="kw">let </span>s_f64 = lerp.round();
+	    <span class="kw">let </span>s_lo = s_f64 - <span class="number">0.5</span>;
+	    <span class="kw">let </span>s = s_f64 <span class="kw">as </span>i64;
+
+	    <span class="kw">let </span>s_case_cp = (<span class="self">self</span>.gaussian.log_probability(lo,s_lo)
+			     <span class="comment">// normalize like case_cp is:
+			     </span>+ <span class="self">self</span>.bins.ln_ps[<span class="number">1</span>]).exp();
+
+	    <span class="macro">debug_assert!</span>(s_case_cp &lt;= case_cp);
+	    <span class="kw">let </span>s_rem = case_cp - s_case_cp;
+	    <span class="macro">debug_assert!</span>(<span class="number">0.0 </span>&lt;= s_rem &amp;&amp; s_rem &lt; <span class="number">1.0</span>);
 
 	    <span class="kw">let </span>progress =
 		( s &gt; <span class="self">self</span>.lo + <span class="number">1 </span>|| (s == <span class="self">self</span>.lo + <span class="number">1
@@ -728,13 +871,16 @@
 		&amp;&amp; s &lt; <span class="self">self</span>.hi;
 
 	    <span class="kw">if </span>!progress &amp;&amp; cp == <span class="number">0.5 </span>{
-		<span class="comment">// (ran out of precision) assume locally uniform
-		</span><span class="kw">let </span>delta = <span class="self">self</span>.hi - (<span class="self">self</span>.lo + <span class="number">1</span>);
-		<span class="macro">debug_assert!</span>(delta &gt; <span class="number">0</span>); <span class="comment">// by case
-		</span><span class="kw">let </span>inc = case_split * delta <span class="kw">as </span>f64;
-		<span class="kw">let </span>inc_floor = inc.floor();
-		s = <span class="self">self</span>.lo + <span class="number">1 </span>+ inc_floor <span class="kw">as </span>i64;
-		s_rem = inc - inc_floor;
+		<span class="macro">eprintln!</span>(<span class="string">"\x1b[31mFailed to progress on a half split\x1b[0m"</span>);
+		<span class="comment">// // (ran out of precision) assume locally uniform
+		// // TODO: lerp in the log-domain instead since it's flatter?
+		// let delta = self.hi - (self.lo + 1);
+		// debug_assert!(delta &gt; 0); // by case
+		// let inc = case_split * delta as f64;
+		// let inc_floor = inc.floor();
+		// s = self.lo + 1 + inc_floor as i64;
+		// s_rem = inc - inc_floor;
+		</span><span class="macro">unimplemented!</span>()
 	    }
 
 	    (s, s_rem)
@@ -742,8 +888,9 @@
     }
 
     <span class="kw">fn </span>truncate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cp: f64, s: i64, s_rem: f64, bit: bool) {
-	<span class="kw">if </span>s == <span class="self">self</span>.lo { <span class="comment">// lo
-	    </span><span class="kw">if </span>bit {
+	<span class="comment">// case lo:
+	</span><span class="kw">if </span>s == <span class="self">self</span>.lo {
+	    <span class="kw">if </span>bit {
 		<span class="self">self</span>.bins.ln_ps[<span class="number">0</span>] += (<span class="number">1.0 </span>- s_rem).ln();
 		<span class="self">self</span>.bins.normalize();
 	    } <span class="kw">else </span>{ <span class="comment">// solved
@@ -754,7 +901,8 @@
 		<span class="self">self</span>.bins.ln_ps[<span class="number">2</span>] = f64::NEG_INFINITY;
 	    }
 
-	} <span class="kw">else if </span>s == <span class="self">self</span>.hi { <span class="comment">// hi
+	<span class="comment">// case hi:
+	</span>} <span class="kw">else if </span>s == <span class="self">self</span>.hi { <span class="comment">// hi
 	    </span><span class="kw">if </span>bit { <span class="comment">// solved
 		</span><span class="self">self</span>.lo = <span class="self">self</span>.hi;
 		<span class="comment">// [0,0,1] but could be [1,0,0]:
@@ -767,19 +915,14 @@
 		<span class="self">self</span>.bins.normalize();
 	    }
 
-	    <span class="comment">// FIXME: case is broken when precision is 52
-	</span>} <span class="kw">else </span>{ <span class="comment">// mid
-	    </span><span class="macro">debug_assert!</span>(<span class="self">self</span>.lo &lt; s &amp;&amp; s &lt; <span class="self">self</span>.hi);
-	    <span class="kw">let </span>s_lo = s <span class="kw">as </span>f64;
-	    <span class="kw">let </span>s_hi = (s + <span class="number">1</span>) <span class="kw">as </span>f64;
-	    <span class="comment">// TODO: ideally we would have an integer version of
-	    // log_probability so we don't lose the delta by converting
-	    // to floats (e.g. mean is very high) but the largest ints
-	    // we model are 52 bits long and 2^51 just fits in an f64
-	    //
-	    // (we might actually be able to get away with a single call
-	    // to log_pdf, and give up the whole definite integral thing)
-	    </span><span class="kw">let </span>s_lp = <span class="kw">if </span>s_lo != s_hi {
+	<span class="comment">// case mid:
+	</span>} <span class="kw">else </span>{
+	    <span class="macro">debug_assert!</span>(<span class="self">self</span>.lo &lt; s &amp;&amp; s &lt; <span class="self">self</span>.hi);
+
+	    <span class="comment">// FIXME: doing this in floats is lazy but
+	    </span><span class="kw">let </span>s_lo = s <span class="kw">as </span>f64 - <span class="number">0.5</span>;
+	    <span class="kw">let </span>s_hi = s <span class="kw">as </span>f64 + <span class="number">0.5</span>;
+	    <span class="kw">let </span>s_lp = <span class="kw">if </span>s_lo != s_hi {
 		<span class="self">self</span>.gaussian.log_probability(s_lo, s_hi)
 	    } <span class="kw">else </span>{
 		<span class="self">self</span>.gaussian.log_pdf(s_lo)
@@ -812,10 +955,10 @@
 	    <span class="kw">let </span>mid_bin = <span class="kw">if </span><span class="self">self</span>.lo + <span class="number">1 </span>== <span class="self">self</span>.hi {
 		f64::NEG_INFINITY
 	    } <span class="kw">else </span>{
-		<span class="kw">let </span>lop1 = (<span class="self">self</span>.lo + <span class="number">1</span>) <span class="kw">as </span>f64;
-		<span class="kw">let </span>hi = <span class="self">self</span>.hi <span class="kw">as </span>f64;
+		<span class="kw">let </span>lo = <span class="self">self</span>.lo <span class="kw">as </span>f64 + <span class="number">0.5</span>;
+		<span class="kw">let </span>hi = <span class="self">self</span>.hi <span class="kw">as </span>f64 - <span class="number">0.5</span>;
 		<span class="kw">let </span><span class="kw-2">mut </span>mid_lp =
-		    <span class="self">self</span>.gaussian.log_probability(lop1,hi);
+		    <span class="self">self</span>.gaussian.log_probability(lo,hi);
 		mid_lp -= <span class="self">self</span>.ln_prob; <span class="comment">// re-base
 		</span>mid_lp
 	    };
@@ -837,5 +980,88 @@
     <span class="kw">let </span>x_int = x_floor <span class="kw">as </span>i64;
     <span class="kw">if </span>x.is_finite() { (x_int, ((x - x_floor))) }
     <span class="kw">else </span>{ (x_int,(<span class="number">0.0</span>)) }
+}
+
+<span class="comment">////////////////////////////// MODELS //////////////////////////////
+
+</span><span class="kw">impl </span>Model&lt;i64&gt; <span class="kw">for </span>Gaussian {
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: i64) -&gt; <span class="prelude-ty">Option</span>&lt;i64&gt; {
+	<span class="prelude-val">Some</span>(s)
+    }
+    <span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt; {
+	Box::new(<span class="kw-2">*</span><span class="self">self</span>)
+    }
+}
+
+<span class="attr">#[derive(Debug,Clone,PartialEq,PartialOrd)]
+</span><span class="doccomment">/// Static (non-optimal) Gaussian model of a set of integers
+</span><span class="kw">pub struct </span>WithReplacement {
+    <span class="kw">pub </span>count: usize,
+    <span class="kw">pub </span>vec: Vec&lt;i64&gt;,
+    <span class="kw">pub </span>distr: Gaussian
+}
+
+<span class="kw">impl </span>WithReplacement {
+    <span class="doccomment">/// Construction from a set of values
+    </span><span class="kw">pub fn </span>mle&lt;I&gt;(values: I) -&gt; <span class="self">Self </span><span class="kw">where </span>I: Iterator&lt;Item=i64&gt; {
+	<span class="kw">let </span>vec = Vec::new();
+	<span class="kw">let </span>distr = Gaussian::mle(values, <span class="number">0</span>);
+	<span class="kw">let </span>count = distr.s0;
+	WithReplacement{ count, vec, distr }
+    }
+}
+
+<span class="kw">impl </span>Model&lt;Vec&lt;i64&gt;&gt; <span class="kw">for </span>WithReplacement {
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, x: i64) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;i64&gt;&gt; {
+	<span class="self">self</span>.vec.push(x);
+	<span class="self">self</span>.count -= <span class="number">1</span>;
+	<span class="kw">if </span><span class="self">self</span>.count == <span class="number">0 </span>{ <span class="prelude-val">Some</span>(std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.vec)) }
+	<span class="kw">else </span>{ <span class="prelude-val">None </span>}
+    }
+    <span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt; {
+	Box::new(<span class="self">self</span>.distr.clone())
+    }
+}
+
+<span class="attr">#[derive(Debug,Clone,PartialEq,PartialOrd)]
+</span><span class="doccomment">/// Updating (optimal) Gaussian model of a set of integers
+</span><span class="kw">pub struct </span>WithoutReplacement {
+    <span class="kw">pub </span>vec: Vec&lt;i64&gt;,
+    <span class="kw">pub </span>distr: Gaussian <span class="comment">// contains count as s0
+</span>}
+
+<span class="kw">impl </span>WithoutReplacement {
+    <span class="doccomment">/// Construction from a set of values
+    </span><span class="kw">pub fn </span>mle&lt;I&gt;(values: I) -&gt; <span class="self">Self </span><span class="kw">where </span>I: Iterator&lt;Item=i64&gt; {
+	WithoutReplacement{ vec: Vec::new(),
+			    distr: Gaussian::mle(values, <span class="number">0</span>) }
+    }
+
+    <span class="kw">pub fn </span>count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+	<span class="self">self</span>.distr.s0
+    }
+}
+
+<span class="kw">impl </span>Model&lt;Vec&lt;i64&gt;&gt; <span class="kw">for </span>WithoutReplacement {
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, x: i64) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;i64&gt;&gt; {
+	<span class="self">self</span>.vec.push(x);
+
+	<span class="comment">// update
+	</span><span class="kw">let </span>s0 = <span class="self">self</span>.distr.s0 - <span class="number">1</span>;
+	<span class="kw">let </span>s1 = <span class="self">self</span>.distr.s1 - x;
+	<span class="kw">let </span>x128 = x.abs() <span class="kw">as </span>u128;
+	<span class="kw">let </span>s2 = <span class="self">self</span>.distr.s2 - x128<span class="kw-2">*</span>x128;
+
+	<span class="kw">if </span>s0 == <span class="number">0 </span>{
+	    <span class="prelude-val">Some</span>(std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.vec)) <span class="comment">// finished
+	</span>}
+	<span class="kw">else </span>{
+	    <span class="self">self</span>.distr = Gaussian::from_sums(s0,s1,s2,<span class="number">0</span>);
+	    <span class="prelude-val">None
+	</span>}
+    }
+    <span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt; {
+	Box::new(<span class="self">self</span>.distr.clone())
+    }
 }
 </code></pre></div></section></main></body></html>

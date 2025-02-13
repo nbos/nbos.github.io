@@ -100,7 +100,7 @@ The **bimodal case** is hardly an issue either and has significant
 probability density at the two modes no matter how "separated" you make
 them.
 
-The **outlier case** is the only one where the likelihood of a datapoint
+The **outlier case** is the only one where the likelihood of a data-point
 can fall really low. If all but one point have non-significant variance
 around a point, the probability density at that outlier point can be
 prohibitively low. So how bad can it get?
@@ -236,8 +236,8 @@ manageable shapes:
 ![](images/logcdfquantileexp.png)
 
 Furthermore, we can model all right tail calculations by using the
-left's and exploit the symmetry of the Gaussian PDF. This leaves us with
-two almost linear curves.
+left's and avoid all asymptotes by exploiting the symmetry of the
+Gaussian PDF. This leaves us with two almost linear curves.
 
 Fortunately, we are not the first to reach this point of the
 journey. SciPy has well documented and precise polynomial approximations
