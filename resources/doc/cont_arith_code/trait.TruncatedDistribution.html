@@ -17,7 +17,7 @@ cumulative probability assigned to <code>s</code>. Indexes must increase
 monotonically w.r.t. <code>cp</code>, and <code>s_rem</code> must increase linearly
 w.r.t. <code>cp</code> inside each <code>s</code>.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="tymethod.truncate" class="method"><a class="src rightside" href="../src/cont_arith_code/lib.rs.html#116">source</a><h4 class="code-header">fn <a href="#tymethod.truncate" class="fn">truncate</a>(&amp;mut self, cp: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>, s: <a class="type" href="type.Index.html" title="type cont_arith_code::Index">Index</a>, s_rem: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>, bit: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>)</h4></section></summary><div class="docblock"><p>Split the remaining probability mass with the given bit
-(false:0:left :: true:1:right) at the given cummulative
+(false:0:left :: true:1:right) at the given cumulative
 probability, which we already know splits at index <code>s</code> with
 remainder <code>s_rem</code>.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="tymethod.lo" class="method"><a class="src rightside" href="../src/cont_arith_code/lib.rs.html#119">source</a><h4 class="code-header">fn <a href="#tymethod.lo" class="fn">lo</a>(&amp;self) -&gt; <a class="type" href="type.Index.html" title="type cont_arith_code::Index">Index</a></h4></section></summary><div class="docblock"><p>Return the index of the lower-bound of the interval of the

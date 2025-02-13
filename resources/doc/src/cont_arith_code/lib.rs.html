@@ -508,7 +508,7 @@
     /// w.r.t. `cp` inside each `s`.
     </span><span class="kw">fn </span>quantile(<span class="kw-2">&amp;</span><span class="self">self</span>, cp: f64) -&gt; (Index, f64); <span class="comment">// returns (s, s_rem)
     </span><span class="doccomment">/// Split the remaining probability mass with the given bit
-    /// (false:0:left :: true:1:right) at the given cummulative
+    /// (false:0:left :: true:1:right) at the given cumulative
     /// probability, which we already know splits at index `s` with
     /// remainder `s_rem`.
     </span><span class="kw">fn </span>truncate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cp: f64, s: Index, s_rem: f64, bit: bool);
