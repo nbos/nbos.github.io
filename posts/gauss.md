@@ -74,8 +74,8 @@ Of course you can break both of these conditions if you select a small
 enough bin size, so we assume only a reasonable limit to the amount of
 precision per number (e.g. on the order of e.g. 32 or 64 bits). 
 
-We first address the potential theoretical limitation (1) and follow
-with the implementation details (2).
+We first address theoretical considerations and follow with the
+implementation considerations.
 
 ## Worst Likelihood Analysis
 
@@ -168,19 +168,15 @@ performance of the uniform distribution of fixed-length codes.
 
 Now, a full account of the performance of the distribution also has to
 take into account the code lengths of non-outliers, although we only
-expect their likelihood to grow (and their code length to shrink) with
-increasing $n$. For completeness, computing the sum of code lengths
-using proper probability intervals (not density) on the CDF, with bin
-size of $0.2$, in base 2 (bits), we show the total code length only
-grows sub-linearly w.r.t. $n$ in this outlier "worst case":
+expect their likelihood to grow with increasing $n$ compared to the
+outlier. For completeness, computing the sum of code lengths using
+proper probability intervals (not density) on the CDF, with bin size
+$\pm 0.5$ around integers, in base 2, we show the total code length also
+achieves linear size w.r.t. $n$ in this outlier "worst case":
 
 ![](images/outliercasecodelength.png)
 
-where computations past $n = 80$ fail because of underflow of the
-default CDF function in `numpy`, which is understandable as this places
-our sampled value $1$ at over $80$ standard deviations off the mean.
-
-## Numerically Stable Functions
+## Numerical Stability
 
 The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at $0 \mapsto -\infty$ and $1

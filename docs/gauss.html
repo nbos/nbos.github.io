@@ -74,8 +74,8 @@ probability distribution.</p></li>
 <p>Of course you can break both of these conditions if you select a small
 enough bin size, so we assume only a reasonable limit to the amount of
 precision per number (e.g. on the order of e.g. 32 or 64 bits).</p>
-<p>We first address the potential theoretical limitation (1) and follow
-with the implementation details (2).</p>
+<p>We first address theoretical considerations and follow with the
+implementation considerations.</p>
 <h2 id="worst-likelihood-analysis">Worst Likelihood Analysis</h2>
 <p>Which distribution of data produces the lowest likelihoods in its
 Gaussian MLE? Presumably, those that are the most dissimilar from the
@@ -142,16 +142,13 @@ in <span class="math inline">\(O(n)\)</span> of the size of the data set, which 
 performance of the uniform distribution of fixed-length codes.</p>
 <p>Now, a full account of the performance of the distribution also has to
 take into account the code lengths of non-outliers, although we only
-expect their likelihood to grow (and their code length to shrink) with
-increasing <span class="math inline">\(n\)</span>. For completeness, computing the sum of code lengths
-using proper probability intervals (not density) on the CDF, with bin
-size of <span class="math inline">\(0.2\)</span>, in base 2 (bits), we show the total code length only
-grows sub-linearly w.r.t. <span class="math inline">\(n\)</span> in this outlier “worst case”:</p>
+expect their likelihood to grow with increasing <span class="math inline">\(n\)</span> compared to the
+outlier. For completeness, computing the sum of code lengths using
+proper probability intervals (not density) on the CDF, with bin size
+<span class="math inline">\(\pm 0.5\)</span> around integers, in base 2, we show the total code length also
+achieves linear size w.r.t. <span class="math inline">\(n\)</span> in this outlier “worst case”:</p>
 <p><img src="images/outliercasecodelength.png" /></p>
-<p>where computations past <span class="math inline">\(n = 80\)</span> fail because of underflow of the
-default CDF function in <code>numpy</code>, which is understandable as this places
-our sampled value <span class="math inline">\(1\)</span> at over <span class="math inline">\(80\)</span> standard deviations off the mean.</p>
-<h2 id="numerically-stable-functions">Numerically Stable Functions</h2>
+<h2 id="numerical-stability">Numerical Stability</h2>
 <p>The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
 \mapsto \infty\)</span>.</p>
