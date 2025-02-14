@@ -100,7 +100,7 @@ The **bimodal case** is hardly an issue either and has significant
 probability density at the two modes no matter how "separated" you make
 them.
 
-The **outlier case** is the only one where the likelihood of a data-point
+The **outlier case** is the only one where the likelihood of a data point
 can fall really low. If all but one point have non-significant variance
 around a point, the probability density at that outlier point can be
 prohibitively low. So how bad can it get?

@@ -531,6 +531,32 @@
 <a href="#531" id="531">531</a>
 <a href="#532" id="532">532</a>
 <a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::f64::consts::<span class="kw-2">*</span>;
 
 <span class="kw">use </span>libm::erf;
@@ -836,6 +862,25 @@
     </span><span class="kw">pub </span>ln_prob: f64, <span class="comment">// log-probability of all bins
 </span>}
 
+<span class="kw">impl </span>TruncatedGaussian {
+    <span class="doccomment">/// Count the information (bits) of a given index in the truncated
+    /// Gaussian, i.e. the log-probability of the +/-0.5 interval around
+    /// an integer, in base 2
+    </span><span class="kw">pub fn </span>bits(<span class="kw-2">&amp;</span><span class="self">self</span>, s: Index) -&gt; f64 {
+	<span class="kw">let </span>ln2 = std::f64::consts::LN_2;
+	<span class="kw">if </span>s &lt; <span class="self">self</span>.lo { f64::INFINITY }
+	<span class="kw">else if </span>s == <span class="self">self</span>.lo { -<span class="self">self</span>.bins.ln_ps[<span class="number">0</span>] / ln2 }
+	<span class="kw">else if </span>s == <span class="self">self</span>.hi { -<span class="self">self</span>.bins.ln_ps[<span class="number">2</span>] / ln2 }
+	<span class="kw">else if </span>s &gt; <span class="self">self</span>.hi { f64::INFINITY }
+	<span class="kw">else </span>{
+	    <span class="kw">let </span>s_lo = s <span class="kw">as </span>f64 - <span class="number">0.5</span>;
+	    <span class="kw">let </span>s_hi = s <span class="kw">as </span>f64 + <span class="number">0.5</span>;
+	    -(<span class="self">self</span>.gaussian.log_probability(s_lo,s_hi)
+	      - <span class="self">self</span>.ln_prob) / ln2
+	}
+    }
+}
+
 <span class="kw">impl </span>TruncatedDistribution <span class="kw">for </span>TruncatedGaussian {
     <span class="kw">fn </span>quantile(<span class="kw-2">&amp;</span><span class="self">self</span>, cp: f64) -&gt; (i64, f64) {
 
@@ -893,12 +938,16 @@
 	    <span class="kw">if </span>bit {
 		<span class="self">self</span>.bins.ln_ps[<span class="number">0</span>] += (<span class="number">1.0 </span>- s_rem).ln();
 		<span class="self">self</span>.bins.normalize();
+		<span class="kw">let </span>lccp = (<span class="number">1.0 </span>- cp).ln();
+		<span class="self">self</span>.ln_prob += lccp;
 	    } <span class="kw">else </span>{ <span class="comment">// solved
 		</span><span class="self">self</span>.hi = <span class="self">self</span>.lo;
 		<span class="comment">// [1,0,0] but could be [0,0,1]:
 		</span><span class="self">self</span>.bins.ln_ps[<span class="number">0</span>] = <span class="number">0.0</span>;
 		<span class="self">self</span>.bins.ln_ps[<span class="number">1</span>] = f64::NEG_INFINITY;
 		<span class="self">self</span>.bins.ln_ps[<span class="number">2</span>] = f64::NEG_INFINITY;
+		<span class="kw">let </span>lcp = cp.ln();
+		<span class="self">self</span>.ln_prob += lcp;
 	    }
 
 	<span class="comment">// case hi:
@@ -909,10 +958,13 @@
 		</span><span class="self">self</span>.bins.ln_ps[<span class="number">0</span>] = f64::NEG_INFINITY;
 		<span class="self">self</span>.bins.ln_ps[<span class="number">1</span>] = f64::NEG_INFINITY;
 		<span class="self">self</span>.bins.ln_ps[<span class="number">2</span>] = <span class="number">0.0</span>;
-
+		<span class="kw">let </span>lccp = (<span class="number">1.0 </span>- cp).ln();
+		<span class="self">self</span>.ln_prob += lccp;
 	    } <span class="kw">else </span>{
 		<span class="self">self</span>.bins.ln_ps[<span class="number">2</span>] += s_rem.ln();
 		<span class="self">self</span>.bins.normalize();
+		<span class="kw">let </span>lcp = cp.ln();
+		<span class="self">self</span>.ln_prob += lcp;
 	    }
 
 	<span class="comment">// case mid:

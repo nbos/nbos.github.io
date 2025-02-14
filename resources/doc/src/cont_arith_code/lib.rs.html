@@ -410,10 +410,10 @@
 /// `i64`s) until a value `T` pops out. Used by both Encoder and Decoder
 /// symmetrically.
 </span><span class="kw">pub trait </span>Model&lt;T&gt; {
-    <span class="doccomment">/// Push a value into the model and updates its state.
-    /// Returns an optional result based on the model's internal logic.
+    <span class="doccomment">/// Push a value into the model and updates its state. Returns a
+    /// values once it's been fully described by a series of indexes.
     </span><span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: Index) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt;;
-    <span class="doccomment">/// Retrieve the next distribution from the model.
+    <span class="doccomment">/// Get the distribution for the next symbol from the model.
     </span><span class="kw">fn </span>next_distr(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>UnivariateDistribution&gt;;
 }
 
@@ -444,8 +444,7 @@
 <span class="doccomment">/// A univariate distribution that can be truncated.
 </span><span class="kw">pub trait </span>UnivariateDistribution: Debug {
     <span class="kw">fn </span>truncated(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>TruncatedDistribution&gt;;
-    <span class="comment">// fn info(&amp;self, s: Index) -&gt; f64;
-</span>}
+}
 
 <span class="doccomment">/// A single sample from a distribution
 </span><span class="kw">pub struct </span>Sample&lt;D,T&gt; {
@@ -607,6 +606,7 @@
 	    // distributions, then it's just
 	    </span>cp &lt; <span class="number">0.5
 	</span>);
+
 
 	<span class="comment">// split distributions on the stack
 	</span><span class="kw">for </span>(target, <span class="kw-2">mut </span>distr, cp, s, s_rem) <span class="kw">in </span>stack {
