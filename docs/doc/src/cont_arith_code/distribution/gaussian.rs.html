@@ -557,6 +557,7 @@
 <a href="#557" id="557">557</a>
 <a href="#558" id="558">558</a>
 <a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::f64::consts::<span class="kw-2">*</span>;
 
 <span class="kw">use </span>libm::erf;
@@ -839,9 +840,10 @@
 			  f64::NEG_INFINITY];
 	<span class="kw">let </span>lo;
 	<span class="kw">let </span>hi;
-	<span class="kw">if </span><span class="self">self</span>.stdev &lt;= <span class="number">0.0 </span>{
-	    lo = <span class="self">self</span>.s1; <span class="comment">// (already resolved)
-	    </span>hi = <span class="self">self</span>.s1;
+	<span class="kw">if </span><span class="self">self</span>.stdev &lt;= <span class="number">0.0 </span>{ <span class="comment">// (already resolved)
+	    </span><span class="kw">let </span>s = <span class="self">self</span>.mean.round() <span class="kw">as </span>i64;
+	    lo = s;
+	    hi = s;
 	} <span class="kw">else </span>{ <span class="comment">// bounds at infinity
 	    </span>lo = i64::MIN;
 	    hi = i64::MAX;

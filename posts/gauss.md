@@ -7,7 +7,7 @@ date: 2025-02-08
 Arithmetic codes are pretty useful for compression. You can find a
 number of implementations of the algorithm online, some work with static
 models, some adaptive. Often, an abstract interface is defined so users
-can call the algorithm with your own model implementation. It makes
+can call the algorithm with their own model implementation. It makes
 sense for the algorithm to interface with a user-defined model through a
 vector of probabilities of the next-symbols, but one can find this
 limiting if trying to model **very large domains** like those of
