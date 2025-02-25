@@ -2,7 +2,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     max-width: 650px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1rem 1rem;
     line-height: 1.4;
 }
 
@@ -58,21 +58,21 @@ img {
 /* Index page post entries */
 .post-entry {
     position: relative;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     overflow: hidden;
-    padding-bottom: 2rem;
+    padding-bottom: 1rem;
 }
 
-/* Separators */
-.post-entry:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 33%; /* Start at 33% from left */
-    width: 33%; /* Make line 33% of container width */
-    height: 1px; /* Thin line */
-    background-color: #cccccc; /* Light grey color */
-}
+/* /\* Separators *\/ */
+/* .post-entry:not(:last-child)::after { */
+/*     content: ""; */
+/*     position: absolute; */
+/*     bottom: 0; */
+/*     left: 33%; /\* Start at 33% from left *\/ */
+/*     width: 33%; /\* Make line 33% of container width *\/ */
+/*     height: 1px; /\* Thin line *\/ */
+/*     background-color: #cccccc; /\* Light grey color *\/ */
+/* } */
 
 .post-entry > a {
     position: absolute;
@@ -90,6 +90,33 @@ img {
     color: #000;
     margin: 0;
     margin-bottom: 0.2rem;
+}
+
+/* Read more link styling */
+.read-more {
+  float: right;  /* Right align the element */
+  color: #666;
+  font-weight: 500;
+  position: relative;
+  z-index: 0;
+  margin-right: 0.5rem;
+  /* margin-left: 0.5rem;  /\* Space between text and read more *\/ */
+}
+
+/* When hovering over the post entry, style the read more link */
+.post-entry:hover .read-more {
+  text-decoration: underline;
+  text-decoration-color: #333;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  color: #333;
+}
+
+/* Clear the float if needed */
+.post-preview::after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 /* Index-specific post title */

@@ -10,12 +10,18 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   </head>
   <body>
+    <h1>Blog Posts</h1>
     $for(posts)$
     <div class="post-entry">
       <a href="$url$"></a>
       <h2 class="post-title">$title$</h2>
       <div class="post-date">$date$</div>
-      <div class="post-preview">$preview$</div>
+      <div class="post-preview">
+	$preview$
+      </div>
+      <div>
+	<span class="read-more">Read more →</span>
+      </div>
     </div>
     $endfor$
   </body>
