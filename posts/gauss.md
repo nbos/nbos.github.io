@@ -211,15 +211,16 @@ value of the function:
 
 ![](images/pdfdiffnorm.png)
 
-That is, the tails may be *absolutely* flat, but they become
-*relatively* steeper the further away you go. Another way to demonstrate
-this is by blowing up the PDF at different scales (here, successive
-factors of 10):
+That is, the tails may be flat in absolute terms, but they become
+steeper relative to themselves the further away you go. Another way to
+demonstrate this is by blowing up the PDF at different scales (here,
+successive factors of 10):
 
 ![](images/pdfscales.png)
 
-which makes it clear we cannot rely on any "flatness" in the tails. We
-are forced to find an analytic or at least numeric solution.
+which makes it more clear why we cannot rely on linear interpolations in
+the tails. We are forced to find an analytic or at least numeric
+solution that is more faithful to the distribution.
 
 ### The Proper Way
 

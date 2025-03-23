@@ -173,13 +173,14 @@ tails, the relative difference becomes greater the further away you move
 from the center. To see this, normalize the (absolute) derivative to the
 value of the function:</p>
 <p><img src="images/pdfdiffnorm.png" /></p>
-<p>That is, the tails may be <em>absolutely</em> flat, but they become
-<em>relatively</em> steeper the further away you go. Another way to demonstrate
-this is by blowing up the PDF at different scales (here, successive
-factors of 10):</p>
+<p>That is, the tails may be flat in absolute terms, but they become
+steeper relative to themselves the further away you go. Another way to
+demonstrate this is by blowing up the PDF at different scales (here,
+successive factors of 10):</p>
 <p><img src="images/pdfscales.png" /></p>
-<p>which makes it clear we cannot rely on any “flatness” in the tails. We
-are forced to find an analytic or at least numeric solution.</p>
+<p>which makes it more clear why we cannot rely on linear interpolations in
+the tails. We are forced to find an analytic or at least numeric
+solution that is more faithful to the distribution.</p>
 <h3 id="the-proper-way">The Proper Way</h3>
 <p>Like is usually the case in probability, the solution to numerical
 instability is found in the
