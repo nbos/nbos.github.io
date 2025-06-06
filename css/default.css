@@ -37,6 +37,8 @@ h1 {
 
 h2 {
     font-size: 2rem;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
 }
 
 article .header {
@@ -150,7 +152,7 @@ img {
 
 @media screen and (max-width: 768px) {
     img {
-        width: 100%;
+        max-width: 100%;
     }
 }
 
