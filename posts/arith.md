@@ -29,7 +29,7 @@ them in the manner of a
 a [categorical
 distribution](https://en.wikipedia.org/wiki/Categorical_distribution):
 
-![](./images/cat-cdf.png)
+![](res/arith/cat-cdf.png)
 
 Now, the code for a symbol is simply the base expansion (for a given
 base, here we use 2 for binary) of the fraction $0 \le r \lt 1$ whose
@@ -38,12 +38,12 @@ base, here we use 2 for binary) of the fraction $0 \le r \lt 1$ whose
 entirely within the **interval** of the desired symbol. In practice, you
 can split your space in however many equal parts of your base:
 
-![](./images/bin0.png)
+![](res/arith/bin0.png)
 
 and continuously split until a code's range falls well within the
 interval of the symbol to encode:
 
-![](./images/bin2.png)
+![](res/arith/bin2.png)
 
 For instance, the code <span style="color: red">101</span> above
 (corresponding to the [binary
@@ -60,7 +60,7 @@ The beauty of arithmetic coding is the optimality you get by recursively
 applying the above principle for each symbol inside the interval of the
 previous symbol. It's best explained graphically:
 
-![](./images/arith-que.png)
+![](res/arith/arith-que.png)
 
 By nesting distributions within each other, every string of symbols
 (however long) corresponds to an interval (however small) and a code. An
@@ -89,7 +89,7 @@ blue">U</span><span style="color:
 #00EF19">E</span>** would not be much longer because it takes a significant
 amount of space within **Q**'s interval:
 
-![](./images/cond-que.png)
+![](res/arith/cond-que.png)
 
 For longer messages, it plays out a bit like the game-like accessibility
 input method [Dasher](https://en.wikipedia.org/wiki/Dasher_(software)),
@@ -100,7 +100,7 @@ on their probability. (Here is a [longer
 version](https://www.youtube.com/watch?v=nr3s4613DX8) if you liked
 that).
 
-![](./images/dasher.gif)
+![](res/arith/dasher.gif)
 
 ## Code Length
 

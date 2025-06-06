@@ -116,19 +116,19 @@ approximation](https://en.wikipedia.org/wiki/Stirling%27s_approximation)
 
 $$\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n) + O\left(\frac{1}{n}\right)$$
 
-![](count/stirling.png)
+![](res/count/stirling.png)
 
 or even [Ramanujan](https://en.wikipedia.org/wiki/Srinivasa_Ramanujan)'s
 more precise version:
 
 $$\log(n!) = n\log n - n\log e+\frac{1}{6}\log(n(1+4n(1+2n)))+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)$$
 
-![](count/ramanujan.png)
+![](res/count/ramanujan.png)
 
 but these additional terms correct a consistent and significant
 difference between the two functions:
 
-![](count/difference.png)
+![](res/count/difference.png)
 
 which definitely translates to the information content of categorical
 MLE's w/ vs. w/o replacement, but how much so is not
@@ -136,7 +136,7 @@ obvious. Experiments on random strings reveals that the w/ replacement
 requires anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)
 more information to encode the same string than doing it w/o replacement
-([full table](count/table.html)):
+([full table](res/count/table.html)):
 
 	+-----+------+-----+-------------+------------+------------+-----------+
 	|   # |    N |   m | N log(N)... | log(N!)... |   (verif.) | delta (%) |

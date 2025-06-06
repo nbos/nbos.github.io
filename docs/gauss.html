@@ -1,21 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Encoding Numbers with Gaussians</title>
-    <link rel="icon" type="image/svg+xml" href="images/tess.svg">
-    <link rel="stylesheet" href="./css/style.css">
+     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
     <link rel="stylesheet" href="./css/syntax.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-    <h1 class="post-title">Encoding Numbers with Gaussians</h1>
-    <div class="post-metadata">
-        Posted on February  8, 2025 by Nathaniel Bos
-    </div>
-    <div class="post-content">
-        <p>Arithmetic codes are pretty useful for compression. You can find a
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Posts</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Encoding Numbers with Gaussians</h1>
+      <article>
+  <section class="header">
+    Posted on February  8, 2025
+    
+    by Nathaniel Bos
+    
+  </section>
+  <section>
+    <p>Arithmetic codes are pretty useful for compression. You can find a
 number of implementations of the algorithm online, some work with static
 models, some adaptive. Often, an abstract interface is defined so users
 can call the algorithm with their own model implementation. It makes
@@ -26,14 +42,14 @@ numbers.</p>
 <p>In arithmetic codes, you usually think of the 1D space addressable by
 codes as divided between next-symbols based on their relative
 probabilities:</p>
-<p><img src="images/alphabet-wide.png" /></p>
+<p><img src="res/gauss/alphabet.png" /></p>
 <p>But nothing in the spirit of the technique prevents you from
 partitioning the space in <strong>infinitely</strong> many bins to make use of
 continuous probability distributions, as long as each bin can be
 assigned a <strong>finite</strong> code/interval and vice versa.</p>
 <p>For instance, a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>:</p>
-<p><img src="images/gauss-cat-wide.png" /></p>
+<p><img src="res/gauss/gauss-cat.png" /></p>
 <p>An implementation of arithmetic coding that works with <em>any</em> model would
 have to be more abstract than what you typically find online. The
 usually included logic for resolving the categorical CDF (i.e. the
@@ -43,7 +59,7 @@ repeatedly <em>truncate</em> at given <em>cumulative probabilities</em> until a
 specific <em>bin</em> is resolved. Here is my implementation in Rust:</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/nbos/cont-arith-code">Source (GitHub)</a></li>
-<li><a href="doc/cont_arith_code/index.html">Documentation</a></li>
+<li><a href="res/doc/cont_arith_code/index.html">Documentation</a></li>
 </ul>
 <p>We use this algorithm to verify the ability of Gaussian distributions to
 encode values compactly.</p>
@@ -83,7 +99,7 @@ bell shape of the Gaussian PDF, in particular where you end up with data
 far off in the tails. Since the mapping from datasets to the Gaussian
 MLE has scale, location and count invariance, there are only a few
 corner cases to examine:</p>
-<p><img src="images/gauss-mle-corner-cases.png" /></p>
+<p><img src="res/gauss/gauss-mle-corner-cases.png" /></p>
 <p>The <strong>unimodal case</strong> is not problematic for our uses as long as you
 implement the logic to handle it. It is a “degenerate” Gaussian,
 (a.k.a. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dirac_delta_function">Dirac
@@ -132,10 +148,10 @@ PDF to get a function of <span class="math inline">\(n\)</span>:</p>
 <p><span class="math display">\[\begin{align}\mathrm{pdf}(x) &amp;= \frac {1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\
 \mathrm{pdf}(1) &amp;= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} \end{align}\]</span></p>
 <p>Which looks like</p>
-<p><img src="images/pdf1.png" /></p>
+<p><img src="res/gauss/pdf1.png" /></p>
 <p>which drops pretty quickly (exponentially quickly), but code length only grows
 in one over the logarithm of the probability so:</p>
-<p><img src="images/neglnpdf1.png" /></p>
+<p><img src="res/gauss/neglnpdf1.png" /></p>
 <p>Which is a pretty unambiguous <span class="math inline">\(0.5n\)</span> towards infinity.</p>
 <p>So it looks like the code length of the outlier of a Gaussian only grows
 in <span class="math inline">\(O(n)\)</span> of the size of the data set, which is only as bad as the
@@ -147,12 +163,12 @@ outlier. For completeness, computing the sum of code lengths using
 proper probability intervals (not density) on the CDF, with bin size
 <span class="math inline">\(\pm 0.5\)</span> around integers, in base 2, we show the total code length also
 achieves linear size w.r.t. <span class="math inline">\(n\)</span> in this outlier “worst case”:</p>
-<p><img src="images/outliercasecodelength.png" /></p>
+<p><img src="res/gauss/outliercasecodelength.png" /></p>
 <h2 id="numerical-stability">Numerical Stability</h2>
 <p>The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
 \mapsto \infty\)</span>.</p>
-<p><img src="images/cdfquantile.png" /></p>
+<p><img src="res/gauss/cdfquantile.png" /></p>
 <p>For our application, what’s important is that <em>repeatedly splitting</em> in
 half an interval of the probability mass down to any symbol to encode
 happens with <em>constant progress</em> (i.e. the middle of any interval cannot
@@ -167,17 +183,17 @@ precision, assuming local linearity. While this is a reasonable
 approximation in the central bulk of the distribution, it fails in the
 tails.</p>
 <p>To see why, consider the PDF and its derivative:</p>
-<p><img src="images/pdfdiff.png" /></p>
+<p><img src="res/gauss/pdfdiff.png" /></p>
 <p>While both flatten out at the tails, for any given interval in the
 tails, the relative difference becomes greater the further away you move
 from the center. To see this, normalize the (absolute) derivative to the
 value of the function:</p>
-<p><img src="images/pdfdiffnorm.png" /></p>
+<p><img src="res/gauss/pdfdiffnorm.png" /></p>
 <p>That is, the tails may be flat in absolute terms, but they become
 steeper relative to themselves the further away you go. Another way to
 demonstrate this is by blowing up the PDF at different scales (here,
 successive factors of 10):</p>
-<p><img src="images/pdfscales.png" /></p>
+<p><img src="res/gauss/pdfscales.png" /></p>
 <p>which makes it more clear why we cannot rely on linear interpolations in
 the tails. We are forced to find an analytic or at least numeric
 solution that is more faithful to the distribution.</p>
@@ -187,7 +203,7 @@ instability is found in the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Log_probability">log-domain</a>. This gives
 us two analogous functions for the cumulative probability with more
 manageable shapes:</p>
-<p><img src="images/logcdfquantileexp.png" /></p>
+<p><img src="res/gauss/logcdfquantileexp.png" /></p>
 <p>Furthermore, we can model all right tail calculations by using the
 left’s and avoid all asymptotes by exploiting the symmetry of the
 Gaussian PDF. This leaves us with two almost linear curves.</p>
@@ -279,22 +295,28 @@ Decoding successful
 </code></pre>
 <p>are generated between <span class="math inline">\(n = 1\)</span> and <span class="math inline">\(n = 100\)</span>, reproducing the plot from
 an earlier section:</p>
-<p><img src="images/outlierresults.png" /></p>
+<p><img src="res/gauss/outlierresults.png" /></p>
 <p>which is not optimal everywhere, but good enough.</p>
 <h3 id="random-data">Random Data</h3>
 <p>The error becomes less noticeable as we move to sets containing more
 information. Here we sample <span class="math inline">\(n\)</span> elements from a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Continuous_uniform_distribution"><strong>uniform</strong></a>
 distribution between -5 and 5, once for each <span class="math inline">\(n\)</span>:</p>
-<p><img src="images/randomuniform.png" /></p>
+<p><img src="res/gauss/randomuniform.png" /></p>
 <p>Seemingly identical performance is obtained when sampling from a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution"><strong>normal</strong></a>
 distribution with the same variance <span class="math inline">\((\sigma^2 = \frac{10^2}{12} =
 8.\overline{3})\)</span>:</p>
-<p><img src="images/randomnormal.png" /></p>
+<p><img src="res/gauss/randomnormal.png" /></p>
 <p>Sampling from any wider distribution produces code lengths closer to the
 information content than is visually distinguishable.</p>
-    </div>
-    <a href="./" class="return-link">← Return to Index</a>
-</body>
+  </section>
+  <footer>
+    <a href="./">Return to index</a>
+  </footer>
+</article>
+
+    </main>
+
+  </body>
 </html>

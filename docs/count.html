@@ -1,21 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ways to Count Information</title>
-    <link rel="icon" type="image/svg+xml" href="images/tess.svg">
-    <link rel="stylesheet" href="./css/style.css">
+     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
     <link rel="stylesheet" href="./css/syntax.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-    <h1 class="post-title">Ways to Count Information</h1>
-    <div class="post-metadata">
-        Posted on March 23, 2025 by Nathaniel Bos
-    </div>
-    <div class="post-content">
-        <p>This note exists mainly because I couldn’t find much about this online.</p>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Posts</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Ways to Count Information</h1>
+      <article>
+  <section class="header">
+    Posted on March 23, 2025
+    
+    by Nathaniel Bos
+    
+  </section>
+  <section>
+    <p>This note exists mainly because I couldn’t find much about this online.</p>
 <h2 id="information-from-probability">Information From Probability</h2>
 <p>When compressing data with <a href="arith.html">arithmetic coding</a>, the length
 of the produced code is equal to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
@@ -97,21 +113,21 @@ grows at the same rate as <span class="math inline">\(\log (n!)\)</span> and the
 approximate the latter, as seen in <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling’s
 approximation</a></p>
 <p><span class="math display">\[\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n) + O\left(\frac{1}{n}\right)\]</span></p>
-<p><img src="count/stirling.png" /></p>
+<p><img src="res/count/stirling.png" /></p>
 <p>or even <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Srinivasa_Ramanujan">Ramanujan</a>’s
 more precise version:</p>
 <p><span class="math display">\[\log(n!) = n\log n - n\log e+\frac{1}{6}\log(n(1+4n(1+2n)))+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)\]</span></p>
-<p><img src="count/ramanujan.png" /></p>
+<p><img src="res/count/ramanujan.png" /></p>
 <p>but these additional terms correct a consistent and significant
 difference between the two functions:</p>
-<p><img src="count/difference.png" /></p>
+<p><img src="res/count/difference.png" /></p>
 <p>which definitely translates to the information content of categorical
 MLE’s w/ vs. w/o replacement, but how much so is not
 obvious. Experiments on random strings reveals that the w/ replacement
 requires anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)
 more information to encode the same string than doing it w/o replacement
-(<a href="count/table.html">full table</a>):</p>
+(<a href="res/count/table.html">full table</a>):</p>
 <pre><code>+-----+------+-----+-------------+------------+------------+-----------+
 |   # |    N |   m | N log(N)... | log(N!)... |   (verif.) | delta (%) |
 +=====+======+=====+=============+============+============+===========+
@@ -179,7 +195,13 @@ ratio</a>:</p>
 the information to specify one among the whole (<span class="math inline">\(\log N\)</span>) minus the
 information to specify one among the part (<span class="math inline">\(\log n_i\)</span>), like an interval
 between <span class="math inline">\(n\)</span> and <span class="math inline">\(N\)</span> in <span class="math inline">\(\log\)</span>-space.</p>
-    </div>
-    <a href="./" class="return-link">← Return to Index</a>
-</body>
+  </section>
+  <footer>
+    <a href="./">Return to index</a>
+  </footer>
+</article>
+
+    </main>
+
+  </body>
 </html>

@@ -1,46 +1,57 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Char (isAlphaNum)
-import Text.HTML.TagSoup (Tag(TagOpen), parseTags, innerText)
+import Text.HTML.TagSoup (Tag(TagOpen))
 import Text.Pandoc.Options
+    ( ReaderOptions(readerExtensions),
+      WriterOptions(writerHTMLMathMethod, writerHighlightStyle),
+      Extension(Ext_latex_macros, Ext_tex_math_single_backslash,
+                Ext_tex_math_double_backslash, Ext_tex_math_dollars),
+      extensionsFromList,
+      HTMLMathMethod(MathJax) )
 import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
 
 import Hakyll
 
-configuration :: Configuration
-configuration = defaultConfiguration
+config :: Configuration
+config = defaultConfiguration
   { destinationDirectory = "docs"
   , previewHost = "0.0.0.0"
   }
 
 main :: IO ()
-main = hakyllWith configuration $ do
-  match "posts/*.md" $ do
-    route $ gsubRoute "posts/" (const "") `composeRoutes` setExtension "html"
-    compile $ do
-      pandocCompiler'
-        >>= saveSnapshot "content" -- Save the content snapshot
-        >>= loadAndApplyTemplate "templates/post.html" postCtx
-        >>= externalLinksInNewTabs
-        >>= relativizeUrls
-
-  create ["index.html"] $ do
-    route idRoute
-    compile $ do
-      posts <- recentFirst =<< loadAll "posts/*.md"
-      let indexCtx =
-            listField "posts" postCtx (return posts)
-              `mappend` defaultContext
-
-      makeItem ""
-        >>= loadAndApplyTemplate "templates/index.html" indexCtx
-        >>= relativizeUrls
-
-  match "templates/*" $ compile templateBodyCompiler
-
+main = hakyllWith config $ do
   match "css/*" $ do
     route idRoute
     compile compressCssCompiler
+
+  match (fromList ["contact.markdown"]) $ do
+    route $ setExtension "html"
+    compile $ pandocCompiler
+      >>= loadAndApplyTemplate "templates/default.html" defaultContext
+      >>= relativizeUrls
+
+  match "posts/*" $ do
+    route $ gsubRoute "posts/" (const "") `composeRoutes` setExtension "html"
+    compile $ myPandocCompiler
+      >>= loadAndApplyTemplate "templates/post.html" postCtx
+      >>= loadAndApplyTemplate "templates/default.html" postCtx
+      >>= targetBlankLinks -- open external links in new tabs
+      >>= relativizeUrls
+
+  match "index.html" $ do
+    route idRoute
+    compile $ do
+      posts <- recentFirst =<< loadAll "posts/*"
+      let indexCtx =
+            listField "posts" postCtx (return posts) `mappend`
+            defaultContext
+
+      getResourceBody
+        >>= applyAsTemplate indexCtx
+        >>= loadAndApplyTemplate "templates/default.html" indexCtx
+        >>= relativizeUrls
+
+  match "templates/*" $ compile templateBodyCompiler
 
   create ["css/syntax.css"] $ do
     route idRoute
@@ -50,30 +61,19 @@ main = hakyllWith configuration $ do
     route idRoute
     compile $ makeItem ("nbos.ca" :: String)
 
-  match "resources/**" $ do
+  match "res/**" $ do
     version "copy" $ do
-        route $ gsubRoute "resources/" (const "")
+        route idRoute
         compile copyFileCompiler
 
 postCtx :: Context String
 postCtx =
-  dateField "date" "%B %e, %Y"
-    `mappend` excerptField
-    `mappend` defaultContext
+    dateField "date" "%B %e, %Y" `mappend`
+    defaultContext
 
-trimEnd :: String -> String
-trimEnd = reverse . dropWhile (not . isAlphaNum) . reverse
-
-excerptField :: Context String
-excerptField = field "preview" $ \item -> do
-    body <- loadSnapshot (itemIdentifier item) "content"
-    let content = itemBody body
-        excerpt = unwords $ take 50 $ words $ innerText $ parseTags content
-    return $ trimEnd excerpt ++ "..."
-
--- TODO: this is a dressed up String -> String function
-externalLinksInNewTabs :: Item String -> Compiler (Item String)
-externalLinksInNewTabs item = return $ fmap addExternalAttributes item
+-- FIXME: this is a dressed up String -> String function
+targetBlankLinks :: Item String -> Compiler (Item String)
+targetBlankLinks item = return $ fmap addExternalAttributes item
   where
     addExternalAttributes :: String -> String
     addExternalAttributes = withTagList (map modifyTag)
@@ -94,14 +94,16 @@ externalLinksInNewTabs item = return $ fmap addExternalAttributes item
 pandocCodeStyle :: Style
 pandocCodeStyle = pygments
 
-pandocCompiler' :: Compiler (Item String)
-pandocCompiler' = pandocCompilerWith
-  defaultHakyllReaderOptions{ readerExtensions = readerExtensions defaultHakyllReaderOptions
-                                                 <> extensionsFromList [ Ext_tex_math_single_backslash,
-                                                                         Ext_tex_math_double_backslash,
-                                                                         Ext_tex_math_dollars,
-                                                                         Ext_latex_macros ]
-                            }
+myPandocCompiler :: Compiler (Item String)
+myPandocCompiler = pandocCompilerWith
+  defaultHakyllReaderOptions
+  { readerExtensions = readerExtensions defaultHakyllReaderOptions
+                       <> extensionsFromList [ Ext_tex_math_single_backslash
+                                             , Ext_tex_math_double_backslash
+                                             , Ext_tex_math_dollars
+                                             , Ext_latex_macros ]
+  }
 
-  defaultHakyllWriterOptions{ writerHighlightStyle = Just pandocCodeStyle,
-                              writerHTMLMathMethod = MathJax "" }
+  defaultHakyllWriterOptions
+  { writerHighlightStyle = Just pandocCodeStyle
+  , writerHTMLMathMethod = MathJax "" }

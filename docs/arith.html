@@ -1,21 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Preliminary: Arithmetic Coding</title>
-    <link rel="icon" type="image/svg+xml" href="images/tess.svg">
-    <link rel="stylesheet" href="./css/style.css">
+     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
     <link rel="stylesheet" href="./css/syntax.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-    <h1 class="post-title">Preliminary: Arithmetic Coding</h1>
-    <div class="post-metadata">
-        Posted on January 26, 2025 by Nathaniel Bos
-    </div>
-    <div class="post-content">
-        <p>I find that information theory, a core discipline of computer science,
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Posts</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Preliminary: Arithmetic Coding</h1>
+      <article>
+  <section class="header">
+    Posted on January 26, 2025
+    
+    by Nathaniel Bos
+    
+  </section>
+  <section>
+    <p>I find that information theory, a core discipline of computer science,
 is given relatively little attention in a computer science
 degree. Although Hamming and Shannon are likely to be mentioned at some
 point, the only attribution to the field I remember having to study were
@@ -36,17 +52,17 @@ them in the manner of a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">CDF</a> of
 a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
 distribution</a>:</p>
-<p><img src="./images/cat-cdf.png" /></p>
+<p><img src="res/arith/cat-cdf.png" /></p>
 <p>Now, the code for a symbol is simply the base expansion (for a given
 base, here we use 2 for binary) of the fraction <span class="math inline">\(0 \le r \lt 1\)</span> whose
 <strong>range</strong> (the interval between that number and its successor in the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unit_in_the_last_place">ULP</a>) falls
 entirely within the <strong>interval</strong> of the desired symbol. In practice, you
 can split your space in however many equal parts of your base:</p>
-<p><img src="./images/bin0.png" /></p>
+<p><img src="res/arith/bin0.png" /></p>
 <p>and continuously split until a code’s range falls well within the
 interval of the symbol to encode:</p>
-<p><img src="./images/bin2.png" /></p>
+<p><img src="res/arith/bin2.png" /></p>
 <p>For instance, the code <span style="color: red">101</span> above
 (corresponding to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Binary_number#Fractions">binary
 fractional</a>
@@ -59,7 +75,7 @@ under.</p>
 <p>The beauty of arithmetic coding is the optimality you get by recursively
 applying the above principle for each symbol inside the interval of the
 previous symbol. It’s best explained graphically:</p>
-<p><img src="./images/arith-que.png" /></p>
+<p><img src="res/arith/arith-que.png" /></p>
 <p>By nesting distributions within each other, every string of symbols
 (however long) corresponds to an interval (however small) and a code. An
 effective arithmetic coding algorithm continuously “zooms” into the 0-1
@@ -83,7 +99,7 @@ and a good conditional model, the code for <strong>Q<span style="color:
 blue">U</span><span style="color:
 #00EF19">E</span></strong> would not be much longer because it takes a significant
 amount of space within <strong>Q</strong>’s interval:</p>
-<p><img src="./images/cond-que.png" /></p>
+<p><img src="res/arith/cond-que.png" /></p>
 <p>For longer messages, it plays out a bit like the game-like accessibility
 input method <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dasher_(software)">Dasher</a>,
 which lets a user enter text by navigating the nested space of symbols
@@ -92,7 +108,7 @@ language model that scales the relative sizes of the intervals depending
 on their probability. (Here is a <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=nr3s4613DX8">longer
 version</a> if you liked
 that).</p>
-<p><img src="./images/dasher.gif" /></p>
+<p><img src="res/arith/dasher.gif" /></p>
 <h2 id="code-length">Code Length</h2>
 <p>The geometric representation of probability works especially because it
 stays consistent across levels: “inserting” a probability distribution
@@ -147,7 +163,13 @@ and have the decoding algorithm count to know when to stop decoding.</p>
 <p>In either method, the added length to the code is on the order of
 <span class="math inline">\(\log(L)\)</span> which is usually insignificant compared to <span class="math inline">\(L\)</span> unless when
 encoding very small messages.</p>
-    </div>
-    <a href="./" class="return-link">← Return to Index</a>
-</body>
+  </section>
+  <footer>
+    <a href="./">Return to index</a>
+  </footer>
+</article>
+
+    </main>
+
+  </body>
 </html>

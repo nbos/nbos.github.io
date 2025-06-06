@@ -17,7 +17,7 @@ In arithmetic codes, you usually think of the 1D space addressable by
 codes as divided between next-symbols based on their relative
 probabilities:
 
-![](images/alphabet-wide.png)
+![](res/gauss/alphabet.png)
 
 But nothing in the spirit of the technique prevents you from
 partitioning the space in **infinitely** many bins to make use of
@@ -27,7 +27,7 @@ assigned a **finite** code/interval and vice versa.
 For instance, a
 [Gaussian](https://en.wikipedia.org/wiki/Normal_distribution):
 
-![](images/gauss-cat-wide.png)
+![](res/gauss/gauss-cat.png)
 
 An implementation of arithmetic coding that works with *any* model would
 have to be more abstract than what you typically find online. The
@@ -38,7 +38,7 @@ repeatedly *truncate* at given *cumulative probabilities* until a
 specific *bin* is resolved. Here is my implementation in Rust:
 
 - [Source (GitHub)](https://github.com/nbos/cont-arith-code)
-- [Documentation](doc/cont_arith_code/index.html)
+- [Documentation](res/doc/cont_arith_code/index.html)
 
 We use this algorithm to verify the ability of Gaussian distributions to
 encode values compactly.
@@ -86,7 +86,7 @@ far off in the tails. Since the mapping from datasets to the Gaussian
 MLE has scale, location and count invariance, there are only a few
 corner cases to examine:
 
-![](images/gauss-mle-corner-cases.png)
+![](res/gauss/gauss-mle-corner-cases.png)
 
 The **unimodal case** is not problematic for our uses as long as you
 implement the logic to handle it. It is a "degenerate" Gaussian,
@@ -153,12 +153,12 @@ $$\begin{align}\mathrm{pdf}(x) &= \frac {1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac 
 
 Which looks like
 
-![](images/pdf1.png)
+![](res/gauss/pdf1.png)
 
 which drops pretty quickly (exponentially quickly), but code length only grows
 in one over the logarithm of the probability so:
 
-![](images/neglnpdf1.png)
+![](res/gauss/neglnpdf1.png)
 
 Which is a pretty unambiguous $0.5n$ towards infinity. 
 
@@ -174,7 +174,7 @@ proper probability intervals (not density) on the CDF, with bin size
 $\pm 0.5$ around integers, in base 2, we show the total code length also
 achieves linear size w.r.t. $n$ in this outlier "worst case":
 
-![](images/outliercasecodelength.png)
+![](res/gauss/outliercasecodelength.png)
 
 ## Numerical Stability
 
@@ -182,7 +182,7 @@ The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at $0 \mapsto -\infty$ and $1
 \mapsto \infty$. 
 
-![](images/cdfquantile.png)
+![](res/gauss/cdfquantile.png)
 
 For our application, what's important is that *repeatedly splitting* in
 half an interval of the probability mass down to any symbol to encode
@@ -202,21 +202,21 @@ tails.
 
 To see why, consider the PDF and its derivative:
 
-![](images/pdfdiff.png)
+![](res/gauss/pdfdiff.png)
 
 While both flatten out at the tails, for any given interval in the
 tails, the relative difference becomes greater the further away you move
 from the center. To see this, normalize the (absolute) derivative to the
 value of the function:
 
-![](images/pdfdiffnorm.png)
+![](res/gauss/pdfdiffnorm.png)
 
 That is, the tails may be flat in absolute terms, but they become
 steeper relative to themselves the further away you go. Another way to
 demonstrate this is by blowing up the PDF at different scales (here,
 successive factors of 10):
 
-![](images/pdfscales.png)
+![](res/gauss/pdfscales.png)
 
 which makes it more clear why we cannot rely on linear interpolations in
 the tails. We are forced to find an analytic or at least numeric
@@ -230,7 +230,7 @@ instability is found in the
 us two analogous functions for the cumulative probability with more
 manageable shapes:
 
-![](images/logcdfquantileexp.png)
+![](res/gauss/logcdfquantileexp.png)
 
 Furthermore, we can model all right tail calculations by using the
 left's and avoid all asymptotes by exploiting the symmetry of the
@@ -340,7 +340,7 @@ Decoding successful
 are generated between $n = 1$ and $n = 100$, reproducing the plot from
 an earlier section:
 
-![](images/outlierresults.png)
+![](res/gauss/outlierresults.png)
 
 which is not optimal everywhere, but good enough.
 
@@ -351,14 +351,14 @@ information. Here we sample $n$ elements from a
 [**uniform**](https://en.wikipedia.org/wiki/Continuous_uniform_distribution)
 distribution between -5 and 5, once for each $n$:
 
-![](images/randomuniform.png)
+![](res/gauss/randomuniform.png)
 
 Seemingly identical performance is obtained when sampling from a
 [**normal**](https://en.wikipedia.org/wiki/Normal_distribution)
 distribution with the same variance $(\sigma^2 = \frac{10^2}{12} =
 8.\overline{3})$:
 
-![](images/randomnormal.png)
+![](res/gauss/randomnormal.png)
 
 Sampling from any wider distribution produces code lengths closer to the
 information content than is visually distinguishable.
