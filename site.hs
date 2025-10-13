@@ -3,7 +3,8 @@
 import Text.HTML.TagSoup (Tag(TagOpen))
 import Text.Pandoc.Options
     ( ReaderOptions(readerExtensions),
-      WriterOptions(writerHTMLMathMethod, writerHighlightStyle),
+      WriterOptions(writerHTMLMathMethod, writerHighlightMethod),
+      HighlightMethod(Skylighting),
       Extension(Ext_latex_macros, Ext_tex_math_single_backslash,
                 Ext_tex_math_double_backslash, Ext_tex_math_dollars),
       extensionsFromList,
@@ -105,5 +106,5 @@ myPandocCompiler = pandocCompilerWith
   }
 
   defaultHakyllWriterOptions
-  { writerHighlightStyle = Just pandocCodeStyle
+  { writerHighlightMethod = Skylighting pandocCodeStyle
   , writerHTMLMathMethod = MathJax "" }
