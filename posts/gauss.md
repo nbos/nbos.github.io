@@ -124,7 +124,7 @@ $$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
 
 where the only parameters are sums of the values raised to a power:
 
-$$s_i = \sum{x^i}$$
+$$s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}$$
 
 With this formulation we can model the probability density at the
 outlier by setting the majority at $0$ and the outlier at $1$ (by
