@@ -149,10 +149,10 @@ PDF to get a function of <span class="math inline">\(n\)</span>:</p>
 <p><span class="math display">\[\begin{align}\mathrm{pdf}(x) &amp;= \frac {1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\
 \mathrm{pdf}(1) &amp;= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} \end{align}\]</span></p>
 <p>Which looks like</p>
-<p><img src="res/gauss/pdf1.png" /></p>
+<p><img src="res/gauss/pdf1.svg" /></p>
 <p>which drops pretty quickly (exponentially quickly), but code length only grows
 in one over the logarithm of the probability so:</p>
-<p><img src="res/gauss/neglnpdf1.png" /></p>
+<p><img src="res/gauss/neglnpdf1.svg" /></p>
 <p>Which is a pretty unambiguous <span class="math inline">\(0.5n\)</span> towards infinity.</p>
 <p>So it looks like the code length of the outlier of a Gaussian only grows
 in <span class="math inline">\(O(n)\)</span> of the size of the data set, which is only as bad as the
@@ -164,12 +164,12 @@ outlier. For completeness, computing the sum of code lengths using
 proper probability intervals (not density) on the CDF, with bin size
 <span class="math inline">\(\pm 0.5\)</span> around integers, in base 2, we show the total code length also
 achieves linear size w.r.t. <span class="math inline">\(n\)</span> in this outlier “worst case”:</p>
-<p><img src="res/gauss/outliercasecodelength.png" /></p>
+<p><img src="res/gauss/outliercasecodelength.svg" /></p>
 <h2 id="numerical-stability">Numerical Stability</h2>
 <p>The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
 \mapsto \infty\)</span>.</p>
-<p><img src="res/gauss/cdfquantile.png" /></p>
+<p><img src="res/gauss/cdfquantile.svg" /></p>
 <p>For our application, what’s important is that <em>repeatedly splitting</em> in
 half an interval of the probability mass down to any symbol to encode
 happens with <em>constant progress</em> (i.e. the middle of any interval cannot
@@ -184,17 +184,17 @@ precision, assuming local linearity. While this is a reasonable
 approximation in the central bulk of the distribution, it fails in the
 tails.</p>
 <p>To see why, consider the PDF and its derivative:</p>
-<p><img src="res/gauss/pdfdiff.png" /></p>
+<p><img src="res/gauss/pdfdiff.svg" /></p>
 <p>While both flatten out at the tails, for any given interval in the
 tails, the relative difference becomes greater the further away you move
 from the center. To see this, normalize the (absolute) derivative to the
 value of the function:</p>
-<p><img src="res/gauss/pdfdiffnorm.png" /></p>
+<p><img src="res/gauss/pdfdiffnorm.svg" /></p>
 <p>That is, the tails may be flat in absolute terms, but they become
 steeper relative to themselves the further away you go. Another way to
 demonstrate this is by blowing up the PDF at different scales (here,
 successive factors of 10):</p>
-<p><img src="res/gauss/pdfscales.png" /></p>
+<p><img src="res/gauss/pdfscales.svg" /></p>
 <p>which makes it more clear why we cannot rely on linear interpolations in
 the tails. We are forced to find an analytic or at least numeric
 solution that is more faithful to the distribution.</p>
@@ -204,7 +204,7 @@ instability is found in the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Log_probability">log-domain</a>. This gives
 us two analogous functions for the cumulative probability with more
 manageable shapes:</p>
-<p><img src="res/gauss/logcdfquantileexp.png" /></p>
+<p><img src="res/gauss/logcdfquantileexp.svg" /></p>
 <p>Furthermore, we can model all right tail calculations by using the
 left’s and avoid all asymptotes by exploiting the symmetry of the
 Gaussian PDF. This leaves us with two almost linear curves.</p>
@@ -296,19 +296,19 @@ Decoding successful
 </code></pre>
 <p>are generated between <span class="math inline">\(n = 1\)</span> and <span class="math inline">\(n = 100\)</span>, reproducing the plot from
 an earlier section:</p>
-<p><img src="res/gauss/outlierresults.png" /></p>
+<p><img src="res/gauss/outlierresults.svg" /></p>
 <p>which is not optimal everywhere, but good enough.</p>
 <h3 id="random-data">Random Data</h3>
 <p>The error becomes less noticeable as we move to sets containing more
 information. Here we sample <span class="math inline">\(n\)</span> elements from a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Continuous_uniform_distribution"><strong>uniform</strong></a>
 distribution between -5 and 5, once for each <span class="math inline">\(n\)</span>:</p>
-<p><img src="res/gauss/randomuniform.png" /></p>
+<p><img src="res/gauss/randomuniform.svg" /></p>
 <p>Seemingly identical performance is obtained when sampling from a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution"><strong>normal</strong></a>
 distribution with the same variance <span class="math inline">\((\sigma^2 = \frac{10^2}{12} =
 8.\overline{3})\)</span>:</p>
-<p><img src="res/gauss/randomnormal.png" /></p>
+<p><img src="res/gauss/randomnormal.svg" /></p>
 <p>Sampling from any wider distribution produces code lengths closer to the
 information content than is visually distinguishable.</p>
   </section>

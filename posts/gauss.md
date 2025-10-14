@@ -153,12 +153,12 @@ $$\begin{align}\mathrm{pdf}(x) &= \frac {1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac 
 
 Which looks like
 
-![](res/gauss/pdf1.png)
+![](res/gauss/pdf1.svg)
 
 which drops pretty quickly (exponentially quickly), but code length only grows
 in one over the logarithm of the probability so:
 
-![](res/gauss/neglnpdf1.png)
+![](res/gauss/neglnpdf1.svg)
 
 Which is a pretty unambiguous $0.5n$ towards infinity. 
 
@@ -174,7 +174,7 @@ proper probability intervals (not density) on the CDF, with bin size
 $\pm 0.5$ around integers, in base 2, we show the total code length also
 achieves linear size w.r.t. $n$ in this outlier "worst case":
 
-![](res/gauss/outliercasecodelength.png)
+![](res/gauss/outliercasecodelength.svg)
 
 ## Numerical Stability
 
@@ -182,7 +182,7 @@ The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at $0 \mapsto -\infty$ and $1
 \mapsto \infty$. 
 
-![](res/gauss/cdfquantile.png)
+![](res/gauss/cdfquantile.svg)
 
 For our application, what's important is that *repeatedly splitting* in
 half an interval of the probability mass down to any symbol to encode
@@ -202,21 +202,21 @@ tails.
 
 To see why, consider the PDF and its derivative:
 
-![](res/gauss/pdfdiff.png)
+![](res/gauss/pdfdiff.svg)
 
 While both flatten out at the tails, for any given interval in the
 tails, the relative difference becomes greater the further away you move
 from the center. To see this, normalize the (absolute) derivative to the
 value of the function:
 
-![](res/gauss/pdfdiffnorm.png)
+![](res/gauss/pdfdiffnorm.svg)
 
 That is, the tails may be flat in absolute terms, but they become
 steeper relative to themselves the further away you go. Another way to
 demonstrate this is by blowing up the PDF at different scales (here,
 successive factors of 10):
 
-![](res/gauss/pdfscales.png)
+![](res/gauss/pdfscales.svg)
 
 which makes it more clear why we cannot rely on linear interpolations in
 the tails. We are forced to find an analytic or at least numeric
@@ -230,7 +230,7 @@ instability is found in the
 us two analogous functions for the cumulative probability with more
 manageable shapes:
 
-![](res/gauss/logcdfquantileexp.png)
+![](res/gauss/logcdfquantileexp.svg)
 
 Furthermore, we can model all right tail calculations by using the
 left's and avoid all asymptotes by exploiting the symmetry of the
@@ -340,7 +340,7 @@ Decoding successful
 are generated between $n = 1$ and $n = 100$, reproducing the plot from
 an earlier section:
 
-![](res/gauss/outlierresults.png)
+![](res/gauss/outlierresults.svg)
 
 which is not optimal everywhere, but good enough.
 
@@ -351,14 +351,14 @@ information. Here we sample $n$ elements from a
 [**uniform**](https://en.wikipedia.org/wiki/Continuous_uniform_distribution)
 distribution between -5 and 5, once for each $n$:
 
-![](res/gauss/randomuniform.png)
+![](res/gauss/randomuniform.svg)
 
 Seemingly identical performance is obtained when sampling from a
 [**normal**](https://en.wikipedia.org/wiki/Normal_distribution)
 distribution with the same variance $(\sigma^2 = \frac{10^2}{12} =
 8.\overline{3})$:
 
-![](res/gauss/randomnormal.png)
+![](res/gauss/randomnormal.svg)
 
 Sampling from any wider distribution produces code lengths closer to the
 information content than is visually distinguishable.
