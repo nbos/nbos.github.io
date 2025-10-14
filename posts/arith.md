@@ -1,7 +1,7 @@
 ---
 title: "Preliminary: Arithmetic Coding"
 author: Nathaniel Bos
-date: 2025-01-26
+date: 2025-10-13
 ---
 
 The topic of [arithmetic
