@@ -114,29 +114,32 @@ over letters as they typically appear in English text:</p>
 assignment like so:</p>
 <p><img src="res/arith/huffman-0.svg" />
 <img src="res/arith/huffman-1.svg" /></p>
-<p>where each symbol is alligned to a power-of-two slice of the code space
+<p>where each symbol is alligned to a binary slice of the code space
 reasonably close to its share in the distribution (unlabeled symbols, in
 order, are <span class="math inline">\(K,Q,X,J,Z\)</span>). Encoding the string <span class="math inline">\(ABA\)</span> according to this
 assignment would produce <span class="math inline">\('0000~111000~0000'\)</span>.</p>
-<p>The length of individual symbol codes range between 3 bits for the most
-frequent letters <span class="math inline">\(\{E,T\}\)</span> to 10 bits for the least frequent letters
-<span class="math inline">\(\{J,Z\}\)</span>.</p>
+<p>The length of individual symbol codes in this example range between 3
+bits for the most frequent letters <span class="math inline">\(\{E,T\}\)</span> to 10 bits for the least
+frequent <span class="math inline">\(\{J,Z\}\)</span>.</p>
 <p>Because Huffman codes produce a fixed <em>assignment</em> between symbols and
 codes, it can only give shares of code-space that are powers of
-<span class="math inline">\(\frac{1}{2}\)</span>. The degree to which the produced distribution
-“reasonably” models the true distribution the Huffman code can be shown
-graphically (true in black, modeled in gray):</p>
+<span class="math inline">\(\frac{1}{2}\)</span>. The degree to which the Huffman tree’s distribution
+“reasonably” models the true distribution can be shown graphically (true
+in black, modeled in gray):</p>
 <p><img src="res/arith/huffman-bars.svg" /></p>
 <p>which consistently under- or over-shoots the share of code-space each
 symbol takes to align them to powers of <span class="math inline">\(\frac{1}{2}\)</span> (e.g. <span class="math inline">\(0.125,
 0.06125, 0.03215, 0.015625\)</span>, etc.)</p>
 <p>As stated before, this assignment of codes to symbols is optimal,
 insofar as it is an <em>assignment</em>, meaning that each symbol gets its own
-fixed code. Whenever the probability distributions being used don’t
-align exactly along powers of <span class="math inline">\(\frac{1}{2}\)</span>, we can asymptotically
-outperform methods like Huffman by giving up “alignment” of symbols to
-the code-space entirely and working directly with the true distribution.</p>
+fixed code. However, whenever the probability distribution doesn’t align
+exactly along powers of <span class="math inline">\(\frac{1}{2}\)</span>, we can outperform methods like
+Huffman by giving up this “alignment” of symbols to the code-space
+entirely and working directly with the true distribution.</p>
 <h2 id="arithmetic-coding">Arithmetic Coding</h2>
+<p>Arithmetic coding is not a symbol-by-symbol coding scheme. Instead,
+messages are directly assigned binary expansions that are precise enough
+to uniquely identify them.</p>
 <p>The same way every binary sequence corresponds to a finite interval of
 code-space by nesting divisions by 2 in the unit interval:</p>
 <p><img src="res/arith/binary.svg" /></p>

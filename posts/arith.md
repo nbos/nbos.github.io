@@ -116,20 +116,20 @@ assignment like so:
 ![](res/arith/huffman-0.svg)
 ![](res/arith/huffman-1.svg)
 
-where each symbol is alligned to a power-of-two slice of the code space
+where each symbol is alligned to a binary slice of the code space
 reasonably close to its share in the distribution (unlabeled symbols, in
 order, are $K,Q,X,J,Z$). Encoding the string $ABA$ according to this
 assignment would produce $'0000~111000~0000'$.
 
-The length of individual symbol codes range between 3 bits for the most
-frequent letters $\{E,T\}$ to 10 bits for the least frequent letters
-$\{J,Z\}$.
+The length of individual symbol codes in this example range between 3
+bits for the most frequent letters $\{E,T\}$ to 10 bits for the least
+frequent $\{J,Z\}$.
 
 Because Huffman codes produce a fixed *assignment* between symbols and
 codes, it can only give shares of code-space that are powers of
-$\frac{1}{2}$. The degree to which the produced distribution
-"reasonably" models the true distribution the Huffman code can be shown
-graphically (true in black, modeled in gray):
+$\frac{1}{2}$. The degree to which the Huffman tree's distribution
+"reasonably" models the true distribution can be shown graphically (true
+in black, modeled in gray):
 
 ![](res/arith/huffman-bars.svg)
 
@@ -139,12 +139,16 @@ symbol takes to align them to powers of $\frac{1}{2}$ (e.g. $0.125,
 
 As stated before, this assignment of codes to symbols is optimal,
 insofar as it is an *assignment*, meaning that each symbol gets its own
-fixed code. Whenever the probability distributions being used don't
-align exactly along powers of $\frac{1}{2}$, we can asymptotically
-outperform methods like Huffman by giving up "alignment" of symbols to
-the code-space entirely and working directly with the true distribution.
+fixed code. However, whenever the probability distribution doesn't align
+exactly along powers of $\frac{1}{2}$, we can outperform methods like
+Huffman by giving up this "alignment" of symbols to the code-space
+entirely and working directly with the true distribution.
 
 ## Arithmetic Coding
+
+Arithmetic coding is not a symbol-by-symbol coding scheme. Instead,
+messages are directly assigned binary expansions that are precise enough
+to uniquely identify them.
 
 The same way every binary sequence corresponds to a finite interval of
 code-space by nesting divisions by 2 in the unit interval:

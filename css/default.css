@@ -92,6 +92,10 @@ a:visited {
     color: var(--color-text-link);
 }
 
+code {
+    font-size: calc(var(--font-size-base) * 0.85);
+}
+
 /* Mobile Styles */
 @media (max-width: 639px) {
     body {
