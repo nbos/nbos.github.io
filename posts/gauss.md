@@ -1,7 +1,7 @@
 ---
 title: "Encoding Numbers with Gaussians"
 author: Nathaniel Bos
-date: 2025-02-08
+date: 2025-10-15
 ---
 
 Arithmetic codes are pretty useful for compression. You can find a
@@ -17,7 +17,9 @@ In arithmetic codes, you usually think of the 1D space addressable by
 codes as divided between next-symbols based on their relative
 probabilities:
 
-![](res/gauss/alphabet.png)
+![](res/gauss/frequency-bars.svg)
+
+![](res/gauss/alphabet.svg)
 
 But nothing in the spirit of the technique prevents you from
 partitioning the space in **infinitely** many bins to make use of
@@ -27,7 +29,11 @@ assigned a **finite** code/interval and vice versa.
 For instance, a
 [Gaussian](https://en.wikipedia.org/wiki/Normal_distribution):
 
-![](res/gauss/gauss-cat.png)
+![](res/gauss/gauss-pdf.svg)
+
+![](res/gauss/gauss-cdf.svg)
+
+## An Abstract Arithmetic Coding Interface
 
 An implementation of arithmetic coding that works with *any* model would
 have to be more abstract than what you typically find online. The
@@ -43,7 +49,8 @@ specific *bin* is resolved. Here is my implementation in Rust:
 We use this algorithm to verify the ability of Gaussian distributions to
 encode values compactly.
 
-## Why (not) Gaussians
+## Gaussian Implementation
+### Motivation
 
 Why this kind of distribution in the first place? The short answer is
 that (A) there aren't that many other good options and (B) it turns out
@@ -77,7 +84,7 @@ precision per number (e.g. on the order of e.g. 32 or 64 bits).
 We first address theoretical considerations and follow with the
 implementation considerations.
 
-## Worst Likelihood Analysis
+### Corner Case Analysis
 
 Which distribution of data produces the lowest likelihoods in its
 Gaussian MLE? Presumably, those that are the most dissimilar from the
@@ -105,7 +112,7 @@ can fall really low. If all but one point have non-significant variance
 around a point, the probability density at that outlier point can be
 prohibitively low. So how bad can it get?
 
-### Outlier Likelihood
+#### Outlier Case Likelihood
 
 The Gaussian MLE of a set of $n$ values $\{x_0, x_1, x_2, ...\}$ has the
 parameters:
@@ -176,7 +183,7 @@ achieves linear size w.r.t. $n$ in this outlier "worst case":
 
 ![](res/gauss/outliercasecodelength.svg)
 
-## Numerical Stability
+### Tackling Numerical Instability
 
 The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at $0 \mapsto -\infty$ and $1
@@ -222,7 +229,7 @@ which makes it more clear why we cannot rely on linear interpolations in
 the tails. We are forced to find an analytic or at least numeric
 solution that is more faithful to the distribution.
 
-### The Proper Way
+### Tackling Numerical Instability (for real)
 
 Like is usually the case in probability, the solution to numerical
 instability is found in the
@@ -254,10 +261,10 @@ of the log$_2$-probabilities of each integer in the distribution. The
 *expected code length* is that value rounded up. *Code length* is the
 empirical result. All codes decode back to the encoded values.
 
-### Degenerate Cases
+### Degenerate Case
 
 Integer sets with a single value produce empty codes:
-```
+```python
 Set: [0]
 Model: Gaussian { μ: 0, σ: 0 } (1, 0, 0)
 Information Content: 0 bits
@@ -289,7 +296,7 @@ Decoding successful
 ### Small Sets
 
 Small symmetric sets produce consistently optimal codes:
-```
+```python
 Set: [-1, 1]
 Model: Gaussian { μ: 0, σ: 1 } (2, 0, 2)
 Information Content: 4.0970591008090445 bits
@@ -321,10 +328,10 @@ Analysis: +0 bits (+0.0%) compared to expected
 Decoding successful
 ```
 
-### Outlier Cases
+### Outlier Case
 
 Outlier cases like this one ($n = 10$):
-```
+```python
 Set: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
 Model: Gaussian { μ: 0.1, σ: 0.3 } (10, 1, 1)
 Information Content: 5.0256952907839185 bits
@@ -344,7 +351,7 @@ an earlier section:
 
 which is not optimal everywhere, but good enough.
 
-### Random Data
+### Random Samples
 
 The error becomes less noticeable as we move to sets containing more
 information. Here we sample $n$ elements from a
