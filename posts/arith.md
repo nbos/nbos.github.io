@@ -317,18 +317,23 @@ $\left(\frac{1}{n}\right)$ in which case the decoder already knows the
 length of the message by way of the probability and the introduction of
 an **EOM** symbol becomes unnecessary.
 
-The more elegant alternative is to prepend messages with a binary
-encoding of its length, letting the decoder know exactly where to stop
-the recursion. A direct binary encoding of a positive integer has a
-similar $\lceil\log_2n\rceil$ bits cost but simply pre-pending this code
-to the message's code makes it impossible to determine where the first
-code stop and the second begins.
+The more elegant alternative is to assume the length of each message
+must be prepended to each message, in a binary encoding, letting the
+decoder know exactly where to stop the recursion. A direct binary
+encoding of a positive integer has a similar $\lfloor\log_2n + 1\rfloor$
+bit cost:
+
+![](res/arith/binarylengths.svg)
+
+but simply pre-pending this code to the message's code makes it
+impossible to determine where the length's code stops and the message's
+begins.
 
 The solution is to either dedicate a *fixed length* (e.g. 32- or 64-bit)
-number or for something more sophisticated, a [universal prefix
+number or, for something more sophisticated, a [universal prefix
 code](https://en.wikipedia.org/wiki/Universal_code_(data_compression))
-(e.g. [Elias](https://en.wikipedia.org/wiki/Elias_coding)) can be used
-which have an unambiguous ending (the [prefix
+(e.g. [Elias](https://en.wikipedia.org/wiki/Elias_delta_coding)) can be
+used which have an unambiguous ending (the [prefix
 property](https://en.wikipedia.org/wiki/Prefix_code)) and also take on
 the order of $O(\log n)$ bits for any $n \in \mathbb{N}$.
 

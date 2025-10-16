@@ -257,17 +257,20 @@ more than <span class="math inline">\(\log n\)</span> longer, or (b) the probabi
 <span class="math inline">\(\left(\frac{1}{n}\right)\)</span> in which case the decoder already knows the
 length of the message by way of the probability and the introduction of
 an <strong>EOM</strong> symbol becomes unnecessary.</p>
-<p>The more elegant alternative is to prepend messages with a binary
-encoding of its length, letting the decoder know exactly where to stop
-the recursion. A direct binary encoding of a positive integer has a
-similar <span class="math inline">\(\lceil\log_2n\rceil\)</span> bits cost but simply pre-pending this code
-to the message’s code makes it impossible to determine where the first
-code stop and the second begins.</p>
+<p>The more elegant alternative is to assume the length of each message
+must be prepended to each message, in a binary encoding, letting the
+decoder know exactly where to stop the recursion. A direct binary
+encoding of a positive integer has a similar <span class="math inline">\(\lfloor\log_2n + 1\rfloor\)</span>
+bit cost:</p>
+<p><img src="res/arith/binarylengths.svg" /></p>
+<p>but simply pre-pending this code to the message’s code makes it
+impossible to determine where the length’s code stops and the message’s
+begins.</p>
 <p>The solution is to either dedicate a <em>fixed length</em> (e.g. 32- or 64-bit)
-number or for something more sophisticated, a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_code_(data_compression)">universal prefix
+number or, for something more sophisticated, a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_code_(data_compression)">universal prefix
 code</a>
-(e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Elias_coding">Elias</a>) can be used
-which have an unambiguous ending (the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Prefix_code">prefix
+(e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Elias_delta_coding">Elias</a>) can be
+used which have an unambiguous ending (the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Prefix_code">prefix
 property</a>) and also take on
 the order of <span class="math inline">\(O(\log n)\)</span> bits for any <span class="math inline">\(n \in \mathbb{N}\)</span>.</p>
 <h2 id="adaptive-coding">Adaptive Coding</h2>
