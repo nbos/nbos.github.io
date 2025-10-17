@@ -52,7 +52,7 @@ plt.plot(x, y, color=CURVE_COLOR, linewidth=CURVE_LINEWIDTH)
 
 # Set up x-axis labels - show μ at the mean position
 plt.xticks([MU], [r'$\mu$'], fontsize=FONT_SIZE)
-plt.yticks(fontsize=FONT_SIZE)
+plt.yticks([])
 
 # Remove ticks and hide all spines except bottom (x-axis)
 plt.tick_params(axis='x', length=0)

@@ -1,120 +1,107 @@
 ---
 title: "Encoding Numbers with Gaussians"
 author: Nathaniel Bos
-date: 2025-10-15
+date: 2025-10-17
 ---
 
-Arithmetic codes are pretty useful for compression. You can find a
-number of implementations of the algorithm online, some work with static
-models, some adaptive. Often, an abstract interface is defined so users
-can call the algorithm with their own model implementation. It makes
-sense for the algorithm to interface with a user-defined model through a
-vector of probabilities of the next-symbols, but one can find this
-limiting if trying to model **very large domains** like those of
-numbers.
+[Arithmetic codes](arith.html) are pretty useful for compression. 
 
-In arithmetic codes, you usually think of the 1D space addressable by
-codes as divided between next-symbols based on their relative
-probabilities:
+There are a number of implementations available online, typically
+employing the equivalent of a [categorical
+distribution](https://en.wikipedia.org/wiki/Categorical_distribution)
+over a finite domain. For example, using a probability table over the
+alphabet comensurate with common English text, each letter gets a
+section of the unit interval proportional to its frequency:
 
 ![](res/gauss/frequency-bars.svg)
 
 ![](res/gauss/alphabet.svg)
 
-But nothing in the spirit of the technique prevents you from
-partitioning the space in **infinitely** many bins to make use of
-continuous probability distributions, as long as each bin can be
-assigned a **finite** code/interval and vice versa. 
-
-For instance, a
-[Gaussian](https://en.wikipedia.org/wiki/Normal_distribution):
+But any probability distribution with a well defined [quantile
+function](https://en.wikipedia.org/wiki/Quantile_function) could be used
+for arithmetic coding, even on infinite domains. For instance, a
+[Gaussian](https://en.wikipedia.org/wiki/Normal_distribution) prior over
+integers could be used to compress whole numbers:
 
 ![](res/gauss/gauss-pdf.svg)
 
 ![](res/gauss/gauss-cdf.svg)
 
-## An Abstract Arithmetic Coding Interface
+Each integer $i \in \mathbb{Z}$ is assigned the probability mass
+contained within the interval $i \pm 0.5$ on the Gaussian of choice.
 
-An implementation of arithmetic coding that works with *any* model would
-have to be more abstract than what you typically find online. The
-usually included logic for resolving the categorical CDF (i.e. the
-[quantile function](https://en.wikipedia.org/wiki/Quantile_function)) is
-replaced with an abstract interface for any *distribution* that can
-repeatedly *truncate* at given *cumulative probabilities* until a
-specific *bin* is resolved. Here is my implementation in Rust:
 
-- [Source (GitHub)](https://github.com/nbos/cont-arith-code)
-- [Documentation](res/doc/cont_arith_code/index.html)
+## Viability
 
-We use this algorithm to verify the ability of Gaussian distributions to
-encode values compactly.
+### PDF as a Estimator for Probability
+The code length achievable by an arithmetic encoder is within two bits
+of the information content of the encoded message, which is the sum of
+the individual information content of the constituent symbols. The
+information content of a symbol is inversely related to its probability:
 
-## Gaussian Implementation
-### Motivation
+$$I(x) = -\log P(x)$$
 
-Why this kind of distribution in the first place? The short answer is
-that (A) there aren't that many other good options and (B) it turns out
-they have a bunch of neat properties that make them special. A short
-list would include the [central limit
-theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), the fact
-that they have [maximum
-entropy](https://en.wikipedia.org/wiki/Maximum_entropy_probability_distribution#Other_examples)
-given mean and variance, that they are closed under
-[intersection](http://www.lucamartino.altervista.org/2003-003.pdf),
-[conditioning](https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Conditional_distributions),
-all while generalizing to [multiple
-dimensions](https://en.wikipedia.org/wiki/Multivariate_normal_distribution).
+The probability we assign each integer is the probability mass within
+the bounds $x \pm 0.5$ of the $PDF$ (the [probability density
+funtcion](https://en.wikipedia.org/wiki/Probability_density_function),
+pictured above). This is computed as
 
-So where might things go wrong? For our present purposes it would be
-sufficient to demonstrate that a Gaussian [Maximum Likelihood Estimation
-(MLE)](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) of a
-dataset can exhibit, for the bins corresponding to each number within
-the set:
+$$\begin{align}P(x) &= CDF(x)|_{x-0.5}^{x+0.5}\\[6pt]
+	&= CDF(x+0.5) - CDF(x-0.5)\end{align}$$
 
-1. sufficiently high likelihood (so that the codes are reasonably
-   small), and
+in terms of the Gaussian $CDF$ (the [cummulative distribution
+function](https://en.wikipedia.org/wiki/Cumulative_distribution_function)),
+which, for a normal $\mathcal{N}(\mu,\sigma^2)$ is equal to:
 
-2. a computable interval derived through successive truncations of the
-   probability distribution.
+$$CDF(x) = \frac {1}{2}\left[1+\operatorname {erf} \left({\frac {x-\mu
+}{\sigma {\sqrt {2}}}}\right)\right]$$
 
-Of course you can break both of these conditions if you select a small
-enough bin size, so we assume only a reasonable limit to the amount of
-precision per number (e.g. on the order of e.g. 32 or 64 bits). 
+which is expressed in terms of the non-elementary, sigmoid, [error
+function](https://en.wikipedia.org/wiki/Error_function) "erf" which
+doesn't factor or reduce well enough to be useful going further.
 
-We first address theoretical considerations and follow with the
-implementation considerations.
+Conveniently, however, the $PDF$ already approximates the
+$CDF(x)|_{x-0.5}^{x+0.5}$ on grounds that the $CDF$ is the integral of
+the $PDF$:
 
-### Corner Case Analysis
+$$PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}$$
 
-Which distribution of data produces the lowest likelihoods in its
-Gaussian MLE? Presumably, those that are the most dissimilar from the
-bell shape of the Gaussian PDF, in particular where you end up with data
-far off in the tails. Since the mapping from datasets to the Gaussian
-MLE has scale, location and count invariance, there are only a few
-corner cases to examine:
+which is just a statement of the fundamental theorem of
+calculus. Practically speaking, this means the $PDF$ approximates the
+interval-$CDF$, especially when the variance is at least 1 (here $\mu =
+0, \sigma = 1$):
 
-![](res/gauss/gauss-mle-corner-cases.png)
+![](res/gauss/ftc0.svg)
 
-The **unimodal case** is not problematic for our uses as long as you
-implement the logic to handle it. It is a "degenerate" Gaussian,
-(a.k.a. [Dirac
-delta](https://en.wikipedia.org/wiki/Dirac_delta_function)) with zero
-variance, infinite probability density at the mode and zero probability
-everywhere else, but that just means the code length for each value is
-zero and only the message length has to be encoded.
+and as the variance approaches 0, our probability function flattens
+relative to the $PDF$ (here $\sigma \in \{ 0.8^i$ | $i \in \{0,1,2,...\} \}$
+and both axes are scaled to keep the $PDF$ at the same place):
 
-The **bimodal case** is hardly an issue either and has significant
-probability density at the two modes no matter how "separated" you make
-them.
+![](res/gauss/ftc1-0.svg)
 
-The **outlier case** is the only one where the likelihood of a data point
-can fall really low. If all but one point have non-significant variance
-around a point, the probability density at that outlier point can be
-prohibitively low. So how bad can it get?
+with sigmoid-shaped steps, where the $\pm 0.5$ interval crosses into and
+out of the actual $PDF$:
 
-#### Outlier Case Likelihood
+![](res/gauss/ftc1-1.svg)
 
-The Gaussian MLE of a set of $n$ values $\{x_0, x_1, x_2, ...\}$ has the
+meaning that either $PDF$ is a good estimator for
+$CDF(x)|_{x-0.5}^{x+0.5}$ when $\sigma \geq 1$ or it underestimates the
+probability in the tails (even beyond the sigmoid steps) when $\sigma <
+1$. In either case I argue it works as a good "worst-case".
+
+This is convenient because the $PDF$ doesn't contain special functions:
+
+$$PDF(x) = \frac{1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu
+)^{2}}{2\sigma ^{2}}}}$$
+
+We use the $PDF$ to explore the information content of different data
+sets w.r.t. their MLE ([maximum likelihood
+estimator](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation)),
+i.e. the Gaussian with mean and variance equal to the mean and variance
+of the data.
+
+### Re-parametrization of Gaussian MLE's
+The Gaussian MLE of a set of $n$ values $\{x_0, x_1, x_2, ...\}$ has
 parameters:
 
 $$\mu = \frac{\sum x}{n} ~~~~~~~~~~~~ \sigma^2 = \frac{\sum (x - \mu)^2}{n}$$
@@ -124,7 +111,7 @@ numerically stable) is:
 
 $$\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}$$
 
-or even:
+or simply:
 
 $$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
 \frac{(s_1)^2}{(s_0)^2}$$
@@ -132,6 +119,8 @@ $$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
 where the only parameters are sums of the values raised to a power:
 
 $$s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}$$
+
+### Modeling the Information of Data Sets
 
 With this formulation we can model the probability density at the
 outlier by setting the majority at $0$ and the outlier at $1$ (by
@@ -155,8 +144,12 @@ $$\begin{array}{|l|c|c|c|}
 Then we have $s_1 = s_2 = 1$. We substitute $\mu$ and $\sigma^2$ in the
 PDF to get a function of $n$:
 
-$$\begin{align}\mathrm{pdf}(x) &= \frac {1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\
-\mathrm{pdf}(1) &= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} \end{align}$$
+$$\begin{align}
+	\mathrm{pdf}(x) 
+	&= \frac {1}{\sqrt {2\pi \sigma^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\ 
+	\mathrm{pdf}(1) 
+	&= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} 
+\end{align}$$
 
 Which looks like
 
@@ -183,6 +176,57 @@ achieves linear size w.r.t. $n$ in this outlier "worst case":
 
 ![](res/gauss/outliercasecodelength.svg)
 
+
+## An Abstract Arithmetic Coding Interface
+
+An implementation of arithmetic coding that works with *any* model is
+more abstract than what you typically find online. Here is my
+implementation in Rust:
+
+- [Source (GitHub)](https://github.com/nbos/cont-arith-code)
+- [Documentation](res/doc/cont_arith_code/index.html)
+
+Traits are defined for a "model" that emits "distributions" which are
+repeatedly truncated at cumulative probabilites $\in (0,1)$ until it
+resolves to a specific symbol $s$`:i64` which is fed back to the
+"model", updating it, before requesting the next "distribution".
+
+Through defining a limited interface:
+
+```rust
+type Index = i64;
+pub trait Model<T> {
+    fn next_distr(&mut self) -> Box<dyn UnivariateDistribution>;
+    fn push(&mut self, s: Index) -> Option<T>;
+}
+```
+
+```rust
+pub trait UnivariateDistribution {
+    fn truncated(&self) -> Box<dyn TruncatedDistribution>;
+}
+```
+
+```rust
+pub trait TruncatedDistribution {
+    fn quantile(&self, cp: f64) -> (Index, f64); // returns (s, s_rem)
+    fn truncate(&mut self, cp: f64, s: Index, s_rem: f64, bit: bool);
+    fn lo(&self) -> Index; // symbol the lower-bound is in
+    fn hi(&self) -> Index; // symbol the upper-bound is in
+    fn is_resolved(&self) -> bool { self.lo() == self.hi() }
+}
+```
+
+the algorithm handles the composition (i.e. nesting) of distributions in
+the code-space, with interfaces for serialization and de-serialization
+of values.
+
+An
+[implementation](res/doc/cont_arith_code/distribution/categorical/struct.Categorical.html)
+for categorical distributions is defined for a typical use-case of
+arithmetic coding.
+
+## Gaussian Implementation
 ### Tackling Numerical Instability
 
 The quantile function for Gaussians is continuous, one-to-one, monotone
@@ -257,7 +301,7 @@ Gaussian we require, at least for now.
 ## Examples
 
 For the examples below, *information content* is calculated as the sum
-of the log$_2$-probabilities of each integer in the distribution. The
+of the $\log_2$-probabilities of each integer in the distribution. The
 *expected code length* is that value rounded up. *Code length* is the
 empirical result. All codes decode back to the encoded values.
 

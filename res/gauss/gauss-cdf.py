@@ -98,11 +98,11 @@ for i in range(len(integers) - 1):
     if segment_width >= MIN_LABEL_WIDTH:
         # Create appropriate label
         if z == mu:
-            label = "μ"
+            label = "⌊μ⌋"
         elif z > mu:
-            label = f"μ+{z - mu}"
+            label = f"⌊μ⌋+{z - mu}"
         else:
-            label = f"μ{z - mu}"  # This creates μ-1, μ-2, etc.
+            label = f"⌊μ⌋{z - mu}"  # This creates μ-1, μ-2, etc.
         
         # Place label in center of segment
         ax.text(
