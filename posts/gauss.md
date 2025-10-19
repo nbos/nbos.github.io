@@ -1,10 +1,10 @@
 ---
 title: "Encoding Numbers with Gaussians"
 author: Nathaniel Bos
-date: 2025-10-17
+date: 2025-10-19
 ---
 
-[Arithmetic codes](arith.html) are pretty useful for compression. 
+[Arithmetic codes](arith.html) are pretty useful for compression.
 
 There are a number of implementations available online, typically
 employing the equivalent of a [categorical
@@ -66,16 +66,17 @@ the $PDF$:
 
 $$PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}$$
 
-which is just a statement of the fundamental theorem of
-calculus. Practically speaking, this means the $PDF$ approximates the
-interval-$CDF$, especially when the variance is at least 1 (here $\mu =
-0, \sigma = 1$):
+which is just a statement of the [fundamental theorem of
+calculus](https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus). Practically
+speaking, this means the $PDF$ approximates the interval-$CDF$,
+especially when the interval is small enough compared to the variance
+(here $\mu = 0, \sigma = 1$):
 
 ![](res/gauss/ftc0.svg)
 
 and as the variance approaches 0, our probability function flattens
-relative to the $PDF$ (here $\sigma \in \{ 0.8^i$ | $i \in \{0,1,2,...\} \}$
-and both axes are scaled to keep the $PDF$ at the same place):
+relative to the $PDF$ (here $\sigma \in \{ 0.8^i$ | $i \in \{0,1,2,...\}
+\}$, and both axes are scaled to keep the $PDF$ at the same place):
 
 ![](res/gauss/ftc1-0.svg)
 
@@ -91,8 +92,8 @@ probability in the tails (even beyond the sigmoid steps) when $\sigma <
 
 This is convenient because the $PDF$ doesn't contain special functions:
 
-$$PDF(x) = \frac{1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu
-)^{2}}{2\sigma ^{2}}}}$$
+$$PDF(x) = \frac{1}{\sqrt{2\pi \sigma^2}}
+	\;\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$$
 
 We use the $PDF$ to explore the information content of different data
 sets w.r.t. their MLE ([maximum likelihood
@@ -104,7 +105,8 @@ of the data.
 The Gaussian MLE of a set of $n$ values $\{x_0, x_1, x_2, ...\}$ has
 parameters:
 
-$$\mu = \frac{\sum x}{n} ~~~~~~~~~~~~ \sigma^2 = \frac{\sum (x - \mu)^2}{n}$$
+$$\mu = \frac{\sum x}{n} ~~~~~~~~~~~~
+\sigma^2 = \frac{\sum (x - \mu)^2}{n}$$
 
 Another formulation of variance (which also happens to be the more
 numerically stable) is:
@@ -113,69 +115,149 @@ $$\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}$$
 
 or simply:
 
-$$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
-\frac{(s_1)^2}{(s_0)^2}$$
+$$\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~
+\sigma^2 = \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}$$
 
 where the only parameters are sums of the values raised to a power:
 
 $$s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}$$
 
 ### Modeling the Information of Data Sets
+#### Multimodal
 
-With this formulation we can model the probability density at the
-outlier by setting the majority at $0$ and the outlier at $1$ (by
-invariance, this is representative of any outlier case modulo a constant
-factor):
+For the multimodal case:
 
-$$\begin{array}{|l|c|c|c|}
-\hline
-\text{Population} & s_0 & s_1 & s_2 \\
+$$\renewcommand{\arraystretch}{1.5}
+\begin{array}{l|c|c|c}
+\text{Data} & s_0 & s_1 & s_2 \\
 \hline
 \{0,1\} & 2 & 1 & 1 \\
-\hline
-\{0,0,1\} & 3 & 1 & 1 \\
-\hline
-\{0,0,0,1\} & 4 & 1 & 1 \\
-\hline
-\{0,0,...,0,1\} & n & 1 & 1 \\
-\hline
+\{0,1,2\} & 3 & 3 & 5 \\
+\{0,1,2,3\} & 4 & 6 & 14 \\
+\{0,1,2,\ldots,n\} & n+1 & \dfrac{n(n+1)}{2} & \dfrac{n(n+1)(2n+1)}{6}
 \end{array}$$
 
-Then we have $s_1 = s_2 = 1$. We substitute $\mu$ and $\sigma^2$ in the
-PDF to get a function of $n$:
+we have parameters:
 
 $$\begin{align}
-	\mathrm{pdf}(x) 
-	&= \frac {1}{\sqrt {2\pi \sigma^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\ 
-	\mathrm{pdf}(1) 
-	&= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} 
+	\mu &= \frac{s_1}{s_0} = \frac{n(n+1)}{2(n+1)} = \frac{n}{2}
 \end{align}$$
 
-Which looks like
+and
 
-![](res/gauss/pdf1.svg)
+$$\begin{align}
+	\sigma^2 &~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}\\
+		&~=~ \frac{n(n+1)(2n+1)}{6(n+1)} - \frac{n^2(n+1)^2}{4(n+1)^2}\\
+		&~=~ \frac{n(2n+1)}{6} - \frac{n^2}{4}\\
+		&~=~ \frac{2n(2n+1) - 3n^2}{12}\\
+		&~=~ \frac{4n^2 + 2n - 3n^2}{12}\\
+		&~=~ \frac{n^2 + 2n}{12}
+\end{align}$$
 
-which drops pretty quickly (exponentially quickly), but code length only grows
-in one over the logarithm of the probability so:
+which flattens out with increasing $n$ e.g. $n \in \{1,2,...,12\}$:
+
+![](res/gauss/multimodals.svg)
+
+In general, we get the class of $PDF$s:
+$$
+\begin{aligned}
+PDF(n,x)_{multimodal}
+&= \frac{1}{\sqrt{2\pi \cdot \frac{n(n+2)}{12}}}
+   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{2 \cdot \frac{n(n+2)}{12}}\right) \\
+&= \frac{1}{\sqrt{\pi \cdot \frac{n(n+2)}{6}}}
+   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{\frac{n(n+2)}{6}}\right) \\
+&= \sqrt{\frac{6}{\pi\,n(n+2)}}
+   \;\exp\!\left(-\frac{6\left(x-\frac{n}{2}\right)^2}{n(n+2)}\right) \\
+\end{aligned}
+$$
+
+As $n$ increases, the probability densities at each of the data points
+$\{0,..,n\}$ converge meaning, at worst, we get an information content
+of:
+
+$$
+\begin{aligned}
+I(n)_{multimodal}
+&= -n\log(PDF(n,0)_{multimodal}) \\
+&= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}} 
+	\; \exp\!\left(-\frac{6\left(0-\frac{n}{2}\right)^2}{n(n+2)}\right)\right) \\
+&= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}} 
+	\; \exp\!\left(-\frac{3n}{2(n+2)}\right)\right) \\
+&= -\frac{n}{2}\log\left(\frac{6}{\pi\,n(n+2)}\right) + \frac{3n^2}{2(n+2)} \\
+&= \frac{n}{2}\log\left(\frac{\pi\,n(n+2)}{6}\right) + \frac{3n^2}{2(n+2)} \\
+\end{aligned}
+$$
+
+which is $O(n)$ and exactly what is expected from the information of a
+data set of size $n$.
+
+#### Outlier case
+
+For a more degenerate case, consider the probability density at an
+outlier by setting the majority at $0$ and the outlier at $1$ (by
+invariance, this is representative of any outlier case, modulo a
+constant factor):
+
+$$\begin{array}{l|c|c|c}
+\text{Data} & s_0 & s_1 & s_2 \\
+\hline
+\{0,1\} & 2 & 1 & 1 \\
+\{0,0,1\} & 3 & 1 & 1 \\
+\{0,0,0,1\} & 4 & 1 & 1 \\
+\{0,0,...,0,1\} & n & 1 & 1 \\
+\end{array}$$
+
+In general, we get parameters:
+
+$$\begin{align}
+	\mu &= \frac{s_1}{s_0} = \frac{1}{n}
+\end{align}$$
+
+and
+
+$$\begin{align}
+	\sigma^2 &~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2} ~=~ \frac{1}{n} - \frac{1}{n^2}
+	~=~ \frac{n-1}{n^2}
+\end{align}$$
+
+The $PDF$ becomes
+
+$$\begin{align}
+PDF(n,x)_{outlier}
+&= \frac{1}{\sqrt{2\pi \cdot\frac{n-1}{n^2}}}
+	\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
+&= \frac{n}{\sqrt{2\pi(n-1)}}\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
+\end{align}$$
+
+For the informational content of a data set of size $n$, we have $(n-1)$
+times $P(0)$ and $P(1)$ once. As $n$ approaches infinity, the density at
+$x=0$ goes beyond $1$, also approaching infinity, which would produce
+negative information. Bounding the probability of non-outliers at $1$,
+they contribute an information content of $0$. The whole of the
+information content thefore comes from the shrinking probability of the
+outlier:
+
+$$\begin{align}
+I(n)_{outlier} &= -\log(PDF(n,1)_{outlier}) \\
+&= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \exp\left(-\frac{n-1}{2}\right)\right) \\
+&= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\left(-\frac{n-1}{2}\right)\right) \\
+&= -\log(n) + \frac{1}{2}\log(2\pi(n-1)) + \frac{n-1}{2} \\
+&= \frac{n-1}{2} + \frac{1}{2}\log(2\pi(n-1)) - \log(n)
+\end{align}$$
+
+which is $O(n)$, again:
 
 ![](res/gauss/neglnpdf1.svg)
 
-Which is a pretty unambiguous $0.5n$ towards infinity. 
-
-So it looks like the code length of the outlier of a Gaussian only grows
-in $O(n)$ of the size of the data set, which is only as bad as the
-performance of the uniform distribution of fixed-length codes. 
-
-Now, a full account of the performance of the distribution also has to
-take into account the code lengths of non-outliers, although we only
-expect their likelihood to grow with increasing $n$ compared to the
-outlier. For completeness, computing the sum of code lengths using
-proper probability intervals (not density) on the CDF, with bin size
-$\pm 0.5$ around integers, in base 2, we show the total code length also
-achieves linear size w.r.t. $n$ in this outlier "worst case":
+We can confirm this trend by computing the information using the real
+assigned probabilities with $CDF(x)|_{x-0.5}^{x+0.5}$ for the first few
+cases:
 
 ![](res/gauss/outliercasecodelength.svg)
 
+with a slope of at little under $2$ bits per number once the line
+settles around $n \sim 20$. This is subjectively tolerable behavior
+under so-called "worst" conditions.
 
 ## An Abstract Arithmetic Coding Interface
 
@@ -231,7 +313,7 @@ arithmetic coding.
 
 The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at $0 \mapsto -\infty$ and $1
-\mapsto \infty$. 
+\mapsto \infty$.
 
 ![](res/gauss/cdfquantile.svg)
 

@@ -19,7 +19,8 @@ a = sigma
 cdf_upper = norm.cdf(x + 1/(2*sigma), 0, 1)
 cdf_lower = norm.cdf(x - 1/(2*sigma), 0, 1)
 f_x_1 = a * (cdf_upper - cdf_lower)
-plt.plot(x, f_x_1, '--', color='black', linewidth=1.5, label=r'$CDF(x)|_{x-0.5}^{x+0.5}$')
+plt.plot(x, f_x_1, '--', color='black',
+         linewidth=1.5, label=r'$CDF(x)|_{x-0.5}^{x+0.5}$')
 
 # # Plot for sigma = 2
 # sigma = 2
@@ -31,7 +32,7 @@ plt.plot(x, f_x_1, '--', color='black', linewidth=1.5, label=r'$CDF(x)|_{x-0.5}^
 
 plt.xlabel('x', fontsize=15)
 plt.legend(loc='upper right', fontsize=12)
-# plt.grid(True, alpha=0.3)
+plt.grid(True, alpha=0.3)
 plt.tick_params(axis='both', labelsize=11)
 plt.xlim(-4, 4)
 plt.ylim(0, None)

@@ -37,7 +37,7 @@ results = [compute_value(n) for n in n_values]
 plt.figure(figsize=(6, 4))
 plt.plot(n_values, results, label="Function Value", color="black")
 plt.xlabel("n",fontsize=12)
-plt.ylabel("Code length (bits)",fontsize=12)
+plt.ylabel("Information (bits)",fontsize=12)
 
 # Add some styling
 plt.axhline(y=0, color='k', linestyle='-', alpha=0.3)

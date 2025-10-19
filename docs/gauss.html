@@ -26,7 +26,7 @@
       <h1>Encoding Numbers with Gaussians</h1>
       <article>
   <section class="header">
-    Posted on October 17, 2025
+    Posted on October 19, 2025
     
     by Nathaniel Bos
     
@@ -75,14 +75,15 @@ doesn’t factor or reduce well enough to be useful going further.</p>
 <span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> on grounds that the <span class="math inline">\(CDF\)</span> is the integral of
 the <span class="math inline">\(PDF\)</span>:</p>
 <p><span class="math display">\[PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}\]</span></p>
-<p>which is just a statement of the fundamental theorem of
-calculus. Practically speaking, this means the <span class="math inline">\(PDF\)</span> approximates the
-interval-<span class="math inline">\(CDF\)</span>, especially when the variance is at least 1 (here <span class="math inline">\(\mu =
-0, \sigma = 1\)</span>):</p>
+<p>which is just a statement of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus">fundamental theorem of
+calculus</a>. Practically
+speaking, this means the <span class="math inline">\(PDF\)</span> approximates the interval-<span class="math inline">\(CDF\)</span>,
+especially when the interval is small enough compared to the variance
+(here <span class="math inline">\(\mu = 0, \sigma = 1\)</span>):</p>
 <p><img src="res/gauss/ftc0.svg" /></p>
 <p>and as the variance approaches 0, our probability function flattens
-relative to the <span class="math inline">\(PDF\)</span> (here <span class="math inline">\(\sigma \in \{ 0.8^i\)</span> | <span class="math inline">\(i \in \{0,1,2,...\} \}\)</span>
-and both axes are scaled to keep the <span class="math inline">\(PDF\)</span> at the same place):</p>
+relative to the <span class="math inline">\(PDF\)</span> (here <span class="math inline">\(\sigma \in \{ 0.8^i\)</span> | <span class="math inline">\(i \in \{0,1,2,...\}
+\}\)</span>, and both axes are scaled to keep the <span class="math inline">\(PDF\)</span> at the same place):</p>
 <p><img src="res/gauss/ftc1-0.svg" /></p>
 <p>with sigmoid-shaped steps, where the <span class="math inline">\(\pm 0.5\)</span> interval crosses into and
 out of the actual <span class="math inline">\(PDF\)</span>:</p>
@@ -92,8 +93,8 @@ out of the actual <span class="math inline">\(PDF\)</span>:</p>
 probability in the tails (even beyond the sigmoid steps) when <span class="math inline">\(\sigma &lt;
 1\)</span>. In either case I argue it works as a good “worst-case”.</p>
 <p>This is convenient because the <span class="math inline">\(PDF\)</span> doesn’t contain special functions:</p>
-<p><span class="math display">\[PDF(x) = \frac{1}{\sqrt {2\pi \sigma ^{2}}}e^{-{\frac {(x-\mu
-)^{2}}{2\sigma ^{2}}}}\]</span></p>
+<p><span class="math display">\[PDF(x) = \frac{1}{\sqrt{2\pi \sigma^2}}
+	\;\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)\]</span></p>
 <p>We use the <span class="math inline">\(PDF\)</span> to explore the information content of different data
 sets w.r.t. their MLE (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">maximum likelihood
 estimator</a>),
@@ -102,58 +103,124 @@ of the data.</p>
 <h3 id="re-parametrization-of-gaussian-mles">Re-parametrization of Gaussian MLE’s</h3>
 <p>The Gaussian MLE of a set of <span class="math inline">\(n\)</span> values <span class="math inline">\(\{x_0, x_1, x_2, ...\}\)</span> has
 parameters:</p>
-<p><span class="math display">\[\mu = \frac{\sum x}{n} ~~~~~~~~~~~~ \sigma^2 = \frac{\sum (x - \mu)^2}{n}\]</span></p>
+<p><span class="math display">\[\mu = \frac{\sum x}{n} ~~~~~~~~~~~~
+\sigma^2 = \frac{\sum (x - \mu)^2}{n}\]</span></p>
 <p>Another formulation of variance (which also happens to be the more
 numerically stable) is:</p>
 <p><span class="math display">\[\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}\]</span></p>
 <p>or simply:</p>
-<p><span class="math display">\[\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~ \sigma^2 = \frac{s_2}{s_0} -
-\frac{(s_1)^2}{(s_0)^2}\]</span></p>
+<p><span class="math display">\[\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~
+\sigma^2 = \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}\]</span></p>
 <p>where the only parameters are sums of the values raised to a power:</p>
 <p><span class="math display">\[s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}\]</span></p>
 <h3 id="modeling-the-information-of-data-sets">Modeling the Information of Data Sets</h3>
-<p>With this formulation we can model the probability density at the
-outlier by setting the majority at <span class="math inline">\(0\)</span> and the outlier at <span class="math inline">\(1\)</span> (by
-invariance, this is representative of any outlier case modulo a constant
-factor):</p>
-<p><span class="math display">\[\begin{array}{|l|c|c|c|}
-\hline
-\text{Population} &amp; s_0 &amp; s_1 &amp; s_2 \\
+<h4 id="multimodal">Multimodal</h4>
+<p>For the multimodal case:</p>
+<p><span class="math display">\[\renewcommand{\arraystretch}{1.5}
+\begin{array}{l|c|c|c}
+\text{Data} &amp; s_0 &amp; s_1 &amp; s_2 \\
 \hline
 \{0,1\} &amp; 2 &amp; 1 &amp; 1 \\
-\hline
-\{0,0,1\} &amp; 3 &amp; 1 &amp; 1 \\
-\hline
-\{0,0,0,1\} &amp; 4 &amp; 1 &amp; 1 \\
-\hline
-\{0,0,...,0,1\} &amp; n &amp; 1 &amp; 1 \\
-\hline
+\{0,1,2\} &amp; 3 &amp; 3 &amp; 5 \\
+\{0,1,2,3\} &amp; 4 &amp; 6 &amp; 14 \\
+\{0,1,2,\ldots,n\} &amp; n+1 &amp; \dfrac{n(n+1)}{2} &amp; \dfrac{n(n+1)(2n+1)}{6}
 \end{array}\]</span></p>
-<p>Then we have <span class="math inline">\(s_1 = s_2 = 1\)</span>. We substitute <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\sigma^2\)</span> in the
-PDF to get a function of <span class="math inline">\(n\)</span>:</p>
+<p>we have parameters:</p>
 <p><span class="math display">\[\begin{align}
-	\mathrm{pdf}(x) 
-	&amp;= \frac {1}{\sqrt {2\pi \sigma^{2}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}\\ 
-	\mathrm{pdf}(1) 
-	&amp;= \frac{1}{\sqrt {\frac{2\pi}{n} - \frac{2\pi}{n^2}}}e^{-\frac{(n-1)^2}{2n-2}} 
+	\mu &amp;= \frac{s_1}{s_0} = \frac{n(n+1)}{2(n+1)} = \frac{n}{2}
 \end{align}\]</span></p>
-<p>Which looks like</p>
-<p><img src="res/gauss/pdf1.svg" /></p>
-<p>which drops pretty quickly (exponentially quickly), but code length only grows
-in one over the logarithm of the probability so:</p>
+<p>and</p>
+<p><span class="math display">\[\begin{align}
+	\sigma^2 &amp;~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}\\
+		&amp;~=~ \frac{n(n+1)(2n+1)}{6(n+1)} - \frac{n^2(n+1)^2}{4(n+1)^2}\\
+		&amp;~=~ \frac{n(2n+1)}{6} - \frac{n^2}{4}\\
+		&amp;~=~ \frac{2n(2n+1) - 3n^2}{12}\\
+		&amp;~=~ \frac{4n^2 + 2n - 3n^2}{12}\\
+		&amp;~=~ \frac{n^2 + 2n}{12}
+\end{align}\]</span></p>
+<p>which flattens out with increasing <span class="math inline">\(n\)</span> e.g. <span class="math inline">\(n \in \{1,2,...,12\}\)</span>:</p>
+<p><img src="res/gauss/multimodals.svg" /></p>
+<p>In general, we get the class of <span class="math inline">\(PDF\)</span>s:
+<span class="math display">\[
+\begin{aligned}
+PDF(n,x)_{multimodal}
+&amp;= \frac{1}{\sqrt{2\pi \cdot \frac{n(n+2)}{12}}}
+   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{2 \cdot \frac{n(n+2)}{12}}\right) \\
+&amp;= \frac{1}{\sqrt{\pi \cdot \frac{n(n+2)}{6}}}
+   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{\frac{n(n+2)}{6}}\right) \\
+&amp;= \sqrt{\frac{6}{\pi\,n(n+2)}}
+   \;\exp\!\left(-\frac{6\left(x-\frac{n}{2}\right)^2}{n(n+2)}\right) \\
+\end{aligned}
+\]</span></p>
+<p>As <span class="math inline">\(n\)</span> increases, the probability densities at each of the data points
+<span class="math inline">\(\{0,..,n\}\)</span> converge meaning, at worst, we get an information content
+of:</p>
+<p><span class="math display">\[
+\begin{aligned}
+I(n)_{multimodal}
+&amp;= -n\log(PDF(n,0)_{multimodal}) \\
+&amp;= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}} 
+	\; \exp\!\left(-\frac{6\left(0-\frac{n}{2}\right)^2}{n(n+2)}\right)\right) \\
+&amp;= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}} 
+	\; \exp\!\left(-\frac{3n}{2(n+2)}\right)\right) \\
+&amp;= -\frac{n}{2}\log\left(\frac{6}{\pi\,n(n+2)}\right) + \frac{3n^2}{2(n+2)} \\
+&amp;= \frac{n}{2}\log\left(\frac{\pi\,n(n+2)}{6}\right) + \frac{3n^2}{2(n+2)} \\
+\end{aligned}
+\]</span></p>
+<p>which is <span class="math inline">\(O(n)\)</span> and exactly what is expected from the information of a
+data set of size <span class="math inline">\(n\)</span>.</p>
+<h4 id="outlier-case">Outlier case</h4>
+<p>For a more degenerate case, consider the probability density at an
+outlier by setting the majority at <span class="math inline">\(0\)</span> and the outlier at <span class="math inline">\(1\)</span> (by
+invariance, this is representative of any outlier case, modulo a
+constant factor):</p>
+<p><span class="math display">\[\begin{array}{l|c|c|c}
+\text{Data} &amp; s_0 &amp; s_1 &amp; s_2 \\
+\hline
+\{0,1\} &amp; 2 &amp; 1 &amp; 1 \\
+\{0,0,1\} &amp; 3 &amp; 1 &amp; 1 \\
+\{0,0,0,1\} &amp; 4 &amp; 1 &amp; 1 \\
+\{0,0,...,0,1\} &amp; n &amp; 1 &amp; 1 \\
+\end{array}\]</span></p>
+<p>In general, we get parameters:</p>
+<p><span class="math display">\[\begin{align}
+	\mu &amp;= \frac{s_1}{s_0} = \frac{1}{n}
+\end{align}\]</span></p>
+<p>and</p>
+<p><span class="math display">\[\begin{align}
+	\sigma^2 &amp;~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2} ~=~ \frac{1}{n} - \frac{1}{n^2}
+	~=~ \frac{n-1}{n^2}
+\end{align}\]</span></p>
+<p>The <span class="math inline">\(PDF\)</span> becomes</p>
+<p><span class="math display">\[\begin{align}
+PDF(n,x)_{outlier}
+&amp;= \frac{1}{\sqrt{2\pi \cdot\frac{n-1}{n^2}}}
+	\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
+&amp;= \frac{n}{\sqrt{2\pi(n-1)}}\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
+\end{align}\]</span></p>
+<p>For the informational content of a data set of size <span class="math inline">\(n\)</span>, we have <span class="math inline">\((n-1)\)</span>
+times <span class="math inline">\(P(0)\)</span> and <span class="math inline">\(P(1)\)</span> once. As <span class="math inline">\(n\)</span> approaches infinity, the density at
+<span class="math inline">\(x=0\)</span> goes beyond <span class="math inline">\(1\)</span>, also approaching infinity, which would produce
+negative information. Bounding the probability of non-outliers at <span class="math inline">\(1\)</span>,
+they contribute an information content of <span class="math inline">\(0\)</span>. The whole of the
+information content thefore comes from the shrinking probability of the
+outlier:</p>
+<p><span class="math display">\[\begin{align}
+I(n)_{outlier} &amp;= -\log(PDF(n,1)_{outlier}) \\
+&amp;= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \exp\left(-\frac{n-1}{2}\right)\right) \\
+&amp;= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\left(-\frac{n-1}{2}\right)\right) \\
+&amp;= -\log(n) + \frac{1}{2}\log(2\pi(n-1)) + \frac{n-1}{2} \\
+&amp;= \frac{n-1}{2} + \frac{1}{2}\log(2\pi(n-1)) - \log(n)
+\end{align}\]</span></p>
+<p>which is <span class="math inline">\(O(n)\)</span>, again:</p>
 <p><img src="res/gauss/neglnpdf1.svg" /></p>
-<p>Which is a pretty unambiguous <span class="math inline">\(0.5n\)</span> towards infinity.</p>
-<p>So it looks like the code length of the outlier of a Gaussian only grows
-in <span class="math inline">\(O(n)\)</span> of the size of the data set, which is only as bad as the
-performance of the uniform distribution of fixed-length codes.</p>
-<p>Now, a full account of the performance of the distribution also has to
-take into account the code lengths of non-outliers, although we only
-expect their likelihood to grow with increasing <span class="math inline">\(n\)</span> compared to the
-outlier. For completeness, computing the sum of code lengths using
-proper probability intervals (not density) on the CDF, with bin size
-<span class="math inline">\(\pm 0.5\)</span> around integers, in base 2, we show the total code length also
-achieves linear size w.r.t. <span class="math inline">\(n\)</span> in this outlier “worst case”:</p>
+<p>We can confirm this trend by computing the information using the real
+assigned probabilities with <span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> for the first few
+cases:</p>
 <p><img src="res/gauss/outliercasecodelength.svg" /></p>
+<p>with a slope of at little under <span class="math inline">\(2\)</span> bits per number once the line
+settles around <span class="math inline">\(n \sim 20\)</span>. This is subjectively tolerable behavior
+under so-called “worst” conditions.</p>
 <h2 id="an-abstract-arithmetic-coding-interface">An Abstract Arithmetic Coding Interface</h2>
 <p>An implementation of arithmetic coding that works with <em>any</em> model is
 more abstract than what you typically find online. Here is my
@@ -307,7 +374,7 @@ empirical result. All codes decode back to the encoded values.</p>
 <span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">6</span> bits</span>
 <span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
 <span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
-<h3 id="outlier-case">Outlier Case</h3>
+<h3 id="outlier-case-1">Outlier Case</h3>
 <p>Outlier cases like this one (<span class="math inline">\(n = 10\)</span>):</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>]</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="fl">0.1</span>, σ: <span class="fl">0.3</span> } (<span class="dv">10</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
