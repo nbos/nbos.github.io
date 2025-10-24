@@ -274,8 +274,9 @@ $$\mathrm{len}(\mathrm{\bf x})_2
 ~\ge~ \left\lceil-\log_2P(\mathrm{\bf x})\right\rceil$$
 
 Notice that, although it is possible that no binary interval immediately
-smaller than the message's interval fits within it if intervals are not
-in perfect phase with each other (as in one of the examples above):
+smaller than the message's interval fits within it if divisions in each
+space are not in perfect phase with each other (as in one of the
+examples above):
 
 ![](res/arith/ABA-arith-phase.svg)
 

@@ -26,96 +26,163 @@
       <h1>Encoding Numbers with Gaussians</h1>
       <article>
   <section class="header">
-    Posted on October 19, 2025
+    Posted on October 23, 2025
     
     by Nathaniel Bos
     
   </section>
   <section>
     <p><a href="arith.html">Arithmetic codes</a> are pretty useful for compression.</p>
-<p>There are a number of implementations available online, typically
-employing the equivalent of a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
-distribution</a>
-over a finite domain. For example, using a probability table over the
-alphabet comensurate with common English text, each letter gets a
-section of the unit interval proportional to its frequency:</p>
+<p>Implementations usually all operate on the equivalent of a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
+distribution</a>. For
+example, using a 26 letter alphabet with probabilities proportional to
+their frequency in English text:</p>
 <p><img src="res/gauss/frequency-bars.svg" /></p>
+<p>Each letter gets an explicity probability assignment and an equivalent
+section of the unit interval like so:</p>
 <p><img src="res/gauss/alphabet.svg" /></p>
+<p>This unit interval is then used as a CDF (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cummulative distribution
+function</a>)
+by the arithmetic encoder to produce a binary code of minimal size.</p>
 <p>But any probability distribution with a well defined <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quantile_function">quantile
-function</a> could be used
-for arithmetic coding, even on infinite domains. For instance, a
+function</a> (the inverse
+of the CDF) can be used for arithmetic coding, even on infinite
+domains. Consider a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a> prior over
-integers could be used to compress whole numbers:</p>
+integers to compress sequences of whole numbers:</p>
 <p><img src="res/gauss/gauss-pdf.svg" /></p>
 <p><img src="res/gauss/gauss-cdf.svg" /></p>
-<p>Each integer <span class="math inline">\(i \in \mathbb{Z}\)</span> is assigned the probability mass
-contained within the interval <span class="math inline">\(i \pm 0.5\)</span> on the Gaussian of choice.</p>
-<h2 id="viability">Viability</h2>
-<h3 id="pdf-as-a-estimator-for-probability">PDF as a Estimator for Probability</h3>
+<p>For each integer <span class="math inline">\(i \in \mathbb{Z}\)</span>, we assign the probability mass
+contained within the interval <span class="math inline">\(i \pm 0.5\)</span> on the Gaussian PDF (the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Probability_density_function">probability density
+function</a>,
+pictured above) of choice.</p>
+<h2 id="an-abstract-arithmetic-coding-interface">An Abstract Arithmetic Coding Interface</h2>
+<p>To support this exploratiom, we implement a generic arithmetic codec
+(encoder/decoder) that interfaces distributions to serialize and
+deserialize values and provide both categorical and Gaussian
+implementations.</p>
+<p>The program is written in Rust:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/nbos/cont-arith-code">Source (GitHub)</a></li>
+<li><a href="res/doc/cont_arith_code/index.html">Documentation</a></li>
+</ul>
+<p>For probability distributions able to be querried at any fraction of
+their remaining probability mass (<code>quantile</code>) and truncated at those
+fractions (<code>truncate</code>), the algorithm can produce binary serializations
+of any value (indexed in <code>i64</code>) of their domain.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Index <span class="op">=</span> <span class="dt">i64</span><span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> TruncatedDistribution <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> quantile(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span>) <span class="op">-&gt;</span> (<span class="bu">Index</span><span class="op">,</span> <span class="dt">f64</span>)<span class="op">;</span> <span class="co">// returns (s, s_rem)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> truncate(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span> s<span class="op">:</span> <span class="bu">Index</span><span class="op">,</span> s_rem<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span> bit<span class="op">:</span> <span class="dt">bool</span>)<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> lo(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the lower-bound is in</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> hi(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the upper-bound is in</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> is_resolved(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span> <span class="kw">self</span><span class="op">.</span>lo() <span class="op">==</span> <span class="kw">self</span><span class="op">.</span>hi() <span class="op">}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>To serialize sequences of values, a trait for a “model” is defined that
+emits distributions which are truncated until resolution whereby the
+resulting symbol is fed back to the model (updating it) before
+requesting the next distribution.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> Model<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> next_distr(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> UnivariateDistribution<span class="op">&gt;;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> push(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">,</span> s<span class="op">:</span> <span class="bu">Index</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;</span>T<span class="op">&gt;;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> UnivariateDistribution <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> truncated(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> TruncatedDistribution<span class="op">&gt;;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>De-serialization (decoding) is implemented using the same interface with
+the same order of mutating calls such that deterministic implementations
+of those methods result in reversible (read: decodable) encodings.</p>
+<p>The rest of this post is divided into three parts: 1) we derive bounds
+on the efficiency of modeling integers with Gaussian PDFs to justify the
+value of the approach, 2) comments on implementation details of the
+Gaussian backend, and 3) a few examples proving the implementation works
+as designed.</p>
+<h2 id="theoretical-viability">Theoretical Viability</h2>
 <p>The code length achievable by an arithmetic encoder is within two bits
-of the information content of the encoded message, which is the sum of
-the individual information content of the constituent symbols. The
-information content of a symbol is inversely related to its probability:</p>
+of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
+content</a> of the
+encoded message, which is the sum of the information content of its
+constituent symbols, which is related to their probability:</p>
 <p><span class="math display">\[I(x) = -\log P(x)\]</span></p>
-<p>The probability we assign each integer is the probability mass within
-the bounds <span class="math inline">\(x \pm 0.5\)</span> of the <span class="math inline">\(PDF\)</span> (the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Probability_density_function">probability density
-funtcion</a>,
-pictured above). This is computed as</p>
+<p>The probability we assign each integer (our symbols) is the probability
+mass within an interval <span class="math inline">\(x \pm 0.5\)</span> of the Gaussian PDF. This is
+computed as</p>
 <p><span class="math display">\[\begin{align}P(x) &amp;= CDF(x)|_{x-0.5}^{x+0.5}\\[6pt]
 	&amp;= CDF(x+0.5) - CDF(x-0.5)\end{align}\]</span></p>
-<p>in terms of the Gaussian <span class="math inline">\(CDF\)</span> (the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cummulative distribution
-function</a>),
-which, for a normal <span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span> is equal to:</p>
+<p>in terms of the CDF (the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cummulative distribution
+function</a>)
+of the Gaussian which, for the parametrized distribution
+<span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span> is equal to:</p>
 <p><span class="math display">\[CDF(x) = \frac {1}{2}\left[1+\operatorname {erf} \left({\frac {x-\mu
 }{\sigma {\sqrt {2}}}}\right)\right]\]</span></p>
-<p>which is expressed in terms of the non-elementary, sigmoid, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Error_function">error
+<p>which is expressed in terms of a non-elementary, sigmoid-shaped, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Error_function">error
 function</a> “erf” which
-doesn’t factor or reduce well enough to be useful going further.</p>
-<p>Conveniently, however, the <span class="math inline">\(PDF\)</span> already approximates the
-<span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> on grounds that the <span class="math inline">\(CDF\)</span> is the integral of
-the <span class="math inline">\(PDF\)</span>:</p>
+doesn’t factor or reduce well enough to be useful for us going further.</p>
+<h3 id="pdf-as-a-estimator-for-probability">PDF as a Estimator for Probability</h3>
+<p>Conveniently, however, the PDF already approximates the
+<span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> based on the fact that:</p>
 <p><span class="math display">\[PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}\]</span></p>
 <p>which is just a statement of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus">fundamental theorem of
-calculus</a>. Practically
-speaking, this means the <span class="math inline">\(PDF\)</span> approximates the interval-<span class="math inline">\(CDF\)</span>,
-especially when the interval is small enough compared to the variance
-(here <span class="math inline">\(\mu = 0, \sigma = 1\)</span>):</p>
+calculus</a>,
+calling on the fact that the CDF is the integral of the PDF. Practically
+speaking, this means the PDF is a good approximation of the interval-CDF
+when the width of the interval is small or, equivalently (since our
+intervals are all equal to 1), when the variance is large.</p>
+<p>For <span class="math inline">\(\sigma = 1\)</span>, the difference is already forgiveable:</p>
 <p><img src="res/gauss/ftc0.svg" /></p>
-<p>and as the variance approaches 0, our probability function flattens
-relative to the <span class="math inline">\(PDF\)</span> (here <span class="math inline">\(\sigma \in \{ 0.8^i\)</span> | <span class="math inline">\(i \in \{0,1,2,...\}
-\}\)</span>, and both axes are scaled to keep the <span class="math inline">\(PDF\)</span> at the same place):</p>
+<p>As the variance approaches 0, our probability function flattens relative
+to the PDF (here <span class="math inline">\(\sigma \in \{ 0.8^i\)</span> | <span class="math inline">\(i \in \{0,1,2,...\} \}\)</span>, and
+both axes are scaled to keep the PDF at the same place):</p>
 <p><img src="res/gauss/ftc1-0.svg" /></p>
 <p>with sigmoid-shaped steps, where the <span class="math inline">\(\pm 0.5\)</span> interval crosses into and
-out of the actual <span class="math inline">\(PDF\)</span>:</p>
+out of the actual PDF:</p>
 <p><img src="res/gauss/ftc1-1.svg" /></p>
-<p>meaning that either <span class="math inline">\(PDF\)</span> is a good estimator for
-<span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> when <span class="math inline">\(\sigma \geq 1\)</span> or it underestimates the
-probability in the tails (even beyond the sigmoid steps) when <span class="math inline">\(\sigma &lt;
-1\)</span>. In either case I argue it works as a good “worst-case”.</p>
-<p>This is convenient because the <span class="math inline">\(PDF\)</span> doesn’t contain special functions:</p>
+<p>meaning that when <span class="math inline">\(\sigma \geq 1\)</span>, the PDF is a good estimator for
+<span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> and when <span class="math inline">\(\sigma &lt; 1\)</span>, it <em>underestimates</em> the
+probability in the tails (even beyond the sigmoid steps). In either case
+I argue it works as a good “worst-case”.</p>
+<p>This is convenient because the formula of the PDF doesn’t contain
+special functions:</p>
 <p><span class="math display">\[PDF(x) = \frac{1}{\sqrt{2\pi \sigma^2}}
 	\;\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)\]</span></p>
-<p>We use the <span class="math inline">\(PDF\)</span> to explore the information content of different data
-sets w.r.t. their MLE (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">maximum likelihood
+<p>We use the PDF to set bounds on the information content of different
+data sets w.r.t. their MLE (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">maximum likelihood
 estimator</a>),
 i.e. the Gaussian with mean and variance equal to the mean and variance
 of the data.</p>
 <h3 id="re-parametrization-of-gaussian-mles">Re-parametrization of Gaussian MLE’s</h3>
-<p>The Gaussian MLE of a set of <span class="math inline">\(n\)</span> values <span class="math inline">\(\{x_0, x_1, x_2, ...\}\)</span> has
+<p>The Gaussian MLE of a set of <span class="math inline">\(n\)</span> values <span class="math inline">\(\{x_0, x_1, ..., x_{n-1}\}\)</span> has
 parameters:</p>
 <p><span class="math display">\[\mu = \frac{\sum x}{n} ~~~~~~~~~~~~
 \sigma^2 = \frac{\sum (x - \mu)^2}{n}\]</span></p>
-<p>Another formulation of variance (which also happens to be the more
-numerically stable) is:</p>
+<p>Another formulation of variance (which is also the more numerically
+stable) is:</p>
 <p><span class="math display">\[\sigma^2 = \frac{\sum x^2}{n} - \frac{(\sum x)^2}{n^2}\]</span></p>
-<p>or simply:</p>
+<p>or more succinctly:</p>
 <p><span class="math display">\[\mu = \frac{s_1}{s_0} ~~~~~~~~~~~~
-\sigma^2 = \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}\]</span></p>
-<p>where the only parameters are sums of the values raised to a power:</p>
+\sigma^2 = \frac{s_2}{s_0} - \frac{s_1\!^2}{s_0\!^2}\]</span></p>
+<p>where:</p>
 <p><span class="math display">\[s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}\]</span></p>
-<h3 id="modeling-the-information-of-data-sets">Modeling the Information of Data Sets</h3>
+<h3 id="information-of-data-sets">Information of Data Sets</h3>
+<p>The only location of low probability on the Gaussian PDF is the tails
+and there are only a few ways to “distribute” data such that the extreme
+values fall at different point in the tails.</p>
+<p>Notably, we have sets where all data is the same value. The <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dirac_delta_function">resulting
+Gaussian</a> is
+technically degenerate (<span class="math inline">\(\sigma^2 = 0\)</span>), but the resulting probability
+around the unit interval at that point will be 1 (code length 0) which
+should not be a problem in terms of compression efficiency if the
+implementation handles it properly.</p>
+<p>Other axes of data “distribution” are 1) how spread out and 2) how
+skewed to one side the values are. We model these by instantiating data
+sets without loss of generality and observe their effects on the
+resulting arithmetic codes.</p>
 <h4 id="multimodal">Multimodal</h4>
-<p>For the multimodal case:</p>
+<p>Moving forward from the case of the degenerate Gaussian of a
+distribution containing only 1 value, we model the parameters of
+Gaussian distributions equally distributed between 2, 3, 4,
+etc. equidistant modes:</p>
 <p><span class="math display">\[\renewcommand{\arraystretch}{1.5}
 \begin{array}{l|c|c|c}
 \text{Data} &amp; s_0 &amp; s_1 &amp; s_2 \\
@@ -125,55 +192,55 @@ numerically stable) is:</p>
 \{0,1,2,3\} &amp; 4 &amp; 6 &amp; 14 \\
 \{0,1,2,\ldots,n\} &amp; n+1 &amp; \dfrac{n(n+1)}{2} &amp; \dfrac{n(n+1)(2n+1)}{6}
 \end{array}\]</span></p>
-<p>we have parameters:</p>
+<p>We get parameters:</p>
 <p><span class="math display">\[\begin{align}
 	\mu &amp;= \frac{s_1}{s_0} = \frac{n(n+1)}{2(n+1)} = \frac{n}{2}
 \end{align}\]</span></p>
 <p>and</p>
 <p><span class="math display">\[\begin{align}
-	\sigma^2 &amp;~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}\\
-		&amp;~=~ \frac{n(n+1)(2n+1)}{6(n+1)} - \frac{n^2(n+1)^2}{4(n+1)^2}\\
-		&amp;~=~ \frac{n(2n+1)}{6} - \frac{n^2}{4}\\
-		&amp;~=~ \frac{2n(2n+1) - 3n^2}{12}\\
-		&amp;~=~ \frac{4n^2 + 2n - 3n^2}{12}\\
-		&amp;~=~ \frac{n^2 + 2n}{12}
+\sigma^2
+	&amp;~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}\\
+	&amp;~=~ \frac{n(n+1)(2n+1)}{6(n+1)} - \frac{n^2(n+1)^2}{4(n+1)^2}\\
+	&amp;~=~ \frac{n(2n+1)}{6} - \frac{n^2}{4}\\
+	&amp;~=~ \frac{2n(2n+1) - 3n^2}{12}\\
+	&amp;~=~ \frac{4n^2 + 2n - 3n^2}{12}\\
+	&amp;~=~ \frac{n^2 + 2n}{12}
 \end{align}\]</span></p>
 <p>which flattens out with increasing <span class="math inline">\(n\)</span> e.g. <span class="math inline">\(n \in \{1,2,...,12\}\)</span>:</p>
 <p><img src="res/gauss/multimodals.svg" /></p>
-<p>In general, we get the class of <span class="math inline">\(PDF\)</span>s:
-<span class="math display">\[
-\begin{aligned}
+<p>In general, we get the class of PDFs:</p>
+<p><span class="math display">\[\begin{aligned}
 PDF(n,x)_{multimodal}
 &amp;= \frac{1}{\sqrt{2\pi \cdot \frac{n(n+2)}{12}}}
-   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{2 \cdot \frac{n(n+2)}{12}}\right) \\
+   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{2 \cdot \frac{n(n+2)}{12}}\right)\\
 &amp;= \frac{1}{\sqrt{\pi \cdot \frac{n(n+2)}{6}}}
-   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{\frac{n(n+2)}{6}}\right) \\
+   \;\exp\!\left(-\frac{\left(x-\frac{n}{2}\right)^2}{\frac{n(n+2)}{6}}\right)\\
 &amp;= \sqrt{\frac{6}{\pi\,n(n+2)}}
-   \;\exp\!\left(-\frac{6\left(x-\frac{n}{2}\right)^2}{n(n+2)}\right) \\
-\end{aligned}
-\]</span></p>
+   \;\exp\!\left(-\frac{6\left(x-\frac{n}{2}\right)^2}{n(n+2)}\right)\\
+\end{aligned}\]</span></p>
 <p>As <span class="math inline">\(n\)</span> increases, the probability densities at each of the data points
-<span class="math inline">\(\{0,..,n\}\)</span> converge meaning, at worst, we get an information content
-of:</p>
-<p><span class="math display">\[
-\begin{aligned}
+<span class="math inline">\(\{0,1,...,n\}\)</span> converge. This means that, at worst, we get an
+information content equal to that of <span class="math inline">\(x=0\)</span>:</p>
+<p><span class="math display">\[\begin{aligned}
 I(n)_{multimodal}
-&amp;= -n\log(PDF(n,0)_{multimodal}) \\
-&amp;= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}} 
-	\; \exp\!\left(-\frac{6\left(0-\frac{n}{2}\right)^2}{n(n+2)}\right)\right) \\
-&amp;= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}} 
-	\; \exp\!\left(-\frac{3n}{2(n+2)}\right)\right) \\
-&amp;= -\frac{n}{2}\log\left(\frac{6}{\pi\,n(n+2)}\right) + \frac{3n^2}{2(n+2)} \\
-&amp;= \frac{n}{2}\log\left(\frac{\pi\,n(n+2)}{6}\right) + \frac{3n^2}{2(n+2)} \\
-\end{aligned}
-\]</span></p>
-<p>which is <span class="math inline">\(O(n)\)</span> and exactly what is expected from the information of a
-data set of size <span class="math inline">\(n\)</span>.</p>
+&amp;= -n\log(PDF(n,0)_{multimodal})\\
+&amp;= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}}
+	\; \exp\!\left(-\frac{6\left(0-\frac{n}{2}\right)^2}{n(n+2)}\right)\right)\\
+&amp;= -n\log\left(\sqrt{\frac{6}{\pi\,n(n+2)}}
+	\; \exp\!\left(-\frac{3n}{2(n+2)}\right)\right)\\
+&amp;= -\frac{n}{2}\log\left(\frac{6}{\pi\,n(n+2)}\right) + \frac{3n^2}{2(n+2)}\\
+&amp;= \frac{n}{2}\log\left(\frac{\pi\,n(n+2)}{6}\right) + \frac{3n^2}{2(n+2)}\\
+\end{aligned}\]</span></p>
+<p>which is <span class="math inline">\(O(n\log n)\)</span>:</p>
+<p><img src="res/gauss/multimodalinfo.svg" /></p>
+<p>This is within expectations. Dividing by <span class="math inline">\(n\)</span>, we get code lengths of
+<span class="math inline">\(O(\log n)\)</span> <em>per integer</em>, which is no more than the complexity of
+distinguishing one among a set of <span class="math inline">\(n\)</span>, which is, informationally
+speaking, needed as the Gaussian prior spreads to cover <span class="math inline">\(O(n)\)</span> values.</p>
 <h4 id="outlier-case">Outlier case</h4>
 <p>For a more degenerate case, consider the probability density at an
-outlier by setting the majority at <span class="math inline">\(0\)</span> and the outlier at <span class="math inline">\(1\)</span> (by
-invariance, this is representative of any outlier case, modulo a
-constant factor):</p>
+outlier by setting the majority on one value (e.g. 0) and a single
+outlier at another (e.g. 1).</p>
 <p><span class="math display">\[\begin{array}{l|c|c|c}
 \text{Data} &amp; s_0 &amp; s_1 &amp; s_2 \\
 \hline
@@ -183,93 +250,71 @@ constant factor):</p>
 \{0,0,...,0,1\} &amp; n &amp; 1 &amp; 1 \\
 \end{array}\]</span></p>
 <p>In general, we get parameters:</p>
-<p><span class="math display">\[\begin{align}
-	\mu &amp;= \frac{s_1}{s_0} = \frac{1}{n}
-\end{align}\]</span></p>
-<p>and</p>
-<p><span class="math display">\[\begin{align}
-	\sigma^2 &amp;~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2} ~=~ \frac{1}{n} - \frac{1}{n^2}
-	~=~ \frac{n-1}{n^2}
-\end{align}\]</span></p>
-<p>The <span class="math inline">\(PDF\)</span> becomes</p>
+<p><span class="math display">\[\mu = \frac{s_1}{s_0} = \frac{1}{n}\]</span></p>
+<p><span class="math display">\[\sigma^2
+	~=~ \frac{s_2}{s_0} - \frac{(s_1)^2}{(s_0)^2}
+	~=~ \frac{1}{n} - \frac{1}{n^2}
+	~=~ \frac{n-1}{n^2}\]</span></p>
+<p>The PDF becomes</p>
 <p><span class="math display">\[\begin{align}
 PDF(n,x)_{outlier}
 &amp;= \frac{1}{\sqrt{2\pi \cdot\frac{n-1}{n^2}}}
 	\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
-&amp;= \frac{n}{\sqrt{2\pi(n-1)}}\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
+&amp;= \frac{n}{\sqrt{2\pi(n-1)}}
+	\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
 \end{align}\]</span></p>
 <p>For the informational content of a data set of size <span class="math inline">\(n\)</span>, we have <span class="math inline">\((n-1)\)</span>
 times <span class="math inline">\(P(0)\)</span> and <span class="math inline">\(P(1)\)</span> once. As <span class="math inline">\(n\)</span> approaches infinity, the density at
-<span class="math inline">\(x=0\)</span> goes beyond <span class="math inline">\(1\)</span>, also approaching infinity, which would produce
-negative information. Bounding the probability of non-outliers at <span class="math inline">\(1\)</span>,
-they contribute an information content of <span class="math inline">\(0\)</span>. The whole of the
-information content thefore comes from the shrinking probability of the
-outlier:</p>
+<span class="math inline">\(x=0\)</span> rises above 1, to infinity, which would produce negative
+information. Bounding the probability of non-outliers at <span class="math inline">\(1\)</span>, they
+contribute an information content of <span class="math inline">\(0\)</span>. The whole of the information
+content then comes from the shrinking probability of the outlier:</p>
 <p><span class="math display">\[\begin{align}
-I(n)_{outlier} &amp;= -\log(PDF(n,1)_{outlier}) \\
-&amp;= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \exp\left(-\frac{n-1}{2}\right)\right) \\
-&amp;= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\left(-\frac{n-1}{2}\right)\right) \\
-&amp;= -\log(n) + \frac{1}{2}\log(2\pi(n-1)) + \frac{n-1}{2} \\
+I(n)_{outlier} &amp;= -\log(PDF(n,1)_{outlier})\\
+&amp;= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \exp\left(-\frac{n-1}{2}\right)\right)\\
+&amp;= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\left(-\frac{n-1}{2}\right)\right)\\
+&amp;= -\log(n) + \frac{1}{2}\log(2\pi(n-1)) + \frac{n-1}{2}\\
 &amp;= \frac{n-1}{2} + \frac{1}{2}\log(2\pi(n-1)) - \log(n)
 \end{align}\]</span></p>
-<p>which is <span class="math inline">\(O(n)\)</span>, again:</p>
+<p>which is <span class="math inline">\(O(n)\)</span>:</p>
 <p><img src="res/gauss/neglnpdf1.svg" /></p>
 <p>We can confirm this trend by computing the information using the real
 assigned probabilities with <span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span> for the first few
 cases:</p>
 <p><img src="res/gauss/outliercasecodelength.svg" /></p>
 <p>with a slope of at little under <span class="math inline">\(2\)</span> bits per number once the line
-settles around <span class="math inline">\(n \sim 20\)</span>. This is subjectively tolerable behavior
-under so-called “worst” conditions.</p>
-<h2 id="an-abstract-arithmetic-coding-interface">An Abstract Arithmetic Coding Interface</h2>
-<p>An implementation of arithmetic coding that works with <em>any</em> model is
-more abstract than what you typically find online. Here is my
-implementation in Rust:</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/nbos/cont-arith-code">Source (GitHub)</a></li>
-<li><a href="res/doc/cont_arith_code/index.html">Documentation</a></li>
-</ul>
-<p>Traits are defined for a “model” that emits “distributions” which are
-repeatedly truncated at cumulative probabilites <span class="math inline">\(\in (0,1)\)</span> until it
-resolves to a specific symbol <span class="math inline">\(s\)</span><code>:i64</code> which is fed back to the
-“model”, updating it, before requesting the next “distribution”.</p>
-<p>Through defining a limited interface:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Index <span class="op">=</span> <span class="dt">i64</span><span class="op">;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> Model<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> next_distr(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> UnivariateDistribution<span class="op">&gt;;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> push(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">,</span> s<span class="op">:</span> <span class="bu">Index</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;</span>T<span class="op">&gt;;</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> UnivariateDistribution <span class="op">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> truncated(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> TruncatedDistribution<span class="op">&gt;;</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> TruncatedDistribution <span class="op">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> quantile(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span>) <span class="op">-&gt;</span> (<span class="bu">Index</span><span class="op">,</span> <span class="dt">f64</span>)<span class="op">;</span> <span class="co">// returns (s, s_rem)</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> truncate(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span> s<span class="op">:</span> <span class="bu">Index</span><span class="op">,</span> s_rem<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span> bit<span class="op">:</span> <span class="dt">bool</span>)<span class="op">;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> lo(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the lower-bound is in</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> hi(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the upper-bound is in</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> is_resolved(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span> <span class="kw">self</span><span class="op">.</span>lo() <span class="op">==</span> <span class="kw">self</span><span class="op">.</span>hi() <span class="op">}</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>the algorithm handles the composition (i.e. nesting) of distributions in
-the code-space, with interfaces for serialization and de-serialization
-of values.</p>
-<p>An
-<a href="res/doc/cont_arith_code/distribution/categorical/struct.Categorical.html">implementation</a>
-for categorical distributions is defined for a typical use-case of
-arithmetic coding.</p>
-<h2 id="gaussian-implementation">Gaussian Implementation</h2>
-<h3 id="tackling-numerical-instability">Tackling Numerical Instability</h3>
+settles around <span class="math inline">\(n \sim 20\)</span>. This is subjectively good behavior under
+so-called “worst” conditions.</p>
+<h2 id="implementation">Implementation</h2>
+<p>The implementation of the actual arithmetic codec algorithm is
+relatively straightforward using the abstract interface we defined,
+ensuring determinism of operations on objects when both encoding and
+decoding.</p>
+<p>The only parts that required special attention was implementing the
+non-trivial methods <code>quantile</code> and <code>truncate</code> for the Gaussian
+implementation of the trait:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Index <span class="op">=</span> <span class="dt">i64</span><span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> TruncatedDistribution <span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> quantile(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span>) <span class="op">-&gt;</span> (<span class="bu">Index</span><span class="op">,</span> <span class="dt">f64</span>)<span class="op">;</span> <span class="co">// returns (s, s_rem)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> truncate(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span> s<span class="op">:</span> <span class="bu">Index</span><span class="op">,</span> s_rem<span class="op">:</span> <span class="dt">f64</span><span class="op">,</span> bit<span class="op">:</span> <span class="dt">bool</span>)<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> lo(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the lower-bound is in</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> hi(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the upper-bound is in</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> is_resolved(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span> <span class="kw">self</span><span class="op">.</span>lo() <span class="op">==</span> <span class="kw">self</span><span class="op">.</span>hi() <span class="op">}</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
 \mapsto \infty\)</span>.</p>
 <p><img src="res/gauss/cdfquantile.svg" /></p>
-<p>For our application, what’s important is that <em>repeatedly splitting</em> in
-half an interval of the probability mass down to any symbol to encode
-happens with <em>constant progress</em> (i.e. the middle of any interval cannot
-be equal to either boundaries) and no overflow to any infinity. This
-reflects on the CDF and quantile by requiring the following: any two
-bounds <span class="math inline">\(a,b\)</span> such that <span class="math inline">\(0&lt;a&lt;b&lt;1\)</span> and where both bounds are not already
-within the bounds of a symbol, then the middle point <code>quantile(cdf(a) + 0.5*(cdf(b) - cdf(a)))</code> must be strictly greater than <code>a</code> and strictly
-less than <code>b</code>. If it is not, encoding becomes impossible.</p>
+<p>For our application, what’s important is that the <code>quantile</code> function
+maps onto the symbol space in amounts commensurate with the given
+cumulative probability <span class="math inline">\(\in [0,1]\)</span>. Inaccuracy in this regard is not
+prohibitive for coding, but will result in longer codes than necessary
+(assuming models are well fit to the data).</p>
+<p>It is required, however, that while a truncated distribution is not yet
+resolved, <code>quantile(0.5)</code> returns an index-remainder pair that is
+different than either <code>quantile(0.0)</code> (the lower-bound) or
+<code>quantile(1.0)</code> (the upper-bound), or the program loops.</p>
+<h3 id="tackling-numerical-instability">Tackling Numerical Instability</h3>
 <p>An easy measure to ensure progress might be to fall back to <em>linear</em>
 interpolation whenever the call to the quantile function runs out of
 precision, assuming local linearity. While this is a reasonable
@@ -310,81 +355,81 @@ and quantile-exp
 (<a target="_blank" rel="noopener" href="https://github.com/scipy/scipy/blob/ab84560b96cf5816be0015b0ee3a41cef708f675/scipy/special/_ndtri_exp.pxd#L163">source</a>). This
 affords us the precise interpolations on the probability mass of the
 Gaussian we require, at least for now.</p>
-<h2 id="examples">Examples</h2>
+<h2 id="verification">Verification</h2>
 <p>For the examples below, <em>information content</em> is calculated as the sum
 of the <span class="math inline">\(\log_2\)</span>-probabilities of each integer in the distribution. The
 <em>expected code length</em> is that value rounded up. <em>Code length</em> is the
 empirical result. All codes decode back to the encoded values.</p>
 <h3 id="degenerate-case">Degenerate Case</h3>
 <p>Integer sets with a single value produce empty codes:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>]</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">0</span> } (<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="dv">0</span> bits</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">0</span> bits</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">''</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">1</span>]</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">1</span>, σ: <span class="dv">0</span> } (<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="dv">0</span> bits</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">0</span> bits</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">''</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>]</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">8</span>, σ: <span class="dv">0</span> } (<span class="dv">12</span>, <span class="dv">96</span>, <span class="dv">768</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="dv">0</span> bits</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">0</span> bits</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">''</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>]</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">0</span> } (<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="dv">0</span> bits</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">0</span> bits</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">''</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">1</span>]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">1</span>, σ: <span class="dv">0</span> } (<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="dv">0</span> bits</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">0</span> bits</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">''</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>]</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">8</span>, σ: <span class="dv">0</span> } (<span class="dv">12</span>, <span class="dv">96</span>, <span class="dv">768</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="dv">0</span> bits</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">0</span> bits</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">''</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
 <h3 id="small-sets">Small Sets</h3>
 <p>Small symmetric sets produce consistently optimal codes:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>]</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">1</span> } (<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">4.0970591008090445</span> bits</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">5</span> bits</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">2.05</span>, <span class="fl">2.05</span>]</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'01010'</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">5</span> bits</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>Set: [<span class="op">-</span><span class="dv">1234</span>, <span class="dv">1234</span>]</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">1234</span> } (<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">3045512</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">24.632444528661186</span> bits</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">25</span> bits</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">12.32</span>, <span class="fl">12.32</span>]</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'0010100010100110000100000'</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">25</span> bits</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">1</span>, <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="fl">0.816496580927726</span> } (<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">5.274689097597744</span> bits</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">6</span> bits</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">2.08</span>, <span class="fl">1.12</span>, <span class="fl">2.08</span>]</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'111000'</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">6</span> bits</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">1</span> } (<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">4.0970591008090445</span> bits</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">5</span> bits</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">2.05</span>, <span class="fl">2.05</span>]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'01010'</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">5</span> bits</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>Set: [<span class="op">-</span><span class="dv">1234</span>, <span class="dv">1234</span>]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">1234</span> } (<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">3045512</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">24.632444528661186</span> bits</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">25</span> bits</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">12.32</span>, <span class="fl">12.32</span>]</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'0010100010100110000100000'</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">25</span> bits</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>Decoding successful</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">1</span>, <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="fl">0.816496580927726</span> } (<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">5.274689097597744</span> bits</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">6</span> bits</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">2.08</span>, <span class="fl">1.12</span>, <span class="fl">2.08</span>]</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'111000'</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">6</span> bits</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
 <h3 id="outlier-case-1">Outlier Case</h3>
 <p>Outlier cases like this one (<span class="math inline">\(n = 10\)</span>):</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>]</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="fl">0.1</span>, σ: <span class="fl">0.3</span> } (<span class="dv">10</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">5.0256952907839185</span> bits</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">6</span> bits</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">3.45</span>]</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'1001110'</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">7</span> bits</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">1</span> bits (<span class="op">+</span><span class="fl">16.7</span><span class="op">%</span>) compared to expected</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>]</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="fl">0.1</span>, σ: <span class="fl">0.3</span> } (<span class="dv">10</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>Information Content: <span class="fl">5.0256952907839185</span> bits</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>Expected code length: <span class="dv">6</span> bits</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>Information Contributions (bits): [<span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">0.17</span>, <span class="fl">3.45</span>]</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>Code: <span class="st">'1001110'</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">7</span> bits</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">1</span> bits (<span class="op">+</span><span class="fl">16.7</span><span class="op">%</span>) compared to expected</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
 <p>are generated between <span class="math inline">\(n = 1\)</span> and <span class="math inline">\(n = 100\)</span>, reproducing the plot from
 an earlier section:</p>
 <p><img src="res/gauss/outlierresults.svg" /></p>
