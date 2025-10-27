@@ -1,0 +1,21 @@
+import math
+
+# Dictionary of letter frequencies
+letter_freq = {
+    'e': 12.7, 't': 9.06, 'a': 8.17, 'o': 7.51, 'i': 6.97, 'n': 6.75,
+    's': 6.33, 'h': 6.09, 'r': 5.99, 'd': 4.25, 'l': 4.03, 'c': 2.78,
+    'u': 2.76, 'm': 2.41, 'w': 2.36, 'f': 2.23, 'g': 2.02, 'y': 1.97,
+    'p': 1.93, 'b': 1.49, 'v': 0.978, 'k': 0.772, 'j': 0.153, 'x': 0.15,
+    'q': 0.095, 'z': 0.074
+}
+
+def calculate_entropy(frequencies):
+    total = sum(frequencies.values())
+    probabilities = {k: v / total for k, v in frequencies.items()}
+    entropy = 0
+    for p in probabilities.values():
+        entropy -= p * math.log2(p)
+    return entropy
+
+entropy = calculate_entropy(letter_freq)
+print(f"The entropy of the English letter distribution is {entropy:.6f} bits")

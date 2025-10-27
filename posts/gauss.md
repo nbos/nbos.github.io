@@ -1,7 +1,7 @@
 ---
 title: "Encoding Numbers with Gaussians"
 author: Nathaniel Bos
-date: 2025-10-27
+date: 2025-10-26
 ---
 
 [Arithmetic codes](arith.html) are pretty useful for compression.

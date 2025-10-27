@@ -26,7 +26,7 @@
       <h1>Ways to Count Information</h1>
       <article>
   <section class="header">
-    Posted on March 23, 2025
+    Posted on October 27, 2025
     
     by Nathaniel Bos
     
@@ -64,9 +64,12 @@ proportional to its frequency in the data (i.e. the
 you work out the information content of the full sequence against its
 categorical MLE, that comes out to</p>
 <p><span class="math display">\[\begin{align}
-\mathrm{I}(X) &amp;= -n_0 \log p(x_0) - n_1 \log p(x_1) - n_2 \log p(x_2) -\ ...\\[8pt]
-&amp;= -n_0 \log \left(\frac{n_0}{N}\right) - n_1 \log \left(\frac{n_1}{N}\right) - n_2 \log \left(\frac{n_2}{N}\right) -\ ... \\[8pt]
-&amp;= \left(\sum_i n_i\right) \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ... \\[8pt]
+\mathrm{I}(X)
+&amp;= -n_0 \log p(x_0) - n_1 \log p(x_1) - n_2 \log p(x_2) -\ ...\\[8pt]
+&amp;= -n_0 \log \left(\frac{n_0}{N}\right) - n_1 \log \left(\frac{n_1}{N}\right)
+	- n_2 \log \left(\frac{n_2}{N}\right) -\ ... \\[8pt]
+&amp;= \left(\sum_i n_i\right) \log N -n_0 \log n_0 - n_1 \log n_1
+	- n_2 \log n_2 -\ ... \\[8pt]
 &amp;= N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...,
 \ \end{align}\]</span></p>
 <p>which conveniently isolates our integer parameters into distinct
@@ -101,9 +104,13 @@ probability at that point:</p>
 &amp;= \log(N+1) -\log (n_i+1)\end{align}\]</span></p>
 <p>which integrates into the factorials by the product property of
 logarithms:</p>
-<p><span class="math display">\[\begin{align}&amp;~ \log(N!) + \log(N+1) -\log(n_0!) -\ ...\ -\log(n_i!) - \log(n_i+1) -\ ... \\[8pt]
-&amp;=\ \log(N! \cdot (N + 1)) -\log(n_0!) -\ ...\ - \log(n_i! \cdot (n_i + 1)) -\ ... \\[8pt]
-&amp;=\ \log((N + 1)!) -\log(n_0!) -\ ...\ -\ \log((n_i + 1)!) -\ ...,\end{align}\]</span></p>
+<p><span class="math display">\[\begin{align}
+&amp;~ \log(N!) + \log(N+1) -\log(n_0!) -\ ...\
+	-\log(n_i!) - \log(n_i+1) -\ ... \\[8pt]
+&amp;=\ \log(N! \cdot (N + 1)) -\log(n_0!) -\ ...\
+	- \log(n_i! \cdot (n_i + 1)) -\ ... \\[8pt]
+&amp;=\ \log((N + 1)!) -\log(n_0!) -\ ...\
+	-\ \log((n_i + 1)!) -\ ...,\end{align}\]</span></p>
 which is our formula with updated parameters.
 <div style="text-align: right">
 <span class="math inline">\(\blacksquare\)</span>
@@ -113,15 +120,17 @@ which is our formula with updated parameters.
 grows at the same rate as <span class="math inline">\(\log (n!)\)</span> and the former is used to
 approximate the latter, as seen in <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling’s
 approximation</a></p>
-<p><span class="math display">\[\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n) + O\left(\frac{1}{n}\right)\]</span></p>
-<p><img src="res/count/stirling.png" /></p>
+<p><span class="math display">\[\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n)
+	+ O\left(\frac{1}{n}\right)\]</span></p>
+<p><img src="res/count/stirling.svg" /></p>
 <p>or even <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Srinivasa_Ramanujan">Ramanujan</a>’s
 more precise version:</p>
-<p><span class="math display">\[\log(n!) = n\log n - n\log e+\frac{1}{6}\log(n(1+4n(1+2n)))+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)\]</span></p>
-<p><img src="res/count/ramanujan.png" /></p>
+<p><span class="math display">\[\log(n!) = n\log n - n\log e+\frac{1}{6}\log(n(1+4n(1+2n)))+\frac{1}{2}\log \pi
+	+ O\left(\frac{1}{n^3}\right)\]</span></p>
+<p><img src="res/count/ramanujan.svg" /></p>
 <p>but these additional terms correct a consistent and significant
 difference between the two functions:</p>
-<p><img src="res/count/difference.png" /></p>
+<p><img src="res/count/difference.svg" /></p>
 <p>which definitely translates to the information content of categorical
 MLE’s w/ vs. w/o replacement, but how much so is not
 obvious. Experiments on random strings reveals that the w/ replacement
@@ -129,24 +138,9 @@ requires anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)
 more information to encode the same string than doing it w/o replacement
 (<a href="res/count/table.html">full table</a>):</p>
-<pre><code>+-----+------+-----+-------------+------------+------------+-----------+
-|   # |    N |   m | N log(N)... | log(N!)... |   (verif.) | delta (%) |
-+=====+======+=====+=============+============+============+===========+
-|   1 |  828 |   2 |    573.634  |   570.048  |   570.048  |  0.628937 |
-+-----+------+-----+-------------+------------+------------+-----------+
-|   2 | 4193 |  31 |  14378.1    | 14278.7    | 14278.7    |  0.696137 |
-+-----+------+-----+-------------+------------+------------+-----------+
-| ... |  ... | ... |      ...    |     ...    |     ...    |  ...      |
-+-----+------+-----+-------------+------------+------------+-----------+
-|  83 |  290 |   9 |    630.094  |   610.039  |   610.039  |  3.28758  |
-+-----+------+-----+-------------+------------+------------+-----------+
-|  84 | 3764 |   4 |   5217.54   |  5205.2    |  5205.2    |  0.236958 | (-)
-+-----+------+-----+-------------+------------+------------+-----------+
-|  85 |   14 |  11 |     32.7879 |    23.1118 |    23.1118 | 41.8667   | (+)
-+-----+------+-----+-------------+------------+------------+-----------+
-|  86 |  104 |   2 |     72.0104 |    69.4607 |    69.4607 |  3.67064  |
-+-----+------+-----+-------------+------------+------------+-----------+
-| ... |  ... | ... |      ...    |     ...    |     ...    |  ...      |</code></pre>
+<p>$$$$
+<img src="res/count/table_abbrev.svg" /></p>
+<p>$$$$</p>
 <p>where <span class="math inline">\(N\)</span> is the length of the string, <span class="math inline">\(m\)</span> is the size of the alphabet,
 the information content is computed w/ and w/o replacement according to
 the formulae and the w/o replacement value is confirmed through the sum
