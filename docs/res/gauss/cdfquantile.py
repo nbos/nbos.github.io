@@ -15,7 +15,7 @@ fig, axes = plt.subplots(1, 2, figsize=(8, 4))  # Two plots side by side
 # Plot the CDF on the left
 axes[0].plot(x_values, cdf_values, 'k-', linewidth=1.5)  # Black line
 axes[0].grid(True, alpha=0.3)
-axes[0].set_xlabel('x', fontsize=12)
+axes[0].set_xlabel('z', fontsize=12)
 axes[0].set_ylabel('Cumulative Probability', fontsize=12)
 axes[0].set_title('CDF', fontsize=12)
 axes[0].axhline(y=0, color='k', linestyle='-', alpha=0.3)
@@ -26,7 +26,7 @@ axes[0].tick_params(axis='both', which='major', labelsize=10)
 axes[1].plot(p_values, quantile_values, 'k-', linewidth=1.5)  # Black line
 axes[1].grid(True, alpha=0.3)
 axes[1].set_xlabel('Cumulative Probability', fontsize=12)
-axes[1].set_ylabel('x', fontsize=12)
+axes[1].set_ylabel('z', fontsize=12)
 axes[1].set_title('Quantile Function', fontsize=12)
 axes[1].axhline(y=0, color='k', linestyle='-', alpha=0.3)
 axes[1].axvline(x=0.5, color='k', linestyle='-', alpha=0.3)
