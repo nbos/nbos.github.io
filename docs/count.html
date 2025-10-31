@@ -26,83 +26,86 @@
       <h1>Ways to Count Information</h1>
       <article>
   <section class="header">
-    Posted on October 27, 2025
+    Posted on October 31, 2025
     
     by Nathaniel Bos
     
   </section>
   <section>
-    <p>This note exists mainly because I couldn’t find much about this online.</p>
-<h2 id="information-from-probability">Information From Probability</h2>
-<p>When compressing data with <a href="arith.html">arithmetic coding</a>, the length
-of the produced code is equal to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
-content</a> of the data
-(rounded to the next integer) with respect to the probabilistic model
-used. It takes 1 bit to encode a coin flip, 2.58496 to encode a dice
-roll, 4.70044 for a letter of the alphabet. If you know the relative
-frequency of letters in English, you only need about 4.18, if you know
-the frequency of words, it goes down to about 2.62 per letter, and you
-can imagine knowing grammar rules or even general knowledge would bring
-it even further down.</p>
-<p>In general, the formula for information content is</p>
-<p><span class="math display">\[\mathrm{I}(x)=-\log p(x),\]</span></p>
-<p>where <span class="math inline">\(p(x)\)</span> is the probability of <span class="math inline">\(x\)</span>. The information content of a
+    <p>In data compression with <a href="arith.html">arithmetic coding</a>, the length of
+the produced code is within 2 bits of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
+content</a> of the
+encoded data, which you get from the probability:</p>
+<p><span class="math display">\[I(x)=-\log P(x).\]</span></p>
+<p>where <span class="math inline">\(P(x)\)</span> is the probability of <span class="math inline">\(x\)</span>. The information content of a
 sequence of events or symbols is just the sum of the information
-contents of each, just like the concatenated codes will have length
-equal to the sum of individual codes.</p>
-<h2 id="categorical-with-replacement">Categorical With Replacement</h2>
+contents of each, just as the concatenated codes will have length equal
+to the sum of individual codes.</p>
+<h2 id="information-of-the-categorical-mle">Information of the Categorical MLE</h2>
 <p>For a sequence of <span class="math inline">\(N\)</span> symbols with individual frequencies <span class="math inline">\(n_0, n_1,
 n_2, ...\)</span>, such that</p>
 <p><span class="math display">\[\sum_i{n_i} = N,\]</span></p>
 <p>the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
 model</a> giving
-the shortest code length, i.e the highest
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Likelihood_function">likelihood</a> to the
-data, is the one where the probability assigned to each symbol is
-proportional to its frequency in the data (i.e. the
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">MLE</a>). If
+the shortest code length is the one where the probability assigned to
+each symbol is proportional to its frequency in the data, i.e. the MLE
+(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">maximum likelihood
+estimator</a>). If
 you work out the information content of the full sequence against its
-categorical MLE, that comes out to</p>
-<p><span class="math display">\[\begin{align}
-\mathrm{I}(X)
+categorical MLE, it comes out to</p>
+<p><span class="math display">\[\begin{align} I(\mathrm{\bf x})
 &amp;= -n_0 \log p(x_0) - n_1 \log p(x_1) - n_2 \log p(x_2) -\ ...\\[8pt]
 &amp;= -n_0 \log \left(\frac{n_0}{N}\right) - n_1 \log \left(\frac{n_1}{N}\right)
 	- n_2 \log \left(\frac{n_2}{N}\right) -\ ... \\[8pt]
 &amp;= \left(\sum_i n_i\right) \log N -n_0 \log n_0 - n_1 \log n_1
 	- n_2 \log n_2 -\ ... \\[8pt]
-&amp;= N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...,
+&amp;= N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...
 \ \end{align}\]</span></p>
-<p>which conveniently isolates our integer parameters into distinct
-terms. This formula, then, is the length of the arithmetic code of a
-sequence if every symbol is predicted according to the MLE categorical
-fitted to the sequence.</p>
-<p>Note, however, that it’s easy to algorithmically improve on this code
-length if the probabilistic model docks counts of symbols as they
-appear, improving the likelihood of symbols down the sequence compared
-to the “static” model.</p>
+<p>This formula, then, is the length of the arithmetic code of a sequence
+if every symbol is predicted according to the MLE categorical fitted to
+the sequence.</p>
+<p>Note, however, that using the same categorical distribution, it would be
+easy to improve the likelihood of symbols (and thus code length) if the
+model was <em>updated</em> after each occurrence of a symbol, docking the count
+of that symbol in our probability distribution, effectively maintaining
+a more accurate MLE of the tail of the sequence rather than the MLE of
+the whole sequence.</p>
+<p>The distinction between a “static” or “updating” categorical modeling a
+sequence of symbols is essentially the one between sampling a
+distribution <em>“with replacement”</em> (keeping the distribution the same for
+the next sample) or <em>“without replacement”</em> (removing the sampled
+element from the distribution).</p>
 <h2 id="categorical-without-replacement">Categorical Without Replacement</h2>
-<p>It can be proven that the information content of the categorical MLE
-<em>without replacement</em> (i.e. that docks counts with each observation)
-follows this formula:</p>
-<p><span class="math display">\[\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...,\]</span></p>
-<p>Although the factorial is unkind to an algebraic treatment, we can show
-this is true by induction from the end of the sequence towards the left.</p>
+<p>I can’t derive the equivalent formula for the information content of the
+categorical <em>without replacement</em>, but a proof that it is equal to</p>
+<p><span class="math display">\[\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...\]</span></p>
+<p>is relatively straightforward.</p>
+<p>By induction from the end of the sequence towards the start:</p>
 <p><span class="math inline">\(\texttt{Proof:}\)</span></p>
 <!-- **Case N=0:** All parameters are zero and the code is also null. -->
 <p><strong>Case N=1:</strong> For the sequence with 1 element, <span class="math inline">\(N = 1\)</span> and <span class="math inline">\(n_0 = 1\)</span>, so</p>
-<p><span class="math display">\[\log(1!) - \log(1!) = 0,\]</span></p>
-<p>as in the arithmetic code where the probability of the only symbol <span class="math inline">\(x_0\)</span>
-is 1 so the code is empty.</p>
+<p><span class="math display">\[\begin{align}
+\log(N!) -\log(n_0!)
+&amp;= \log(1!) - \log(1!) \\
+&amp;= 0,
+\end{align}\]</span></p>
+<p>which corresponds to the information content of a symbol with
+probability 1:</p>
+<p><span class="math display">\[\begin{align}
+I(x_0) &amp;= -\log P(x_0)_1 \\
+	&amp;= -\log 1 \\
+	&amp;= 0.
+\end{align}\]</span></p>
 <p><strong>Case N+1:</strong> For an additional symbol <span class="math inline">\(x_i\)</span>, given that the length of
 the code for the rest of the string is</p>
 <p><span class="math display">\[\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...,\]</span></p>
 <p>for any count <span class="math inline">\(n_i\)</span> of that symbol in the rest of the string (including
-0), the additional code for that symbol has length as a function of its
-probability at that point:</p>
-<p><span class="math display">\[\begin{align}\mathrm{I}(x_i)_{N+1} &amp;= -\log p(x_i)_{N+1} \\[8pt]
+0 for a new symbol), the additional information from that symbol is a
+function of its probability at that point:</p>
+<p><span class="math display">\[\begin{align}I(x_i)_{N+1} &amp;= -\log P(x_i)_{N+1} \\[8pt]
 &amp;= -\log \left(\frac{n_i+1}{N+1}\right) \\[8pt]
 &amp;= \log(N+1) -\log (n_i+1)\end{align}\]</span></p>
-<p>which integrates into the factorials by the product property of
+<p>which distributes into the factorials by the product property of
 logarithms:</p>
 <p><span class="math display">\[\begin{align}
 &amp;~ \log(N!) + \log(N+1) -\log(n_0!) -\ ...\
@@ -111,85 +114,111 @@ logarithms:</p>
 	- \log(n_i! \cdot (n_i + 1)) -\ ... \\[8pt]
 &amp;=\ \log((N + 1)!) -\log(n_0!) -\ ...\
 	-\ \log((n_i + 1)!) -\ ...,\end{align}\]</span></p>
-which is our formula with updated parameters.
+which is the formula with updated parameters.
 <div style="text-align: right">
 <span class="math inline">\(\blacksquare\)</span>
 </div>
+<p>Of note is that the <em>order</em> in which symbols appear in the sequence
+(e.g. whether identical symbols are grouped together at the beginning,
+clearing them out for the rest of the inference, or not) has no bearing
+on the information content of a <em>without replacement</em> strategy. It is
+uniquely determined by the length (<span class="math inline">\(N\)</span>) and bin sizes (<span class="math inline">\(n_0, n_1, n_2,
+...\)</span>) with no regard to the actual structure of the sequence.</p>
 <h2 id="discussion">Discussion</h2>
-<p>It is well known that <span class="math inline">\(n \log n\)</span> (i.e. <span class="math inline">\(\log(n^n)\)</span>) asymptotically
-grows at the same rate as <span class="math inline">\(\log (n!)\)</span> and the former is used to
-approximate the latter, as seen in <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling’s
-approximation</a></p>
+<p>So how much smaller is the information of a sequenced modeled <em>without
+replacement</em>:</p>
+<p><span class="math display">\[\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...\]</span></p>
+<p>than one modeled <em>with replacement</em>:</p>
+<p><span class="math display">\[N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...\\[10pt]\]</span></p>
+<p>Obviously, we have that, for <span class="math inline">\(n &gt; 0\)</span>:</p>
+<p><span class="math display">\[\log(n!) &lt; n\log n,\]</span></p>
+<p>because <span class="math inline">\(n\log n = \log(n^n)\)</span> and <span class="math inline">\(n! &lt; n^n\)</span>. Asymptotically, however:</p>
+<p><span class="math display">\[O(\log(n!)) = O(n\log n)\]</span></p>
+<p>as demonstrated by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling’s
+approximation</a>
+of <span class="math inline">\(\log(n!)\)</span> where the leading terms is <span class="math inline">\(n\log n\)</span>:</p>
 <p><span class="math display">\[\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n)
 	+ O\left(\frac{1}{n}\right)\]</span></p>
 <p><img src="res/count/stirling.svg" /></p>
-<p>or even <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Srinivasa_Ramanujan">Ramanujan</a>’s
-more precise version:</p>
-<p><span class="math display">\[\log(n!) = n\log n - n\log e+\frac{1}{6}\log(n(1+4n(1+2n)))+\frac{1}{2}\log \pi
-	+ O\left(\frac{1}{n^3}\right)\]</span></p>
+<p>or <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Srinivasa_Ramanujan">Ramanujan</a>’s more
+precise approximation:</p>
+<p><span class="math display">\[\begin{align}
+\log(n!) =~&amp;n\log n - n\log e \\
+	&amp;+\frac{1}{6}\log(n(1+4n(1+2n))) \\
+	&amp;+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)
+\end{align}\]</span></p>
 <p><img src="res/count/ramanujan.svg" /></p>
-<p>but these additional terms correct a consistent and significant
-difference between the two functions:</p>
+<p>but these additional terms correct a mostly constant factor <span class="math inline">\(n\log e\)</span>
+between the two functions:</p>
 <p><img src="res/count/difference.svg" /></p>
-<p>which definitely translates to the information content of categorical
-MLE’s w/ vs. w/o replacement, but how much so is not
-obvious. Experiments on random strings reveals that the w/ replacement
-requires anywhere from 0.2% (on the longest strings with the smallest
+<p>How this difference affects different parametrizations of a categorical
+is less obvious.</p>
+<p>Experiments on a small sample of random strings of different lengths
+(<span class="math inline">\(N\)</span>) and number of symbols (<span class="math inline">\(m\)</span>) reveals that <em>with replacement</em>
+contains anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)
-more information to encode the same string than doing it w/o replacement
-(<a href="res/count/table.html">full table</a>):</p>
+more information than <em>without replacement</em>
+(<a href="res/count/examples.py">code</a>, <a href="res/count/table.html">full table</a>):</p>
 <p>$$$$
 <img src="res/count/table_abbrev.svg" /></p>
 <p>$$$$</p>
-<p>where <span class="math inline">\(N\)</span> is the length of the string, <span class="math inline">\(m\)</span> is the size of the alphabet,
-the information content is computed w/ and w/o replacement according to
-the formulae and the w/o replacement value is confirmed through the sum
-of the individual information of each symbol (simulating an adaptive
-model), validating our proof. Lastly, the percentage difference
-w.r.t. the information content w/o replacement.</p>
-<p>What’s surprising is that there is no way for the order of the symbols
-to affect the performance of a w/o replacement strategy. One would think
-having all the instances of some symbol organized together (e.g. at the
-beginning) would help an inference w/o replacement by getting them “out
-of the way”, but the formula is simply not affected by the order of the
-symbols in the string.</p>
-<p>Finally, let’s address the <strong>combinatorial</strong> connection hinted so far by
-our choice of vocabulary. Our formula for information content w/o
-replacement is equal to the <span class="math inline">\(\log\)</span> of the so-called <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multinomial_theorem">multinomial
+<p>where the information content is computed <em>with</em> and <em>without
+replacement</em> according to the formulae and the <em>without</em> value is
+confirmed through the sum of the individual information of each symbol
+(simulating an updating model), validating our proof.</p>
+<p>Since larger values of <span class="math inline">\(N\)</span> increase the information content of strings
+of both <em>with</em> or <em>without replacement</em>, the difference comes from
+whether the <span class="math inline">\(N\)</span> values are distributed between fewer distinct symbols
+(less change to the distribution per update, less difference between
+methods) or more uniformly between many values (more change to the
+distribution per update, more difference between methods).</p>
+<h3 id="combinatorial-view">Combinatorial View</h3>
+<p>At this point, the combinatorial interpretation begs to be mentioned.</p>
+<p>Our formula for information content <em>without replacement</em> is simply
+equal to the <span class="math inline">\(\log\)</span> of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multinomial_theorem">multinomial
 coefficient</a>:</p>
-<p><span class="math display">\[\begin{align}
-\mathrm{I}(X) &amp;= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
+<p><span class="math display">\[\begin{align} I(\mathrm{\bf x})
+&amp;= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
 &amp;= \log \left(\frac {N!}{n_0!\ n_1!\ n_2!\ \cdots}\right) \\[8pt]
-&amp;= \log {N \choose n_0,n_1,n_2,\ldots},\ \end{align}\]</span></p>
+&amp;= \log \left(N \choose n_0,n_1,n_2,\ldots\right),\ 
+\end{align}\]</span></p>
 <p>which is the number of ways a sequence of <span class="math inline">\(N\)</span> objects with equivalence
-classes of sizes <span class="math inline">\(n_0, n_1, n_2, ...\)</span>, where</p>
-<p><span class="math display">\[\sum_i{n_i} = N.\]</span></p>
-<p>So this whole derivation about probabilities and mutation of a
-probabilistic model is equivalent to the <span class="math inline">\(\log\)</span> of the number of
-possible strings given the same parameters. In the two cases where we
-restrict the space as much as the parameters allow, we get the same
-result.</p>
-<h2 id="information-from-variety">Information From Variety</h2>
-<p>This motivates an alternative definition of information, the one in term
-of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a>. Much
-simpler in my opinion; there are no negations, no normalization, just</p>
-<p><span class="math display">\[\mathrm{I}(X)= \log \left(V(X)\right),\]</span></p>
-<p>where <span class="math inline">\(V(X)\)</span> is the <strong>variety</strong>, or number of states a system <span class="math inline">\(X\)</span> can
-find itself in. In terms of the probabilistic definition, it’s as if
-every state had equal probability:</p>
-<p><span class="math display">\[\begin{align}\mathrm{I}(x) &amp;= -\log p(x) \\[5pt]
+classes of sizes <span class="math inline">\(n_0, n_1, n_2, ...\)</span>, where <span class="math inline">\(N = \sum_i{n_i}\)</span>.</p>
+<p>A derivation based on probabilities and mutation of a probabilistic
+model reduces to the <span class="math inline">\(\log\)</span> of the number of possible strings given the
+same parameters.</p>
+<!-- Unfortunately, no such interpretation can be drawn from the formula of -->
+<!-- the case *with replacement* as it is not the $\log$ of an integer value -->
+<!-- in general. -->
+<h3 id="information-from-variety">Information From Variety</h3>
+<p>This motivates a simpler description of information.</p>
+<p>If the probabilistic model is equivalent to one with <span class="math inline">\(N\)</span> equiprobable
+states, the denominator position of the size cancels out the negation of
+the <span class="math inline">\(\log,\)</span> leaving only:</p>
+<p><span class="math display">\[\begin{align}I(x)
+&amp;= -\log P(x) \\[5pt]
 &amp;= -\log \left(\frac{1}{N}\right) \\[5pt]
-&amp;= \log N.\end{align}\]</span></p>
-<p>But even the probabilistic definition makes more sense in terms of
-variety as long as the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Frequentist_probability">probability is a
-ratio</a>:</p>
-<p><span class="math display">\[\begin{align}\mathrm{I}(x_i) &amp;= -\log p(x_i) \\[5pt]
+&amp;= \log N. \\[5pt]
+&amp;
+\end{align}\]</span></p>
+<p>This applies more generally to information relating to
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a>, which is
+simply:</p>
+<p><span class="math display">\[I(x) = \log \left(V(X)\right),\]</span></p>
+<p>where <span class="math inline">\(V(X)\)</span> is the <strong>variety</strong>, or number of states a system <span class="math inline">\(X\)</span> can
+find itself in.</p>
+<p>$$$$</p>
+<p>Even when the probabilities are not equal, but derived from
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Frequentist_probability">frequencies</a>:</p>
+<p><span class="math display">\[\begin{align} I(x_i)
+&amp;= -\log P(x_i) \\[5pt]
 &amp;= -\log \left(\frac{n_i}{N}\right) \\[5pt]
-&amp;= \log N - \log n_i.\end{align}\]</span></p>
-<p>That is, the information content of a part (<span class="math inline">\(n_i\)</span>) in a whole (<span class="math inline">\(N\)</span>) is
-the information to specify one among the whole (<span class="math inline">\(\log N\)</span>) minus the
-information to specify one among the part (<span class="math inline">\(\log n_i\)</span>), like an interval
-between <span class="math inline">\(n\)</span> and <span class="math inline">\(N\)</span> in <span class="math inline">\(\log\)</span>-space.</p>
+&amp;= \log N - \log n_i.
+\end{align}\]</span></p>
+<p>the information content of a part (<span class="math inline">\(n_i\)</span>) from a whole (<span class="math inline">\(N\)</span>) can be
+interpreted as the information to specify one among the whole (<span class="math inline">\(\log N\)</span>)
+minus the information to specify one among the part (<span class="math inline">\(\log n_i\)</span>)—like
+an interval between <span class="math inline">\(n_i\)</span> and <span class="math inline">\(N\)</span> in <span class="math inline">\(\log\)</span>-space.</p>
   </section>
   <footer>
     <a href="./">Return</a>

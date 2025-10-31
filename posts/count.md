@@ -1,34 +1,22 @@
 ---
 title: "Ways to Count Information"
 author: Nathaniel Bos
-date: 2025-10-27
+date: 2025-10-31
 ---
 
-This note exists mainly because I couldn't find much about this online.
+In data compression with [arithmetic coding](arith.html), the length of
+the produced code is within 2 bits of the [information
+content](https://en.wikipedia.org/wiki/Information_content) of the
+encoded data, which you get from the probability:
 
-## Information From Probability
+$$I(x)=-\log P(x).$$
 
-When compressing data with [arithmetic coding](arith.html), the length
-of the produced code is equal to the [information
-content](https://en.wikipedia.org/wiki/Information_content) of the data
-(rounded to the next integer) with respect to the probabilistic model
-used. It takes 1 bit to encode a coin flip, 2.58496 to encode a dice
-roll, 4.70044 for a letter of the alphabet. If you know the relative
-frequency of letters in English, you only need about 4.18, if you know
-the frequency of words, it goes down to about 2.62 per letter, and you
-can imagine knowing grammar rules or even general knowledge would bring
-it even further down.
-
-In general, the formula for information content is
-
-$$\mathrm{I}(x)=-\log p(x),$$
-
-where $p(x)$ is the probability of $x$. The information content of a
+where $P(x)$ is the probability of $x$. The information content of a
 sequence of events or symbols is just the sum of the information
-contents of each, just like the concatenated codes will have length
-equal to the sum of individual codes.
+contents of each, just as the concatenated codes will have length equal
+to the sum of individual codes.
 
-## Categorical With Replacement
+## Information of the Categorical MLE
 
 For a sequence of $N$ symbols with individual frequencies $n_0, n_1,
 n_2, ...$, such that
@@ -37,44 +25,49 @@ $$\sum_i{n_i} = N,$$
 
 the [categorical
 model](https://en.wikipedia.org/wiki/Categorical_distribution) giving
-the shortest code length, i.e the highest
-[likelihood](https://en.wikipedia.org/wiki/Likelihood_function) to the
-data, is the one where the probability assigned to each symbol is
-proportional to its frequency in the data (i.e. the
-[MLE](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation)). If
+the shortest code length is the one where the probability assigned to
+each symbol is proportional to its frequency in the data, i.e. the MLE
+([maximum likelihood
+estimator](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation)). If
 you work out the information content of the full sequence against its
-categorical MLE, that comes out to
+categorical MLE, it comes out to
 
-$$\begin{align}
-\mathrm{I}(X)
+$$\begin{align} I(\mathrm{\bf x})
 &= -n_0 \log p(x_0) - n_1 \log p(x_1) - n_2 \log p(x_2) -\ ...\\[8pt]
 &= -n_0 \log \left(\frac{n_0}{N}\right) - n_1 \log \left(\frac{n_1}{N}\right)
 	- n_2 \log \left(\frac{n_2}{N}\right) -\ ... \\[8pt]
 &= \left(\sum_i n_i\right) \log N -n_0 \log n_0 - n_1 \log n_1
 	- n_2 \log n_2 -\ ... \\[8pt]
-&= N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...,
+&= N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...
 \ \end{align}$$
 
-which conveniently isolates our integer parameters into distinct
-terms. This formula, then, is the length of the arithmetic code of a
-sequence if every symbol is predicted according to the MLE categorical
-fitted to the sequence.
+This formula, then, is the length of the arithmetic code of a sequence
+if every symbol is predicted according to the MLE categorical fitted to
+the sequence.
 
-Note, however, that it's easy to algorithmically improve on this code
-length if the probabilistic model docks counts of symbols as they
-appear, improving the likelihood of symbols down the sequence compared
-to the "static" model.
+Note, however, that using the same categorical distribution, it would be
+easy to improve the likelihood of symbols (and thus code length) if the
+model was *updated* after each occurrence of a symbol, docking the count
+of that symbol in our probability distribution, effectively maintaining
+a more accurate MLE of the tail of the sequence rather than the MLE of
+the whole sequence.
+
+The distinction between a "static" or "updating" categorical modeling a
+sequence of symbols is essentially the one between sampling a
+distribution *"with replacement"* (keeping the distribution the same for
+the next sample) or *"without replacement"* (removing the sampled
+element from the distribution).
 
 ## Categorical Without Replacement
 
-It can be proven that the information content of the categorical MLE
-*without replacement* (i.e. that docks counts with each observation)
-follows this formula:
+I can't derive the equivalent formula for the information content of the
+categorical *without replacement*, but a proof that it is equal to
 
-$$\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...,$$
+$$\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...$$
 
-Although the factorial is unkind to an algebraic treatment, we can show
-this is true by induction from the end of the sequence towards the left.
+is relatively straightforward.
+
+By induction from the end of the sequence towards the start:
 
 $\texttt{Proof:}$
 
@@ -82,10 +75,20 @@ $\texttt{Proof:}$
 
 **Case N=1:** For the sequence with 1 element, $N = 1$ and $n_0 = 1$, so
 
-$$\log(1!) - \log(1!) = 0,$$
+$$\begin{align}
+\log(N!) -\log(n_0!)
+&= \log(1!) - \log(1!) \\
+&= 0,
+\end{align}$$
 
-as in the arithmetic code where the probability of the only symbol $x_0$
-is 1 so the code is empty.
+which corresponds to the information content of a symbol with
+probability 1:
+
+$$\begin{align}
+I(x_0) &= -\log P(x_0)_1 \\
+	&= -\log 1 \\
+	&= 0.
+\end{align}$$
 
 **Case N+1:** For an additional symbol $x_i$, given that the length of
 the code for the rest of the string is
@@ -93,14 +96,14 @@ the code for the rest of the string is
 $$\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...,$$
 
 for any count $n_i$ of that symbol in the rest of the string (including
-0), the additional code for that symbol has length as a function of its
-probability at that point:
+0 for a new symbol), the additional information from that symbol is a
+function of its probability at that point:
 
-$$\begin{align}\mathrm{I}(x_i)_{N+1} &= -\log p(x_i)_{N+1} \\[8pt]
+$$\begin{align}I(x_i)_{N+1} &= -\log P(x_i)_{N+1} \\[8pt]
 &= -\log \left(\frac{n_i+1}{N+1}\right) \\[8pt]
 &= \log(N+1) -\log (n_i+1)\end{align}$$
 
-which integrates into the factorials by the product property of
+which distributes into the factorials by the product property of
 logarithms:
 
 $$\begin{align}
@@ -111,107 +114,148 @@ $$\begin{align}
 &=\ \log((N + 1)!) -\log(n_0!) -\ ...\
 	-\ \log((n_i + 1)!) -\ ...,\end{align}$$
 
-which is our formula with updated parameters.
+which is the formula with updated parameters.
 <div style="text-align: right">$\blacksquare$</div>
+
+Of note is that the *order* in which symbols appear in the sequence
+(e.g. whether identical symbols are grouped together at the beginning,
+clearing them out for the rest of the inference, or not) has no bearing
+on the information content of a *without replacement* strategy. It is
+uniquely determined by the length ($N$) and bin sizes ($n_0, n_1, n_2,
+...$) with no regard to the actual structure of the sequence.
 
 ## Discussion
 
-It is well known that $n \log n$ (i.e. $\log(n^n)$) asymptotically
-grows at the same rate as $\log (n!)$ and the former is used to
-approximate the latter, as seen in [Stirling's
+So how much smaller is the information of a sequenced modeled *without
+replacement*:
+
+$$\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...$$
+
+than one modeled *with replacement*:
+
+$$N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...\\[10pt]$$
+
+Obviously, we have that, for $n > 0$:
+
+$$\log(n!) < n\log n,$$
+
+because $n\log n = \log(n^n)$ and $n! < n^n$. Asymptotically, however:
+
+$$O(\log(n!)) = O(n\log n)$$
+
+as demonstrated by [Stirling's
 approximation](https://en.wikipedia.org/wiki/Stirling%27s_approximation)
+of $\log(n!)$ where the leading terms is $n\log n$:
 
 $$\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n)
 	+ O\left(\frac{1}{n}\right)$$
 
 ![](res/count/stirling.svg)
 
-or even [Ramanujan](https://en.wikipedia.org/wiki/Srinivasa_Ramanujan)'s
-more precise version:
+or [Ramanujan](https://en.wikipedia.org/wiki/Srinivasa_Ramanujan)'s more
+precise approximation:
 
-$$\log(n!) = n\log n - n\log e+\frac{1}{6}\log(n(1+4n(1+2n)))+\frac{1}{2}\log \pi
-	+ O\left(\frac{1}{n^3}\right)$$
+$$\begin{align}
+\log(n!) =~&n\log n - n\log e \\
+	&+\frac{1}{6}\log(n(1+4n(1+2n))) \\
+	&+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)
+\end{align}$$
 
 ![](res/count/ramanujan.svg)
 
-but these additional terms correct a consistent and significant
-difference between the two functions:
+but these additional terms correct a mostly constant factor $n\log e$
+between the two functions:
 
 ![](res/count/difference.svg)
 
-which definitely translates to the information content of categorical
-MLE's w/ vs. w/o replacement, but how much so is not
-obvious. Experiments on random strings reveals that the w/ replacement
-requires anywhere from 0.2% (on the longest strings with the smallest
+How this difference affects different parametrizations of a categorical
+is less obvious.
+
+Experiments on a small sample of random strings of different lengths
+($N$) and number of symbols ($m$) reveals that *with replacement*
+contains anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)
-more information to encode the same string than doing it w/o replacement
-([full table](res/count/table.html)):
+more information than *without replacement*
+([code](res/count/examples.py), [full table](res/count/table.html)):
 
 $$$$
 ![](res/count/table_abbrev.svg)
 
 $$$$
 
-where $N$ is the length of the string, $m$ is the size of the alphabet,
-the information content is computed w/ and w/o replacement according to
-the formulae and the w/o replacement value is confirmed through the sum
-of the individual information of each symbol (simulating an adaptive
-model), validating our proof. Lastly, the percentage difference
-w.r.t. the information content w/o replacement.
+where the information content is computed *with* and *without
+replacement* according to the formulae and the *without* value is
+confirmed through the sum of the individual information of each symbol
+(simulating an updating model), validating our proof.
 
-What's surprising is that there is no way for the order of the symbols
-to affect the performance of a w/o replacement strategy. One would think
-having all the instances of some symbol organized together (e.g. at the
-beginning) would help an inference w/o replacement by getting them "out
-of the way", but the formula is simply not affected by the order of the
-symbols in the string.
+Since larger values of $N$ increase the information content of strings
+of both *with* or *without replacement*, the difference comes from
+whether the $N$ values are distributed between fewer distinct symbols
+(less change to the distribution per update, less difference between
+methods) or more uniformly between many values (more change to the
+distribution per update, more difference between methods).
 
-Finally, let's address the **combinatorial** connection hinted so far by
-our choice of vocabulary. Our formula for information content w/o
-replacement is equal to the $\log$ of the so-called [multinomial
+### Combinatorial View
+
+At this point, the combinatorial interpretation begs to be mentioned.
+
+Our formula for information content *without replacement* is simply
+equal to the $\log$ of the [multinomial
 coefficient](https://en.wikipedia.org/wiki/Multinomial_theorem):
 
-$$\begin{align}
-\mathrm{I}(X) &= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
+$$\begin{align} I(\mathrm{\bf x})
+&= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
 &= \log \left(\frac {N!}{n_0!\ n_1!\ n_2!\ \cdots}\right) \\[8pt]
-&= \log {N \choose n_0,n_1,n_2,\ldots},\ \end{align}$$
+&= \log \left(N \choose n_0,n_1,n_2,\ldots\right),\ 
+\end{align}$$
 
 which is the number of ways a sequence of $N$ objects with equivalence
-classes of sizes $n_0, n_1, n_2, ...$, where
+classes of sizes $n_0, n_1, n_2, ...$, where $N = \sum_i{n_i}$.
 
-$$\sum_i{n_i} = N.$$
+A derivation based on probabilities and mutation of a probabilistic
+model reduces to the $\log$ of the number of possible strings given the
+same parameters.
 
-So this whole derivation about probabilities and mutation of a
-probabilistic model is equivalent to the $\log$ of the number of
-possible strings given the same parameters. In the two cases where we
-restrict the space as much as the parameters allow, we get the same
-result.
+<!-- Unfortunately, no such interpretation can be drawn from the formula of -->
+<!-- the case *with replacement* as it is not the $\log$ of an integer value -->
+<!-- in general. -->
 
-## Information From Variety
+### Information From Variety
 
-This motivates an alternative definition of information, the one in term
-of [variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)). Much
-simpler in my opinion; there are no negations, no normalization, just
+This motivates a simpler description of information.
 
-$$\mathrm{I}(X)= \log \left(V(X)\right),$$
+If the probabilistic model is equivalent to one with $N$ equiprobable
+states, the denominator position of the size cancels out the negation of
+the $\log,$ leaving only:
+
+$$\begin{align}I(x)
+&= -\log P(x) \\[5pt]
+&= -\log \left(\frac{1}{N}\right) \\[5pt]
+&= \log N. \\[5pt]
+&
+\end{align}$$
+
+This applies more generally to information relating to
+[variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)), which is
+simply:
+
+$$I(x) = \log \left(V(X)\right),$$
 
 where $V(X)$ is the **variety**, or number of states a system $X$ can
-find itself in. In terms of the probabilistic definition, it's as if
-every state had equal probability:
+find itself in.
 
-$$\begin{align}\mathrm{I}(x) &= -\log p(x) \\[5pt]
-&= -\log \left(\frac{1}{N}\right) \\[5pt]
-&= \log N.\end{align}$$
+$$$$
 
-But even the probabilistic definition makes more sense in terms of
-variety as long as the [probability is a
-ratio](https://en.wikipedia.org/wiki/Frequentist_probability):
+Even when the probabilities are not equal, but derived from
+[frequencies](https://en.wikipedia.org/wiki/Frequentist_probability):
 
-$$\begin{align}\mathrm{I}(x_i) &= -\log p(x_i) \\[5pt]
+$$\begin{align} I(x_i)
+&= -\log P(x_i) \\[5pt]
 &= -\log \left(\frac{n_i}{N}\right) \\[5pt]
-&= \log N - \log n_i.\end{align}$$
+&= \log N - \log n_i.
+\end{align}$$
 
-That is, the information content of a part ($n_i$) in a whole ($N$) is
-the information to specify one among the whole ($\log N$) minus the
-information to specify one among the part ($\log n_i$), like an interval
-between $n$ and $N$ in $\log$-space.
+the information content of a part ($n_i$) from a whole ($N$) can be
+interpreted as the information to specify one among the whole ($\log N$)
+minus the information to specify one among the part ($\log n_i$)---like
+an interval between $n_i$ and $N$ in $\log$-space.
