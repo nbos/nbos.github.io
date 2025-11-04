@@ -206,7 +206,7 @@ coefficient](https://en.wikipedia.org/wiki/Multinomial_theorem):
 $$\begin{align} I(\mathrm{\bf x})
 &= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
 &= \log \left(\frac {N!}{n_0!\ n_1!\ n_2!\ \cdots}\right) \\[8pt]
-&= \log \left(N \choose n_0,n_1,n_2,\ldots\right),\ 
+&= \log {N \choose n_0,n_1,n_2,\ldots},\ 
 \end{align}$$
 
 which is the number of ways a sequence of $N$ objects with equivalence
@@ -235,14 +235,14 @@ $$\begin{align}I(x)
 &
 \end{align}$$
 
-This applies more generally to information relating to
+This applies more generally to the information of a
 [variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)), which is
 simply:
 
 $$I(x) = \log \left(V(X)\right),$$
 
-where $V(X)$ is the **variety**, or number of states a system $X$ can
-find itself in.
+where the **variety** $V(X)$ is the total number of states a system $X$
+can find itself in.
 
 $$$$
 

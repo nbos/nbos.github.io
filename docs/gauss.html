@@ -260,9 +260,9 @@ outlier at another (e.g. 1).</p>
 <p><span class="math display">\[\begin{align}
 PDF(n,x)_{outlier}
 &amp;= \frac{1}{\sqrt{2\pi \cdot\frac{n-1}{n^2}}}
-	\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
+	\;\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
 &amp;= \frac{n}{\sqrt{2\pi(n-1)}}
-	\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
+	\;\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
 \end{align}\]</span></p>
 <p>For the informational content of a data set of size <span class="math inline">\(n\)</span>, we have <span class="math inline">\((n-1)\)</span>
 times <span class="math inline">\(P(0)\)</span> and <span class="math inline">\(P(1)\)</span> once. As <span class="math inline">\(n\)</span> approaches infinity, the density at
@@ -273,8 +273,8 @@ information content of <span class="math inline">\(0\)</span>. The whole of the 
 comes from the shrinking probability of the outlier:</p>
 <p><span class="math display">\[\begin{align}
 I(n)_{outlier} &amp;= -\log(PDF(n,1)_{outlier})\\
-&amp;= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \exp\left(-\frac{n-1}{2}\right)\right)\\
-&amp;= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\left(-\frac{n-1}{2}\right)\right)\\
+&amp;= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \;\exp\!\left(-\frac{n-1}{2}\right)\right)\\
+&amp;= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\!\left(-\frac{n-1}{2}\right)\right)\\
 &amp;= -\log(n) + \frac{1}{2}\log(2\pi(n-1)) + \frac{n-1}{2}\\
 &amp;= \frac{n-1}{2} + \frac{1}{2}\log(2\pi(n-1)) - \log(n)
 \end{align}\]</span></p>

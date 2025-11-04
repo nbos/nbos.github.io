@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Information Theoretic Chunking</title>
+     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Posts</a>
+        <a href="./hackage.html">Hackage</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Information Theoretic Chunking</h1>
+      <article>
+  <section class="header">
+    Posted on November  4, 2025
+    
+    by Nathaniel Bos
+    
+  </section>
+  <section>
+    <p>One of the more salient features of our cognition is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">organization
+of related parts into
+wholes</a>.</p>
+<p>In the absence of clear statistical principles guiding this impulse to
+<em>construct</em>, we attempt to reproduce a similar structure by growing a
+prediction model greedily in the direction of maximal compression.</p>
+<p>For this, we design a format to serialize text and its derived
+prediction model using combinatorial objects of known lengths, which we
+simplify into a loss function guiding efficient, deterministic
+construction of dictionaries, which we evaluate in appearance and
+compression efficiency.</p>
+<h2 id="note-on-overfitting">Note on Overfitting</h2>
+<p>When modeling data using a growing numbers of parameters, the likelihood
+of the data can easily reach zero as the complexity of the data is
+transfered into the model instead of getting distilled into its
+underlying features.</p>
+<p>In machine learning, this is called
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Overfitting">overfitting</a> and is best
+pictured by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Polynomial_regression">regression
+lines</a> (the
+predictions) drifting away in wild and unlikely interpolations as more
+parameters are added to the model.</p>
+<p><img src="res/chunk/overfit.svg" /></p>
+<p>This behavior is undesirable in machine learning as it undermines the
+<em>generalizability</em> of the model which is usually an important aspect of
+the exercise.</p>
+<p>In the context of compression, where the prediction of unobserved data
+is of little importance, the behavior is equally pathological: as the
+information to encode the data approaches zero, the information required
+to describe the model measurably increases in proportion.</p>
+<p>While solutions to overfitting in machine learning almost always
+implicate <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets">carving off sections of the
+data</a>
+to hide from the model only to be used for measuring generalizability,
+the solution in the context of compression is simply to measure the
+information (likelihood) of <em>both the data and the model</em> in the loss
+function.</p>
+<p>This is a basic requirement of parametric information measures to avoid
+falling into traps where information seems to disappear during
+compression.</p>
+<h2 id="serializing-combinatorial-objects">Serializing Combinatorial Objects</h2>
+<p><a href="count.html#combinatorial-view">As shown previously</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> of
+parametrized systems can produce simple closed formulations of their
+code length (information) using optimal encoders.</p>
+<p>For example, the code length of a sequence of <span class="math inline">\(N\)</span> symbols from an
+alphabet of size <span class="math inline">\(m\)</span> with known individual counts <span class="math inline">\(n_0, n_1, ... n_m\)</span>
+(i.e. a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical</a>
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">MLE</a>) is
+simply the <span class="math inline">\(\log\)</span> of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Binomial_coefficient#Generalization_to_multinomials">multinomial
+coefficient</a></p>
+<p><span class="math display">\[N \choose n_0,n_1,\ldots,n_m.\]</span></p>
+<p>Further, given a total order
+(e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Lexicographic_order#Finite_subsets">lexicographic</a>)
+on the summoned combinatorial objects (here <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets">multiset
+permutations</a>),
+one can
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">derive</a> so
+called “ranking” and “unranking” algorithms which, converting the
+resulting integers into their binary expansion, are equivalent to
+entropy encoders and decoders for serializations of minimal length.</p>
+<p>Thus, combinatorial descriptions give both information measure and
+codecs (encoder/decoder) to verify those measures.</p>
+<h2 id="format-description">Format Description</h2>
+<p>Using this approach, the order of a sequence of a known alphabet with
+known counts can be encoded with code length:</p>
+<p><span class="math display">\[\underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
+<p>which depends on knowing the counts of each symbol, which has a variety
+equal to the binomial coefficient according to the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stars_and_bars_(combinatorics)">stars-and-bars method</a>:</p>
+<p><span class="math display">\[N + m - 1 \choose m - 1\]</span></p>
+<p>where the number of distribution of <span class="math inline">\(N\)</span> identical values across <span class="math inline">\(m\)</span> bins
+by counting the number of orderings of the <span class="math inline">\(N\)</span> values (stars) and <span class="math inline">\(m-1\)</span>
+separators (bars).</p>
+<p>We prepend this code so that the string’s code can be interpreted
+correctly:</p>
+<p><span class="math display">\[\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle n_0,n_1,\ldots,n_m \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
+<p>This, in turn, depends on knowing parameters <span class="math inline">\(N\)</span> and <span class="math inline">\(m\)</span>. The length of
+the binary expansion of a number is on the order of <span class="math inline">\(\log_2 n\)</span>, but
+without the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Prefix_code">prefix
+property</a>, the length of such
+an expansion is unknowable by a decoder. To address this, a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_code_(data_compression)">universal
+integer
+code</a>
+(e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Elias_delta_coding">Elias</a>) is used
+taking at most <span class="math inline">\(2\log_2 n\)</span> bits:</p>
+<p><span class="math display">\[\underbrace{2\log m\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle m \vphantom{\prod}}
++ \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle N \vphantom{\prod}}
++ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle n_0,n_1,\ldots,n_m \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
+<p>The only part now missing is the actual set of constructions that make
+up the <span class="math inline">\(m\)</span> symbols.</p>
+<h3 id="inductive-constructions">Inductive Constructions</h3>
+<p>We grow our dictionary of constructions one-by-one, by appending
+construction rules consisting of two previously defined symbols (atomic
+or constructed) based resting on an assumption that a whole can only be
+statistically significant if both of its parts also are.</p>
+<p>The resulting model can then be interpreted as a sparse version of a
+high-dimensional
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-gram</a>
+model which avoids the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Curse_of_dimensionality">combinatorial
+explosion</a>
+associated with assigning parameters to every combination of symbols.</p>
+<p>Starting with an alphabet of the 256 bytes, the first construction is
+one among</p>
+<p><span class="math display">\[256 \times 256\]</span></p>
+<p>possible pairs. With the second construction, we include the first:</p>
+<p><span class="math display">\[256 \times 256 \times 257 \times 257...\]</span></p>
+<p>In general, for <span class="math inline">\(m\)</span> symbols, we have 256 atoms and <span class="math inline">\(m-256\)</span>
+constructions. This has variety</p>
+<p><span class="math display">\[V(\mathrm{Rules}) = \left(\frac{m!}{255!}\right)^2\]</span></p>
+<p>which is information</p>
+<p><span class="math display">\[I(\mathrm{Rules}) = 2\log\left(\frac{m!}{255!}\right).\]</span></p>
+<p>We can also get away with encoding <span class="math inline">\(m - 255\)</span> since <span class="math inline">\(m \geq 256\)</span>. The
+complete formula for our code length (which is our loss function) is
+therefore:</p>
+<p><span class="math display">\[\underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle m \vphantom{\prod}}
++ \underbrace{2\log \left(\frac{m!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{Rules} \vphantom{\prod}}
++ \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle N \vphantom{\prod}}
++ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle n_0,n_1,\ldots,n_m \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
+<p>which is only a function of number of symbols <span class="math inline">\(m\)</span> and counts <span class="math inline">\(n_0, n_1,
+..., n_m\)</span>.</p>
+  </section>
+  <footer>
+    <a href="./">Return</a>
+  </footer>
+</article>
+
+    </main>
+
+  </body>
+</html>

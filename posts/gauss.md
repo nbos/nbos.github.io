@@ -312,9 +312,9 @@ The PDF becomes
 $$\begin{align}
 PDF(n,x)_{outlier}
 &= \frac{1}{\sqrt{2\pi \cdot\frac{n-1}{n^2}}}
-	\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
+	\;\exp\!\left(-\frac{\left(x-\frac{1}{n}\right)^2}{2\cdot \frac{n-1}{n^2}}\right)\\
 &= \frac{n}{\sqrt{2\pi(n-1)}}
-	\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
+	\;\exp\!\left(-\frac{n^2\left(x-\frac{1}{n}\right)^2}{2(n-1)}\right)
 \end{align}$$
 
 For the informational content of a data set of size $n$, we have $(n-1)$
@@ -328,8 +328,8 @@ comes from the shrinking probability of the outlier:
 
 $$\begin{align}
 I(n)_{outlier} &= -\log(PDF(n,1)_{outlier})\\
-&= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \exp\left(-\frac{n-1}{2}\right)\right)\\
-&= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\left(-\frac{n-1}{2}\right)\right)\\
+&= -\log\left(\frac{n}{\sqrt{2\pi(n-1)}} \;\exp\!\left(-\frac{n-1}{2}\right)\right)\\
+&= -\log(n) + \log(\sqrt{2\pi(n-1)}) - \log\left(\exp\!\left(-\frac{n-1}{2}\right)\right)\\
 &= -\log(n) + \frac{1}{2}\log(2\pi(n-1)) + \frac{n-1}{2}\\
 &= \frac{n-1}{2} + \frac{1}{2}\log(2\pi(n-1)) - \log(n)
 \end{align}$$
