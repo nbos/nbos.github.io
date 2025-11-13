@@ -26,101 +26,112 @@
       <h1>Information Theoretic Chunking</h1>
       <article>
   <section class="header">
-    Posted on November  4, 2025
+    Posted on November 13, 2025
     
     by Nathaniel Bos
     
   </section>
   <section>
-    <p>One of the more salient features of our cognition is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">organization
-of related parts into
+    <p>One of the more salient features of our cognition is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">organization of
+related parts into
 wholes</a>.</p>
-<p>In the absence of clear statistical principles guiding this impulse to
-<em>construct</em>, we attempt to reproduce a similar structure by growing a
+<p>In the absence of clear statistical principles guiding this drive to
+<em>construct</em>, we attempt to reproduce similar structure by growing a
 prediction model greedily in the direction of maximal compression.</p>
-<p>For this, we design a format to serialize text and its derived
-prediction model using combinatorial objects of known lengths, which we
-simplify into a loss function guiding efficient, deterministic
-construction of dictionaries, which we evaluate in appearance and
-compression efficiency.</p>
+<p>For this, we define a serialization format for text based on
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Permutation">combinatorial objects</a>
+<a href="count.html">equivalent</a> to such a model, which produces codes of known
+lenghts
+(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information</a>), from
+which we derive a loss function that guides the deterministic
+construction of dictionaries, of which we note the appearance and
+efficiency in compression.</p>
 <h2 id="note-on-overfitting">Note on Overfitting</h2>
-<p>When modeling data using a growing numbers of parameters, the likelihood
-of the data can easily reach zero as the complexity of the data is
-transfered into the model instead of getting distilled into its
+<p>When modeling data using ever growing numbers of parameters, the
+likelihood of the data can easily reach zero as the complexity of the
+data is transfered to the model instead of being distilled into their
 underlying features.</p>
 <p>In machine learning, this is called
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Overfitting">overfitting</a> and is best
 pictured by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Polynomial_regression">regression
-lines</a> (the
-predictions) drifting away in wild and unlikely interpolations as more
+lines</a>
+(predictions) drifting away in wild and unlikely interpolations as more
 parameters are added to the model.</p>
 <p><img src="res/chunk/overfit.svg" /></p>
 <p>This behavior is undesirable in machine learning as it undermines the
 <em>generalizability</em> of the model which is usually an important aspect of
 the exercise.</p>
 <p>In the context of compression, where the prediction of unobserved data
-is of little importance, the behavior is equally pathological: as the
-information to encode the data approaches zero, the information required
-to describe the model measurably increases in proportion.</p>
-<p>While solutions to overfitting in machine learning almost always
-implicate <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets">carving off sections of the
+is of little importance, the phenomena is equally pathological: as the
+information of the data w.r.t. the model approaches zero, the
+information required to describe the model measurably increases in
+proportion.</p>
+<p>While the solution to overfitting in machine learning almost always
+implicates <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets">carving off sections of the
 data</a>
 to hide from the model only to be used for measuring generalizability,
-the solution in the context of compression is simply to measure the
-information (likelihood) of <em>both the data and the model</em> in the loss
-function.</p>
-<p>This is a basic requirement of parametric information measures to avoid
-falling into traps where information seems to disappear during
-compression.</p>
+the context of compression offers a more complete solution: one needs
+only to measure the information (likelihood) of <em>both the data and the
+model</em> and stop when the gain in the information of the model begins to
+outweigh the loss in the information of the data given the model.</p>
+<p>This inclusion of the model into the calculation is a basic requirement
+of parametric measurements of information to avoid falling into traps
+where information seems to magically disappear from compression.</p>
 <h2 id="serializing-combinatorial-objects">Serializing Combinatorial Objects</h2>
-<p><a href="count.html#combinatorial-view">As shown previously</a>,
+<p>As shown <a href="count.html#combinatorial-view">previously</a>,
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> of
 parametrized systems can produce simple closed formulations of their
-code length (information) using optimal encoders.</p>
-<p>For example, the code length of a sequence of <span class="math inline">\(N\)</span> symbols from an
-alphabet of size <span class="math inline">\(m\)</span> with known individual counts <span class="math inline">\(n_0, n_1, ... n_m\)</span>
+information (code length) w.r.t. an optimal encoder.</p>
+<p>For example, the information of a sequence of <span class="math inline">\(N\)</span> symbols from an
+alphabet of size <span class="math inline">\(m\)</span> with known individual counts <span class="math inline">\(n_0, n_1, ... n_{m-1}\)</span>
 (i.e. a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical</a>
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">MLE</a>) is
 simply the <span class="math inline">\(\log\)</span> of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Binomial_coefficient#Generalization_to_multinomials">multinomial
-coefficient</a></p>
-<p><span class="math display">\[N \choose n_0,n_1,\ldots,n_m.\]</span></p>
+coefficient</a>
+with the same parameters:</p>
+<p><span class="math display">\[{N \choose n_0,n_1,\ldots,n_{m-1}},\]</span></p>
+<p>which is exactly the number of ways to order a set of <span class="math inline">\(N\)</span> elements
+containing equivalence classes of sizes <span class="math inline">\(n_0,n_1,\ldots,n_{m-1}\)</span>.</p>
 <p>Further, given a total order
 (e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Lexicographic_order#Finite_subsets">lexicographic</a>)
-on the summoned combinatorial objects (here <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets">multiset
+on the summoned combinatorial object (here <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets">multiset
 permutations</a>),
 one can
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">derive</a> so
-called “ranking” and “unranking” algorithms which, converting the
-resulting integers into their binary expansion, are equivalent to
-entropy encoders and decoders for serializations of minimal length.</p>
-<p>Thus, combinatorial descriptions give both information measure and
-codecs (encoder/decoder) to verify those measures.</p>
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">derive</a>
+so-called “ranking” and “unranking” algorithms to map to and from
+natural numbers. Reading the resulting numbers in their binary
+expansion, the process is equivalent in compression efficiency to
+entropy coding the sequence symbol-by-symbol using their derived
+probabilities.</p>
+<p>Combinatorial descriptions therefore give both information content
+formulae and the codecs (encoder/decoder) to verify them.</p>
 <h2 id="format-description">Format Description</h2>
-<p>Using this approach, the order of a sequence of a known alphabet with
-known counts can be encoded with code length:</p>
-<p><span class="math display">\[\underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+<p>The order of a sequence of an alphabet with known counts has information
+content:</p>
+<p><span class="math display">\[\underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}}. \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
-<p>which depends on knowing the counts of each symbol, which has a variety
-equal to the binomial coefficient according to the
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stars_and_bars_(combinatorics)">stars-and-bars method</a>:</p>
+<p>The count of each symbol in the alphabet has a variety equal to the
+binomial coefficient according to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stars_and_bars_(combinatorics)">stars-and-bars
+method</a>:</p>
 <p><span class="math display">\[N + m - 1 \choose m - 1\]</span></p>
 <p>where the number of distribution of <span class="math inline">\(N\)</span> identical values across <span class="math inline">\(m\)</span> bins
-by counting the number of orderings of the <span class="math inline">\(N\)</span> values (stars) and <span class="math inline">\(m-1\)</span>
+is counted as number of orderings of the <span class="math inline">\(N\)</span> values (stars) and <span class="math inline">\(m-1\)</span>
 separators (bars).</p>
-<p>We prepend this code so that the string’s code can be interpreted
-correctly:</p>
+<p>We prepend this code so that the string’s code (ranked multiset
+permutation) can be interpreted correctly:</p>
 <p><span class="math display">\[\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle n_0,n_1,\ldots,n_m \vphantom{\prod}}
-+ \underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
-<p>This, in turn, depends on knowing parameters <span class="math inline">\(N\)</span> and <span class="math inline">\(m\)</span>. The length of
-the binary expansion of a number is on the order of <span class="math inline">\(\log_2 n\)</span>, but
-without the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Prefix_code">prefix
+<p>This, in turn, assumes knowledge of parameters <span class="math inline">\(N\)</span> and <span class="math inline">\(m\)</span>.</p>
+<p>The length of the binary expansion of a natural number is on the order
+of <span class="math inline">\(\log_2 n\)</span>, but without the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Prefix_code">prefix
 property</a>, the length of such
-an expansion is unknowable by a decoder. To address this, a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_code_(data_compression)">universal
-integer
+an expansion (i.e. the cut-off point between the number’s code and the
+rest of the code) is unknowable by a decoder. To address this, a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_code_(data_compression)">universal integer
 code</a>
 (e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Elias_delta_coding">Elias</a>) is used
 taking at most <span class="math inline">\(2\log_2 n\)</span> bits:</p>
@@ -129,47 +140,233 @@ taking at most <span class="math inline">\(2\log_2 n\)</span> bits:</p>
 + \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle N \vphantom{\prod}}
 + \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle n_0,n_1,\ldots,n_m \vphantom{\prod}}
-+ \underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
-<p>The only part now missing is the actual set of constructions that make
-up the <span class="math inline">\(m\)</span> symbols.</p>
+<p>which only leaves the dictionary of constructions to be encoded so that
+constructed symbols can be properly interpreted.</p>
 <h3 id="inductive-constructions">Inductive Constructions</h3>
-<p>We grow our dictionary of constructions one-by-one, by appending
-construction rules consisting of two previously defined symbols (atomic
-or constructed) based resting on an assumption that a whole can only be
-statistically significant if both of its parts also are.</p>
-<p>The resulting model can then be interpreted as a sparse version of a
-high-dimensional
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-gram</a>
-model which avoids the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Curse_of_dimensionality">combinatorial
+<p>The dictionary (alphabet) of constructions (symbols) is grown
+incrementally one-by-one, by appending construction <em>rules</em> consisting
+of two previously defined symbols (atomic or constructed) based on an
+assumption that a <em>whole</em> can only be statistically significant if both
+of its <em>parts</em> also are.</p>
+<p>Substituting the parts in the string with the newly introduced symbol
+and repeating the process produces a sparse exploration into the space
+of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-grams</a>
+which avoids the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Curse_of_dimensionality">combinatorial
 explosion</a>
-associated with assigning parameters to every combination of symbols.</p>
-<p>Starting with an alphabet of the 256 bytes, the first construction is
-one among</p>
+associated with assigning parameters to each possible combination of
+symbols and the requirement of deciding of a fixed construction length.</p>
+<p>We start with an alphabet of the 256 bytes. The first construction rule
+is therefore one among</p>
 <p><span class="math display">\[256 \times 256\]</span></p>
-<p>possible pairs. With the second construction, we include the first:</p>
-<p><span class="math display">\[256 \times 256 \times 257 \times 257...\]</span></p>
-<p>In general, for <span class="math inline">\(m\)</span> symbols, we have 256 atoms and <span class="math inline">\(m-256\)</span>
-constructions. This has variety</p>
-<p><span class="math display">\[V(\mathrm{Rules}) = \left(\frac{m!}{255!}\right)^2\]</span></p>
+<p>possible pairs. With the second construction, we include the first
+introduced symbol:</p>
+<p><span class="math display">\[256 \times 256 \times 257 \times 257 \times \ldots\]</span></p>
+<p>In general, for <span class="math inline">\(m\)</span> symbols, this has variety</p>
+<p><span class="math display">\[\left(\frac{(m-1)!}{255!}\right)^2\]</span></p>
 <p>which is information</p>
-<p><span class="math display">\[I(\mathrm{Rules}) = 2\log\left(\frac{m!}{255!}\right).\]</span></p>
-<p>We can also get away with encoding <span class="math inline">\(m - 255\)</span> since <span class="math inline">\(m \geq 256\)</span>. The
-complete formula for our code length (which is our loss function) is
-therefore:</p>
-<p><span class="math display">\[\underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
+<p><span class="math display">\[\begin{align}
+\log\left(\left(\frac{(m-1)!}{255!}\right)^2\right)
+= 2\log\left(\frac{(m-1)!}{255!}\right).
+\end{align}\]</span></p>
+<p>We can also get away with encoding <span class="math inline">\(m - 256\)</span> instead of <span class="math inline">\(m\)</span> since it
+will always be the case that <span class="math inline">\(m \geq 256\)</span>. The information content of
+our entire encoding is therefore:</p>
+<p><span class="math display">\[\begin{align}
+I(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})
+=~&amp;~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle m \vphantom{\prod}}
-+ \underbrace{2\log \left(\frac{m!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{Rules} \vphantom{\prod}}
++ \underbrace{2\log \left(\frac{(m-1)!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf r}: Rules} \vphantom{\prod}}
 + \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle N \vphantom{\prod}}
-+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle n_0,n_1,\ldots,n_m \vphantom{\prod}}
-+ \underbrace{\log {N \choose n_0,n_1,\ldots,n_m} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
-<p>which is only a function of number of symbols <span class="math inline">\(m\)</span> and counts <span class="math inline">\(n_0, n_1,
-..., n_m\)</span>.</p>
+	_{\displaystyle N \vphantom{\prod}}\\[10pt]
+&amp;+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}}
+\end{align}\]</span></p>
+<p>which is only a function of dictionary size <span class="math inline">\(m\)</span> and counts vector
+<span class="math inline">\(\mathrm{\bf n}: n_0, n_1, ..., n_{m-1}\)</span>.</p>
+<h2 id="loss-function">Loss Function</h2>
+<p>Evaluating the amount of information of each field for each variation of
+the dictionary depending on what two symbols come next in the rule set
+is excessive.</p>
+<p>First, the terms for parameter <span class="math inline">\(m\)</span> and the rule set (dictionary) are
+constant in information regardless of <em>which</em> symbols make the new
+construction. While they determine when the program stops, they can be
+dropped when evaluating different pairs for rule introduction. Same goes
+for the encoding of <span class="math inline">\(N\)</span> which is mostly constant between introductions
+and only a few bits of variation at specific junctures between powers of
+two.</p>
+<!-- Increasing the number of symbols in the alphabet from $m$ to $m+1$ and -->
+<!-- the decreasing the number of symbols in the string from $N$ to $N - -->
+<!-- n_{01}$ for a construction of $n_{01}$ instances, changes the bin counts -->
+<!-- code length by: -->
+<p>For the introduction of a joint symbol with count <span class="math inline">\(n_{01}\)</span>, constructed
+from the symbols with counts <span class="math inline">\((n_0,n_1)\)</span>, the main terms that affect the
+total information are the term for the counts:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I(\mathrm{\bf n})
+&amp;= \log {N - n_{01} + m \choose m} - \log {N + m - 1 \choose m - 1} \\[5pt]
+&amp;= \log \left(\frac{(N - n_{01} + m)!}{m! ~ (N - n_{01})!}\right)
+	- \log \left(\frac{(N + m - 1)!}{(m - 1)! ~ N!}\right) \\[5pt]
+&amp;= \log \left(\frac{(N - n_{01} + m)! ~ (m - 1)! ~ N!}
+	{(N + m - 1)! ~ m! ~ (N - n_{01})!}\right) \\[5pt]
+&amp;= \log \left(\frac{(N - n_{01} + m)! ~ N!}
+	{(N + m - 1)! ~ m ~ (N - n_{01})!}\right) \\[5pt]
+\end{align}\]</span></p>
+<!-- The equivalent expansion of the multinomial coefficient for the length -->
+<!-- of the multiset permutation has on the order of $m$ terms but most -->
+<!-- cancel out leaving only those implicated in the rule $(s_0, s_1) \to -->
+<!-- s_{01}$: -->
+<p>and the term for the ordering of the string:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I(\mathrm{\bf s})
+&amp;= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
+	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
+&amp;= \begin{cases}
+	\log\left(\displaystyle \frac{(N - n_{01})! ~ n_0!}
+	{N! ~ (n_0 - 2n_{01})! ~ n_{01}!} \right)
+	&amp; \text{when } s_0 = s_1 \\[5pt]
+	\log\left(\displaystyle \frac{(N - n_{01})! ~ n_0! ~ n_1!}
+	{N! ~ (n_0 - n_{01})! ~ (n_1 - n_{01})! ~ n_{01}!} \right)
+	&amp; \text{when } s_0 \neq s_1
+	\end{cases} \\[5pt]
+&amp;= \log \left( \frac{(N - n_{01})! ~ n_0!}{N! ~ n_{01}!} \right) + \begin{cases}
+	\log \left(\frac{\displaystyle 1}{\displaystyle (n_0 - 2n_{01})!} \right)
+	&amp; \text{when } s_0 = s_1 \\
+	\log \left(\frac{\displaystyle n_1!}
+	{\displaystyle (n_0 - n_{01})! ~ (n_1 - n_{01})!} \right)
+	&amp; \text{when } s_0 \neq s_1
+	\end{cases}
+\end{align}\]</span></p>
+<p>Together, some additional terms/factors cancel out:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I(\mathrm{\bf n},\mathrm{\bf s})
+&amp;= \log \left(\frac{(N - n_{01} + m)! ~ N!}
+	{(N + m - 1)! ~ m ~ (N - n_{01})!}\right)
+	+ \log \left( \frac{(N - n_{01})! ~ n_0!}{N! ~ n_{01}!} \right) \\[5pt]
+&amp; ~~~~ + \begin{cases}
+	\log \left(\frac{\displaystyle 1}{\displaystyle (n_0 - 2n_{01})!} \right)
+	&amp; \text{when } s_0 = s_1 \\
+	\log \left(\frac{\displaystyle n_1!}
+	{\displaystyle (n_0 - n_{01})! ~ (n_1 - n_{01})!} \right)
+	&amp; \text{when } s_0 \neq s_1
+	\end{cases} \\[5pt]
+&amp;= \log \left(\frac{(N - n_{01} + m)! ~ n_0!}
+	{(N + m - 1)! ~ m ~ n_{01}!} \right) + \begin{cases}
+	\log \left(\frac{\displaystyle 1}{\displaystyle (n_0 - 2n_{01})!} \right)
+	&amp; \text{when } s_0 = s_1 \\
+	\log \left(\frac{\displaystyle n_1!}
+	{\displaystyle (n_0 - n_{01})! ~ (n_1 - n_{01})!} \right)
+	&amp; \text{when } s_0 \neq s_1
+	\end{cases}
+\end{align}\]</span></p>
+<p>which, by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Using_simpler_operations">logarithmic
+identity</a>,
+can be computed in an efficient and numerically stable way with an
+implementation of the
+<a target="_blank" rel="noopener" href="https://hackage.haskell.org/package/math-functions-0.3.4.4/docs/Numeric-SpecFunctions.html#v:logFactorial">log-factorial</a>
+using the expansion</p>
+<p><span class="math display">\[\log((N - n_{01} + m)!) + \log(n_0!) - \log((N + m - 1)!)~-~...\]</span></p>
+<p>Finding the pair <span class="math inline">\((s_0,s_1)\)</span> with joint count <span class="math inline">\(n_{01}\)</span> and individual
+counts <span class="math inline">\((n_0,n_1)\)</span> which minimize this function at each step in the
+evolution of the dictionary is sufficient to find the next rule to
+introduce to (locally) maximize compressibility.</p>
+<p>Together with whatever changes to the length of the encoding of <span class="math inline">\(N\)</span>, as
+long as the reduction in code length offsets the increase in code length
+of the introduction of a new rule, we grow the rule set.</p>
+<h2 id="implementation">Implementation</h2>
+<p>We implement a greedy algorithm that, given a text file, repeatedly
+combines the pair of symbols that brings the greatest reduction in the
+overall information content until no pair produces a loss below zero. We
+log the introduced construction rules and information content at each
+step.</p>
+<p>The program is written in Haskell:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/nbos/diagram">Source (GitHub)</a></li>
+</ul>
+<h3 id="optimizations">Optimizations</h3>
+<p>A number of optimizations are required to run the derivations of rule
+sets to completion for inputs of significant length.</p>
+<h4 id="symbol-counts-bookkeeping">Symbol Counts Bookkeeping</h4>
+<p>As most of the symbol counts stay constant between iterations, it makes
+sense to keep those values stored in a vector (<span class="math inline">\(O(m)\)</span>) and only modify
+those affected by the introduced rule.</p>
+<h4 id="joint-counts-bookkeeping">Joint Counts Bookkeeping</h4>
+<p>Similarly, most of the joint counts stay contant between iterations,
+although there are at worst <span class="math inline">\(O(m^2)\)</span> of them. This is worth it however
+as otherwise scanning the whole string for those counts becomes
+necessary with a time complexity of <span class="math inline">\(O(Nm^2)\)</span>. Then a single pass per
+iteration can update the joint counts wherever instances of the joint
+symbol occur with <span class="math inline">\(O(N)\)</span> which is on the same order as the pass required
+to re-write the string anyway.</p>
+<h4 id="joint-positions-bookkeeping">Joint Positions Bookkeeping</h4>
+<p>At this point, the program can run on inputs of thousands or millions of
+symbols, but the operation taking up most of the run time is the <span class="math inline">\(O(N)\)</span>
+pass over the input required to 1) re-write joint occurences of
+<span class="math inline">\((s_0,s_1)\)</span> into <span class="math inline">\(s_{01}\)</span> and 2) update the joint counts map/table,
+decrementing the joints of <span class="math inline">\(s_0\)</span> with the previous symbol and <span class="math inline">\(s_1\)</span> with
+the next symbol and incrementing those with <span class="math inline">\(s_{01}\)</span> instead.</p>
+<p>This is especially pathological after the first 10% of symbols have been
+introduced and joint counts in natural text fall drastically following a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Pareto_distribution">Pareto</a>-like drop in
+counts into a very low and long tail. The algorithm then spends most of
+its time performing <span class="math inline">\(O(N)\)</span> scans of the working string looking for the
+few locations where the joint it has already decided to introduce
+appears.</p>
+<p>To resolve this, we keep track of each location
+(<span class="math inline">\(O(\mathrm{max}(\mathrm{\bf n}))\)</span>) each potential joint (<span class="math inline">\(O(m^2)\)</span>)
+occurs at and read the changes in joint counts and write the changes in
+symbol in constant time, bypassing the need to scan over the whole
+string at each iteration. Because the size of the string shrinks at
+random points between iterations, positions are stored as pointers in a
+mutable doubly-linked list so that the introduced symbols can be written
+and the difference in joints can be read in <span class="math inline">\(O(1)\)</span>.</p>
+<p>This incurs significant overhead at the begining of the execution of the
+program, but pays for itself many times over in the tail of the
+execution.</p>
+<h2 id="results">Results</h2>
+<p>The datasets of choice are initial truncations of different sizes of <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">a
+2006 version of English
+Wikipedia</a> (XML format),
+following the example of the <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">Large Text Compression
+Benchmark</a> and <a target="_blank" rel="noopener" href="http://prize.hutter1.net/">Hutter
+Prize</a>.</p>
+<p>The first <span class="math inline">\(10^9\)</span> bytes of the snapshot are referred to as <code>enwik9</code>. We
+name truncations of smaller magnitudes accordingly:</p>
+<p><img src="res/chunk/datasets.svg" /></p>
+<p>$$$$</p>
+<p>We show the total and relative share in code length (information) of the
+different components (terms) of the encoding (formula). The
+contributions of the encodings of parameters <span class="math inline">\(m\)</span> and <span class="math inline">\(N\)</span> are too small
+to be noticeable. The size of the encoding at <span class="math inline">\(m=256\)</span> (starting state)
+is indicated with a marker on the Y axis:</p>
+<p><img src="res/chunk/enwik4.svg" /></p>
+<p><img src="res/chunk/enwik5.svg" /></p>
+<p><img src="res/chunk/enwik6.svg" /></p>
+<p><img src="res/chunk/enwik7.svg" /></p>
+<p>As one would expect the bulk of the gain in compressability occur with
+the first few introduced symbols and tapers out as they produce fewer
+modifications to the string.</p>
+<p>We also notice that greater compressability is achieved with greater
+inputs (and larger dictionaries).</p>
+<p>We can measure the compressability, or “information density” resulting
+from the encoding at each point in the model’s evolution as a
+compression factor</p>
+<p><span class="math display">\[\text{compression factor} = \frac{\text{original size}}{\text{compressed size}}\]</span></p>
+<p>A compression factor slightly above 1.5 is achieved across the board
+with an empty dictionary simply by virtue of the encoding. For a given
+number of symbols, greater factors are achieved by smaller sets,
+probably due to the reduced variance of the data, but larger inputs
+produce gerater factors in the long run. The X axis is displayed in
+log-scale:</p>
+<p><img src="res/chunk/evolution.svg" /></p>
+<p>The exponentially increasing size of the input translates to
+exponentially increasing achieved dictionary sizes (and running time)
+and <em>linearly</em> increasing compression factors.</p>
   </section>
   <footer>
     <a href="./">Return</a>
