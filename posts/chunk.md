@@ -374,12 +374,11 @@ execution.
 
 ## Results
 
-The datasets of choice are initial truncations of different sizes of [a
-2006 version of English
+The dataset of choice is [a 2006 snapshot of the English
 Wikipedia](https://mattmahoney.net/dc/textdata.html) (XML format),
-following the example of the [Large Text Compression
-Benchmark](https://mattmahoney.net/dc/textdata.html) and [Hutter
-Prize](http://prize.hutter1.net/).
+following the example from the [Large Text Compression
+Benchmark](https://mattmahoney.net/dc/textdata.html) and
+[Hutter](http://prize.hutter1.net/).
 
 The first $10^9$ bytes of the snapshot are referred to as `enwik9`. We
 name truncations of smaller magnitudes accordingly:
@@ -394,13 +393,13 @@ contributions of the encodings of parameters $m$ and $N$ are too small
 to be noticeable. The size of the encoding at $m=256$ (starting state)
 is indicated with a marker on the Y axis:
 
-![](res/chunk/enwik4.svg)
+![](res/chunk/stacked/enwik4.svg)
 
-![](res/chunk/enwik5.svg)
+![](res/chunk/stacked/enwik5.svg)
 
-![](res/chunk/enwik6.svg)
+![](res/chunk/stacked/enwik6.svg)
 
-![](res/chunk/enwik7.svg)
+![](res/chunk/stacked/enwik7.svg)
 
 As one would expect the bulk of the gain in compressability occur with
 the first few introduced symbols and tapers out as they produce fewer
@@ -411,7 +410,7 @@ inputs (and larger dictionaries).
 
 We can measure the compressability, or "information density" resulting
 from the encoding at each point in the model's evolution as a
-compression factor
+compression *factor*
 
 $$\text{compression factor} = \frac{\text{original size}}{\text{compressed size}}$$
 
@@ -422,7 +421,7 @@ probably due to the reduced variance of the data, but larger inputs
 produce gerater factors in the long run. The X axis is displayed in
 log-scale:
 
-![](res/chunk/evolution.svg)
+![](res/chunk/self.svg)
 
 The exponentially increasing size of the input translates to
 exponentially increasing achieved dictionary sizes (and running time)
