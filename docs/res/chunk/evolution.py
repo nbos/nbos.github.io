@@ -166,7 +166,7 @@ for x_end, y_end, label in line_endpoints:
     
     plt.annotate(label, 
                 xy=(x_end, y_end),
-                xytext=(x_end * x_offset_factor, y_end + 0.1),
+                xytext=(x_end * x_offset_factor, y_end + 0.2),
                 textcoords='data',
                 fontfamily='monospace',
                 fontsize=12,
