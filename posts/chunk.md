@@ -1,7 +1,7 @@
 ---
 title: "Information Theoretic Chunking"
 author: Nathaniel Bos
-date: 2025-11-13
+date: 2025-12-01
 ---
 
 One of the more salient features of our cognition is the [organization of
@@ -371,45 +371,48 @@ decremented and the joint count with $s_{01}$ incremented.
 #### Joint Positions Bookkeeping
 
 At this point, the program runs to completion in a reasonable amount of
-time on strings of thousands (KB) up to a million (1 MB) symbols. The
-operation taking by far most of the run time on large strings is the
-$O(N)$ pass over the input required to
+time on strings of thousands (KB) up to a million (1 MB) symbols.
+
+By far, the operation taking most of the run time on large strings is
+the $O(N)$ pass over the input required to
 
 1) re-write joint occurences of $(s_0,s_1)$ into $s_{01}$ and
 
-2) update joint counts wherever they appear around sites where $s_{01}$
-gets written
+2) update joint counts at sites where $s_{01}$ gets written
 
 This is especially problematic after the first few symbols have been
-introduced and joint counts in natural text fall sharply following a
-[Pareto](https://en.wikipedia.org/wiki/Pareto_distribution)-like drop in
-counts into a very long tail. The algorithm then spends most of its time
-performing $O(N)$ scans of the working string looking for the few
-locations where the joint it has already decided to introduce appears.
+introduced and joint counts---for a sample of natural text---fall
+sharply following a
+[Pareto](https://en.wikipedia.org/wiki/Pareto_distribution)-like drop
+into a very long tail. The algorithm then spends most of its time
+performing uneventful $O(N)$ scans of the working string, looking for
+the few locations where the joint it has already decided to introduce
+appears.
 
-The obvious alternative to this is to index every possible construction
-site by their joint and store the string in a structure so that given a
-joint, each site can be read an rewritten in $O(1)$ time.
+The alternative to this is to store the set construction sites (indexes)
+for each candidate joint and use a string representation that allows
+efficient random access at those locations when a rule is introduced.
 
-Because rewriting turns two symbols into one symbol, a simple vector
-cannot support arbitrary amounts of random rewrites while guaranteeing
-constant-time access to the left and right positions of random
-construction sites. Introducing a layer of indirection on the positions
-in the string (essentially implementing a doubly-linked-list) we can
-ensure those complexity bounds with only a $O(N)$ increase in space
-requirements.
+Because the act of rewriting turns two symbols into one symbol, a vector
+of symbols traditionally indexed either accumulates gaps of arbitrary
+length over time, hindering access, or requires on the order of $O(N)$
+rewrites per introduction to close them.
 
-This incurs significant overhead at the begining of the execution of the
-program, but pays for itself many times over in the tail of the
-execution.
+The solution is to use a doubly linked list together and the permanent
+memory addresses of nodes as indexes allowing both random access closing
+gaps in constant time without affecting indexes down the line.
+
+In practice, this incurs significant overhead at the begining of the
+execution of the program, but pays for itself many times over in the
+long tail of the execution.
 
 ## Results
 
-The dataset of choice is [a 2006 snapshot of the English
+The dataset of choice is a [2006 snapshot of the English
 Wikipedia](https://mattmahoney.net/dc/textdata.html) (XML format),
 following the example of the [Large Text Compression
 Benchmark](https://mattmahoney.net/dc/textdata.html) and
-[Hutter](http://prize.hutter1.net/).
+[Hutter prize](http://prize.hutter1.net/).
 
 The first $10^9$ bytes of the snapshot are referred to as
 `enwik9`. Truncations of smaller magnitudes are named accordingly:
@@ -418,11 +421,12 @@ The first $10^9$ bytes of the snapshot are referred to as
 
 $$$$
 
-We show the total and relative share in code length (information) of the
-different components (terms) of the encoding (formula). The
-contributions of the encodings of parameters $m$ and $N$ are too small
-to be noticeable. The size of the encoding at $m=256$ (starting state)
-is indicated with a marker on the Y axis:
+For different sized inputs, we show the evolution of the total code
+length (information) divided among the different components (terms) of
+the encoding (formula) as the dictionary grows. The contributions of the
+encodings of parameters $m$ and $N$ are too small to be noticeable and
+left out. The size of the encoding at $m=256$ (empty dictionary) is
+indicated with a marker on the Y axis:
 
 ![](res/chunk/stacked/enwik4.svg)
 
@@ -439,23 +443,32 @@ modifications to the string.
 We also notice that greater compressability is achieved with greater
 inputs (and larger dictionaries).
 
-We can measure the compressability, or "information density" resulting
-from the encoding at each point in the model's evolution as a
-compression *factor*
+We can compare the compressability, or "information density" between
+scales by computing a compression *factor* at each point in the model's
+evolution:
 
-$$\text{compression factor} = \frac{\text{original size}}{\text{compressed size}}$$
+$$\text{compression factor} = \frac{\text{original size}}
+{\text{compressed size}}.$$
 
 A compression factor slightly above 1.5 is achieved across the board
-with an empty dictionary simply by virtue of the encoding. For a given
-number of symbols, greater factors are achieved by smaller sets,
-probably due to the reduced variance of the data, but larger inputs
-produce gerater factors in the long run. The X axis is displayed in
+with an empty dictionary simply by virtue of the encoding. Final
+compression factors are marked on the Y axis. The X axis is displayed in
 log-scale:
 
 ![](res/chunk/self.svg)
 
-<!-- ![](res/chunk/enwik7.svg) -->
+For a given number of symbols, greater factors are achieved by smaller
+sets, probably due to the reduced variance of a smaller dataset, but
+larger inputs are amenable to greater factors in the long run, as the
+large string encoding term ($\mathrm{\bf s}$) can support rule
+introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf n}$) before
+they begin to outweigh the reduction on $\mathrm{\bf s}$.
 
-The exponentially increasing size of the input translates to
-exponentially increasing achieved dictionary sizes (and running time)
-and *linearly* increasing compression factors.
+Ultimately, exponentially increasing input sizes seem to translate to
+exponentially increasing dictionary sizes (and running time), and
+*linearly* increasing compression factors.
+
+Data: [`enwik4`](res/chunk/self/enwik4.csv),
+[`enwik5`](res/chunk/self/enwik5.csv),
+[`enwik6`](res/chunk/self/enwik6.csv),
+[`enwik7`](res/chunk/self/enwik7.csv)

@@ -26,7 +26,7 @@
       <h1>Information Theoretic Chunking</h1>
       <article>
   <section class="header">
-    Posted on November 13, 2025
+    Posted on December  1, 2025
     
     by Nathaniel Bos
     
@@ -323,48 +323,50 @@ decremented and the joint count with <span class="math inline">\(s_{01}\)</span>
 <!-- but in practice where  -->
 <h4 id="joint-positions-bookkeeping">Joint Positions Bookkeeping</h4>
 <p>At this point, the program runs to completion in a reasonable amount of
-time on strings of thousands (KB) up to a million (1 MB) symbols. The
-operation taking by far most of the run time on large strings is the
-<span class="math inline">\(O(N)\)</span> pass over the input required to</p>
+time on strings of thousands (KB) up to a million (1 MB) symbols.</p>
+<p>By far, the operation taking most of the run time on large strings is
+the <span class="math inline">\(O(N)\)</span> pass over the input required to</p>
 <ol type="1">
 <li><p>re-write joint occurences of <span class="math inline">\((s_0,s_1)\)</span> into <span class="math inline">\(s_{01}\)</span> and</p></li>
-<li><p>update joint counts wherever they appear around sites where <span class="math inline">\(s_{01}\)</span>
-gets written</p></li>
+<li><p>update joint counts at sites where <span class="math inline">\(s_{01}\)</span> gets written</p></li>
 </ol>
 <p>This is especially problematic after the first few symbols have been
-introduced and joint counts in natural text fall sharply following a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Pareto_distribution">Pareto</a>-like drop in
-counts into a very long tail. The algorithm then spends most of its time
-performing <span class="math inline">\(O(N)\)</span> scans of the working string looking for the few
-locations where the joint it has already decided to introduce appears.</p>
-<p>The obvious alternative to this is to index every possible construction
-site by their joint and store the string in a structure so that given a
-joint, each site can be read an rewritten in <span class="math inline">\(O(1)\)</span> time.</p>
-<p>Because rewriting turns two symbols into one symbol, a simple vector
-cannot support arbitrary amounts of random rewrites while guaranteeing
-constant-time access to the left and right positions of random
-construction sites. Introducing a layer of indirection on the positions
-in the string (essentially implementing a doubly-linked-list) we can
-ensure those complexity bounds with only a <span class="math inline">\(O(N)\)</span> increase in space
-requirements.</p>
-<p>This incurs significant overhead at the begining of the execution of the
-program, but pays for itself many times over in the tail of the
-execution.</p>
+introduced and joint counts—for a sample of natural text—fall
+sharply following a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Pareto_distribution">Pareto</a>-like drop
+into a very long tail. The algorithm then spends most of its time
+performing uneventful <span class="math inline">\(O(N)\)</span> scans of the working string, looking for
+the few locations where the joint it has already decided to introduce
+appears.</p>
+<p>The alternative to this is to store the set construction sites (indexes)
+for each candidate joint and use a string representation that allows
+efficient random access at those locations when a rule is introduced.</p>
+<p>Because the act of rewriting turns two symbols into one symbol, a vector
+of symbols traditionally indexed either accumulates gaps of arbitrary
+length over time, hindering access, or requires on the order of <span class="math inline">\(O(N)\)</span>
+rewrites per introduction to close them.</p>
+<p>The solution is to use a doubly linked list together and the permanent
+memory addresses of nodes as indexes allowing both random access closing
+gaps in constant time without affecting indexes down the line.</p>
+<p>In practice, this incurs significant overhead at the begining of the
+execution of the program, but pays for itself many times over in the
+long tail of the execution.</p>
 <h2 id="results">Results</h2>
-<p>The dataset of choice is <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">a 2006 snapshot of the English
+<p>The dataset of choice is a <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">2006 snapshot of the English
 Wikipedia</a> (XML format),
 following the example of the <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">Large Text Compression
 Benchmark</a> and
-<a target="_blank" rel="noopener" href="http://prize.hutter1.net/">Hutter</a>.</p>
+<a target="_blank" rel="noopener" href="http://prize.hutter1.net/">Hutter prize</a>.</p>
 <p>The first <span class="math inline">\(10^9\)</span> bytes of the snapshot are referred to as
 <code>enwik9</code>. Truncations of smaller magnitudes are named accordingly:</p>
 <p><img src="res/chunk/datasets.svg" /></p>
 <p>$$$$</p>
-<p>We show the total and relative share in code length (information) of the
-different components (terms) of the encoding (formula). The
-contributions of the encodings of parameters <span class="math inline">\(m\)</span> and <span class="math inline">\(N\)</span> are too small
-to be noticeable. The size of the encoding at <span class="math inline">\(m=256\)</span> (starting state)
-is indicated with a marker on the Y axis:</p>
+<p>For different sized inputs, we show the evolution of the total code
+length (information) divided among the different components (terms) of
+the encoding (formula) as the dictionary grows. The contributions of the
+encodings of parameters <span class="math inline">\(m\)</span> and <span class="math inline">\(N\)</span> are too small to be noticeable and
+left out. The size of the encoding at <span class="math inline">\(m=256\)</span> (empty dictionary) is
+indicated with a marker on the Y axis:</p>
 <p><img src="res/chunk/stacked/enwik4.svg" /></p>
 <p><img src="res/chunk/stacked/enwik5.svg" /></p>
 <p><img src="res/chunk/stacked/enwik6.svg" /></p>
@@ -374,21 +376,29 @@ the first few introduced symbols and tapers out as they produce fewer
 modifications to the string.</p>
 <p>We also notice that greater compressability is achieved with greater
 inputs (and larger dictionaries).</p>
-<p>We can measure the compressability, or “information density” resulting
-from the encoding at each point in the model’s evolution as a
-compression <em>factor</em></p>
-<p><span class="math display">\[\text{compression factor} = \frac{\text{original size}}{\text{compressed size}}\]</span></p>
+<p>We can compare the compressability, or “information density” between
+scales by computing a compression <em>factor</em> at each point in the model’s
+evolution:</p>
+<p><span class="math display">\[\text{compression factor} = \frac{\text{original size}}
+{\text{compressed size}}.\]</span></p>
 <p>A compression factor slightly above 1.5 is achieved across the board
-with an empty dictionary simply by virtue of the encoding. For a given
-number of symbols, greater factors are achieved by smaller sets,
-probably due to the reduced variance of the data, but larger inputs
-produce gerater factors in the long run. The X axis is displayed in
+with an empty dictionary simply by virtue of the encoding. Final
+compression factors are marked on the Y axis. The X axis is displayed in
 log-scale:</p>
 <p><img src="res/chunk/self.svg" /></p>
-<!-- ![](res/chunk/enwik7.svg) -->
-<p>The exponentially increasing size of the input translates to
-exponentially increasing achieved dictionary sizes (and running time)
-and <em>linearly</em> increasing compression factors.</p>
+<p>For a given number of symbols, greater factors are achieved by smaller
+sets, probably due to the reduced variance of a smaller dataset, but
+larger inputs are amenable to greater factors in the long run, as the
+large string encoding term (<span class="math inline">\(\mathrm{\bf s}\)</span>) can support rule
+introductions for longer (<span class="math inline">\(\mathrm{\bf r}\)</span> and <span class="math inline">\(\mathrm{\bf n}\)</span>) before
+they begin to outweigh the reduction on <span class="math inline">\(\mathrm{\bf s}\)</span>.</p>
+<p>Ultimately, exponentially increasing input sizes seem to translate to
+exponentially increasing dictionary sizes (and running time), and
+<em>linearly</em> increasing compression factors.</p>
+<p>Data: <a href="res/chunk/self/enwik4.csv"><code>enwik4</code></a>,
+<a href="res/chunk/self/enwik5.csv"><code>enwik5</code></a>,
+<a href="res/chunk/self/enwik6.csv"><code>enwik6</code></a>,
+<a href="res/chunk/self/enwik7.csv"><code>enwik7</code></a></p>
   </section>
   <footer>
     <a href="./">Return</a>
