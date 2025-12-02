@@ -187,7 +187,7 @@ pairs is one larger:</p>
 will always be the case that <span class="math inline">\(m \geq 256\)</span>. The information content of
 our entire encoding is therefore:</p>
 <p><span class="math display">\[\begin{align}
-I(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})
+I_{(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})}
 =~&amp;~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle m \vphantom{\prod}}
 + \underbrace{2\log \left(\frac{(m-1)!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
@@ -219,7 +219,7 @@ constructed into a new symbol.</p>
 from symbols with counts <span class="math inline">\((n_0,n_1)\)</span>, the main terms that affect the
 total information are the term for the counts:</p>
 <p><span class="math display">\[\begin{align}
-\Delta I(\mathrm{\bf n})
+\Delta I_{\mathrm{\bf n}}
 &amp;= \log {N - n_{01} + m \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
 &amp;= \log \left(\frac{(N - n_{01} + m)!}{m!\,(N - n_{01})!}\right)
 	- \log \left(\frac{(N + m - 1)!}{(m - 1)!\,N!}\right) \\[5pt]
@@ -234,7 +234,7 @@ total information are the term for the counts:</p>
 <!-- s_{01}$: -->
 <p>and the term for the ordering of the string:</p>
 <p><span class="math display">\[\begin{align}
-\Delta I(\mathrm{\bf s})
+\Delta I_\mathrm{\bf s}
 &amp;= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
 	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
 &amp;= \begin{cases}
@@ -255,8 +255,9 @@ total information are the term for the counts:</p>
 \end{align}\]</span></p>
 <p>$$$$</p>
 <p>Together, some additional terms/factors cancel out:</p>
+<div id="loss-formula">
 <p><span class="math display">\[\begin{align}
-\Delta I(\mathrm{\bf n},\mathrm{\bf s})
+\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})}
 &amp;= \log \left(\frac{(N - n_{01} + m)!\,N!}
 	{(N + m - 1)!\,m\,(N - n_{01})!}\right)
 	+ \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) \\[5pt]
@@ -276,6 +277,7 @@ total information are the term for the counts:</p>
 	&amp; \text{when } s_0 \neq s_1
 	\end{cases}
 \end{align}\]</span></p>
+</div>
 <p>which, by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Using_simpler_operations">logarithmic
 identity</a>,
 can be computed in an efficient and numerically stable way with an
@@ -302,7 +304,7 @@ at each step.</p>
 <li><a target="_blank" rel="noopener" href="https://github.com/nbos/diagram_">Source (GitHub)</a></li>
 </ul>
 <h3 id="optimizations">Optimizations</h3>
-<p>A number of additional optimizations are required to run the program to
+<p>A number of additional optimizations were required to run the program to
 completion on inputs of significant length.</p>
 <h4 id="counts-bookkeeping">Counts Bookkeeping</h4>
 <p>As most of the symbol counts <span class="math inline">\(n_0,n_1,\ldots,n_{m-1}\)</span> stay constant
@@ -319,15 +321,16 @@ candidate for the next rule.</p>
 s_{01}\)</span>, symbols occuring immediately before <span class="math inline">\(s_0\)</span> and immediately after
 <span class="math inline">\(s_1\)</span> are subject to have their joint count with the respective part
 decremented and the joint count with <span class="math inline">\(s_{01}\)</span> incremented.</p>
-<!-- At worst, this has the same complexity as re-counting all joint counts, -->
-<!-- but in practice where  -->
+<!-- At worst, this has the same complexity as re-counting all joint
+counts, but in practice where -->
 <h4 id="joint-positions-bookkeeping">Joint Positions Bookkeeping</h4>
-<p>At this point, the program runs to completion in a reasonable amount of
-time on strings of thousands (KB) up to a million (1 MB) symbols.</p>
-<p>By far, the operation taking most of the run time on large strings is
-the <span class="math inline">\(O(N)\)</span> pass over the input required to</p>
+<p>With the above optimizations, the program runs to completion in a
+reasonable amount of time on strings of thousands (KB) up to a million
+(1 MB) symbols.</p>
+<p>At this point, the operation taking by far most of the run time on large
+strings is the <span class="math inline">\(O(N)\)</span> pass over the input required to</p>
 <ol type="1">
-<li><p>re-write joint occurences of <span class="math inline">\((s_0,s_1)\)</span> into <span class="math inline">\(s_{01}\)</span> and</p></li>
+<li><p>rewrite joint occurences of <span class="math inline">\((s_0,s_1)\)</span> into <span class="math inline">\(s_{01}\)</span> and</p></li>
 <li><p>update joint counts at sites where <span class="math inline">\(s_{01}\)</span> gets written</p></li>
 </ol>
 <p>This is especially problematic after the first few symbols have been
@@ -351,6 +354,106 @@ gaps in constant time without affecting indexes down the line.</p>
 <p>In practice, this incurs significant overhead at the begining of the
 execution of the program, but pays for itself many times over in the
 long tail of the execution.</p>
+<h4 id="joint-loss-bookkeeping">Joint Loss Bookkeeping</h4>
+<p>The next operations which appropriates the bulk of the run-time on large
+inputs is the evaluation and sorting of all joints according to the
+<a href="#loss-formula">loss function</a>.</p>
+<p>We can see this becomes severe when the size of the dictionary (<span class="math inline">\(m\)</span>) is
+large as the number of possible joints grows on the order of
+<span class="math display">\[O(\min(m^2,N)).\]</span></p>
+<p>Examining our loss formula:</p>
+<p><span class="math display">\[\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
+\log \left( \frac
+	{(N - n_{01} + m)!\,n_0!}
+	{(N + m - 1)!\,m\,n_{01}!}
+\right)
++ \begin{cases} \log  \left( \frac
+	{\displaystyle 1}
+	{\displaystyle (n_0 - 2n_{01})!}
+\right) &amp; \text{when } s_0 = s_1 \\
+\log \left( \frac
+	{\displaystyle n_1!}
+	{\displaystyle (n_0 - n_{01})!\,(n_1 - n_{01})!}
+\right) &amp; \text{when } s_0 \neq s_1,
+\end{cases}\]</span></p>
+<p>splitting factors according to which term they came from</p>
+<p><span class="math display">\[\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
+\Delta I_\mathrm{\bf n}' + \Delta I_\mathrm{\bf s}'\]</span></p>
+<p>we have a loss on the encoding of the counts:</p>
+<p><span class="math display">\[\Delta I_\mathrm{\bf n}' =
+	\log \left( \frac
+		{(N - n_{01} + m)!}
+		{(N + m - 1)!\,m}
+	\right),
+\]</span>
+which is</p>
+<ol type="1">
+<li>always negative, given <span class="math inline">\(N,m,n_{01} &gt; 1\)</span></li>
+<li>only depends on <span class="math inline">\(N\)</span>, <span class="math inline">\(m\)</span>, and <span class="math inline">\(n_{01}\)</span>, and</li>
+<li>for a given <span class="math inline">\(N\)</span> and <span class="math inline">\(m\)</span>, minimal when <span class="math inline">\(n_{01}\)</span> is maximal,</li>
+</ol>
+<p>$$$$</p>
+<p>and one on the encoding of the ordering of the string:</p>
+<p><span class="math display">\[\Delta I_\mathrm{\bf s}' =
+\begin{cases}
+	\log \left( \frac
+		{ \displaystyle n_0! }
+		{ \displaystyle n_{01}! \, (n_0 - 2n_{01})! }
+	\right)  &amp; \text{when } s_0 = s_1 \\
+	\log \left( \frac
+		{ \displaystyle n_0! \, n_1! }
+		{ \displaystyle n_{01}! \, (n_0 - n_{01})! \, (n_1 - n_{01})! }
+	\right) &amp; \text{when } s_0 \neq s_1,
+\end{cases}
+\]</span>
+which is</p>
+<ol type="1">
+<li>always positive since it can be rewritten as</li>
+</ol>
+<p><span class="math display">\[\Delta I_\mathrm{\bf s}' =
+\begin{cases}
+	\log \left( \displaystyle
+		{ n_0 \choose 2n_{01}} \cdot (2n_{01})!
+	\right)  &amp; \text{when } s_0 = s_1 \\
+	\log \left( \displaystyle
+	    { n_0 \choose n_{01}} \cdot { n_1 \choose n_{01}} \cdot n_{01}!
+	\right) &amp; \text{when } s_0 \neq s_1,
+\end{cases}
+\]</span></p>
+<ol start="2" type="1">
+<li>only depends on <span class="math inline">\(n_0\)</span>, <span class="math inline">\(n_1\)</span>, and <span class="math inline">\(n_{01}\)</span>, and</li>
+<li>is minimal given <span class="math inline">\(n_{01}\)</span> when <span class="math inline">\(n_0\)</span> and <span class="math inline">\(n_1\)</span> are also minimal,
+which is
+<span class="math display">\[\mathrm{argmin}~\Delta I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01}) =
+ 	\begin{cases}
+ 		n_0 := 2n_{01}  &amp; \text{when } s_0 = s_1 \\
+ 		(n_0,n_1) := (n_{01},n_{01}) &amp; \text{when } s_0 \neq s_1,
+ 	\end{cases}
+ \]</span></li>
+</ol>
+<p>$$$$</p>
+<p>Given these bounds, we can restrict our search for the minimal value of
+<span class="math inline">\(\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})}\)</span> on a certain subset of the
+highest values of <span class="math inline">\(n_01\)</span>.</p>
+<p>The chosen strategy was to sort joints first according to the joint
+count <span class="math inline">\(n_{01}\)</span> and—for joints with the same value of
+<span class="math inline">\(n_{01}\)</span>—according to the value of <span class="math inline">\(\Delta I_\mathrm{\bf s}'\)</span>. These
+indexes remain constant between rule introductions where <span class="math inline">\(N\)</span> and <span class="math inline">\(m\)</span>
+necessarily change value, but most counts and joint counts remain
+constant.</p>
+<p>Then, at each iteration, given the values of <span class="math inline">\(N\)</span> and <span class="math inline">\(m\)</span>, we traverse
+the joints along the spine of <span class="math inline">\(n_{01}\)</span>’s, from high to low, computing
+the lowest values available for <span class="math inline">\(\Delta I_\mathrm{\bf n}'(N,m,n_{01})\)</span>
+in order, and for each, add it to the minimal value of <span class="math inline">\(\Delta
+I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01})\)</span> (as indexed) and interrupt the
+traversal when</p>
+<p><span class="math display">\[\begin{align}
+\text{best so far} &lt;~&amp; \Delta I_\mathrm{\bf n}'(N,m,n_{01}) \\
+&amp;\!+~ \mathrm{argmin}~\Delta I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01}).
+\end{align}\]</span></p>
+<p>This way, retrieving the joint with the minimal loss is almost instant
+at the cost of having to maintain the indexes of joints for which any of
+<span class="math inline">\(n_0\)</span>, <span class="math inline">\(n_1\)</span>, or <span class="math inline">\(n_{01}\)</span> gets changed after each introduction.</p>
 <h2 id="results">Results</h2>
 <p>The dataset of choice is a <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">2006 snapshot of the English
 Wikipedia</a> (XML format),
@@ -389,10 +492,11 @@ log-scale:</p>
 <p>For a given number of symbols, greater factors are achieved by smaller
 sets, probably due to the reduced variance of a smaller dataset, but
 larger inputs are amenable to greater factors in the long run, as the
-large string encoding term (<span class="math inline">\(\mathrm{\bf s}\)</span>) can support rule
-introductions for longer (<span class="math inline">\(\mathrm{\bf r}\)</span> and <span class="math inline">\(\mathrm{\bf n}\)</span>) before
-they begin to outweigh the reduction on <span class="math inline">\(\mathrm{\bf s}\)</span>.</p>
-<p>Ultimately, exponentially increasing input sizes seem to translate to
+large string encoding term (<span class="math inline">\(\mathrm{\bf s}\)</span> decreasing) can support
+rule introductions for longer (<span class="math inline">\(\mathrm{\bf r}\)</span> and <span class="math inline">\(\mathrm{\bf n}\)</span>
+increasing) before they begin to outweigh the reduction on <span class="math inline">\(\mathrm{\bf
+s}\)</span>.</p>
+<p>Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 <em>linearly</em> increasing compression factors.</p>
 <p>Data: <a href="res/chunk/self/enwik4.csv"><code>enwik4</code></a>,

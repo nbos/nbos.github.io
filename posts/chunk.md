@@ -206,7 +206,7 @@ will always be the case that $m \geq 256$. The information content of
 our entire encoding is therefore:
 
 $$\begin{align}
-I(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})
+I_{(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})}
 =~&~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle m \vphantom{\prod}}
 + \underbrace{2\log \left(\frac{(m-1)!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
@@ -244,7 +244,7 @@ from symbols with counts $(n_0,n_1)$, the main terms that affect the
 total information are the term for the counts:
 
 $$\begin{align}
-\Delta I(\mathrm{\bf n})
+\Delta I_{\mathrm{\bf n}}
 &= \log {N - n_{01} + m \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
 &= \log \left(\frac{(N - n_{01} + m)!}{m!\,(N - n_{01})!}\right)
 	- \log \left(\frac{(N + m - 1)!}{(m - 1)!\,N!}\right) \\[5pt]
@@ -262,7 +262,7 @@ $$\begin{align}
 and the term for the ordering of the string:
 
 $$\begin{align}
-\Delta I(\mathrm{\bf s})
+\Delta I_\mathrm{\bf s}
 &= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
 	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
 &= \begin{cases}
@@ -286,8 +286,9 @@ $$$$
 
 Together, some additional terms/factors cancel out:
 
+<div id="loss-formula">
 $$\begin{align}
-\Delta I(\mathrm{\bf n},\mathrm{\bf s})
+\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})}
 &= \log \left(\frac{(N - n_{01} + m)!\,N!}
 	{(N + m - 1)!\,m\,(N - n_{01})!}\right)
 	+ \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) \\[5pt]
@@ -307,6 +308,7 @@ $$\begin{align}
 	& \text{when } s_0 \neq s_1
 	\end{cases}
 \end{align}$$
+</div>
 
 which, by [logarithmic
 identity](https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Using_simpler_operations),
@@ -342,7 +344,7 @@ The program is written in Haskell:
 
 ### Optimizations
 
-A number of additional optimizations are required to run the program to
+A number of additional optimizations were required to run the program to
 completion on inputs of significant length.
 
 #### Counts Bookkeeping
@@ -365,18 +367,19 @@ s_{01}$, symbols occuring immediately before $s_0$ and immediately after
 $s_1$ are subject to have their joint count with the respective part
 decremented and the joint count with $s_{01}$ incremented.
 
-<!-- At worst, this has the same complexity as re-counting all joint counts, -->
-<!-- but in practice where  -->
+<!-- At worst, this has the same complexity as re-counting all joint
+counts, but in practice where -->
 
 #### Joint Positions Bookkeeping
 
-At this point, the program runs to completion in a reasonable amount of
-time on strings of thousands (KB) up to a million (1 MB) symbols.
+With the above optimizations, the program runs to completion in a
+reasonable amount of time on strings of thousands (KB) up to a million
+(1 MB) symbols.
 
-By far, the operation taking most of the run time on large strings is
-the $O(N)$ pass over the input required to
+At this point, the operation taking by far most of the run time on large
+strings is the $O(N)$ pass over the input required to
 
-1) re-write joint occurences of $(s_0,s_1)$ into $s_{01}$ and
+1) rewrite joint occurences of $(s_0,s_1)$ into $s_{01}$ and
 
 2) update joint counts at sites where $s_{01}$ gets written
 
@@ -405,6 +408,122 @@ gaps in constant time without affecting indexes down the line.
 In practice, this incurs significant overhead at the begining of the
 execution of the program, but pays for itself many times over in the
 long tail of the execution.
+
+#### Joint Loss Bookkeeping
+
+The next operations which appropriates the bulk of the run-time on large
+inputs is the evaluation and sorting of all joints according to the
+[loss function](#loss-formula).
+
+We can see this becomes severe when the size of the dictionary ($m$) is
+large as the number of possible joints grows on the order of
+$$O(\min(m^2,N)).$$
+
+Examining our loss formula:
+
+$$\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
+\log \left( \frac
+	{(N - n_{01} + m)!\,n_0!}
+	{(N + m - 1)!\,m\,n_{01}!}
+\right)
++ \begin{cases} \log  \left( \frac
+	{\displaystyle 1}
+	{\displaystyle (n_0 - 2n_{01})!}
+\right) & \text{when } s_0 = s_1 \\
+\log \left( \frac
+	{\displaystyle n_1!}
+	{\displaystyle (n_0 - n_{01})!\,(n_1 - n_{01})!}
+\right) & \text{when } s_0 \neq s_1,
+\end{cases}$$
+
+splitting factors according to which term they came from
+
+$$\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
+\Delta I_\mathrm{\bf n}' + \Delta I_\mathrm{\bf s}'$$
+
+we have a loss on the encoding of the counts:
+
+$$\Delta I_\mathrm{\bf n}' =
+	\log \left( \frac
+		{(N - n_{01} + m)!}
+		{(N + m - 1)!\,m}
+	\right),
+$$
+which is
+
+1) always negative, given $N,m,n_{01} > 1$
+2) only depends on $N$, $m$, and $n_{01}$, and
+3) for a given $N$ and $m$, minimal when $n_{01}$ is maximal,
+
+$$$$
+
+and one on the encoding of the ordering of the string:
+
+$$\Delta I_\mathrm{\bf s}' =
+\begin{cases}
+	\log \left( \frac
+		{ \displaystyle n_0! }
+		{ \displaystyle n_{01}! \, (n_0 - 2n_{01})! }
+	\right)  & \text{when } s_0 = s_1 \\
+	\log \left( \frac
+		{ \displaystyle n_0! \, n_1! }
+		{ \displaystyle n_{01}! \, (n_0 - n_{01})! \, (n_1 - n_{01})! }
+	\right) & \text{when } s_0 \neq s_1,
+\end{cases}
+$$
+which is
+
+1) always positive since it can be rewritten as
+
+$$\Delta I_\mathrm{\bf s}' =
+\begin{cases}
+	\log \left( \displaystyle
+		{ n_0 \choose 2n_{01}} \cdot (2n_{01})!
+	\right)  & \text{when } s_0 = s_1 \\
+	\log \left( \displaystyle
+	    { n_0 \choose n_{01}} \cdot { n_1 \choose n_{01}} \cdot n_{01}!
+	\right) & \text{when } s_0 \neq s_1,
+\end{cases}
+$$
+
+2) only depends on $n_0$, $n_1$, and $n_{01}$, and
+3) is minimal given $n_{01}$ when $n_0$ and $n_1$ are also minimal,
+which is
+	$$\mathrm{argmin}~\Delta I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01}) =
+		\begin{cases}
+			n_0 := 2n_{01}  & \text{when } s_0 = s_1 \\
+			(n_0,n_1) := (n_{01},n_{01}) & \text{when } s_0 \neq s_1,
+		\end{cases}
+	$$
+
+$$$$
+
+Given these bounds, we can restrict our search for the minimal value of
+$\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})}$ on a certain subset of the
+highest values of $n_01$.
+
+The chosen strategy was to sort joints first according to the joint
+count $n_{01}$ and---for joints with the same value of
+$n_{01}$---according to the value of $\Delta I_\mathrm{\bf s}'$. These
+indexes remain constant between rule introductions where $N$ and $m$
+necessarily change value, but most counts and joint counts remain
+constant.
+
+Then, at each iteration, given the values of $N$ and $m$, we traverse
+the joints along the spine of $n_{01}$'s, from high to low, computing
+the lowest values available for $\Delta I_\mathrm{\bf n}'(N,m,n_{01})$
+in order, and for each, add it to the minimal value of $\Delta
+I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01})$ (as indexed) and interrupt the
+traversal when
+
+$$\begin{align}
+\text{best so far} <~& \Delta I_\mathrm{\bf n}'(N,m,n_{01}) \\
+&\!+~ \mathrm{argmin}~\Delta I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01}).
+\end{align}$$
+
+This way, retrieving the joint with the minimal loss is almost instant
+at the cost of having to maintain the indexes of joints for which any of
+$n_0$, $n_1$, or $n_{01}$ gets changed after each introduction.
 
 ## Results
 
@@ -460,11 +579,12 @@ log-scale:
 For a given number of symbols, greater factors are achieved by smaller
 sets, probably due to the reduced variance of a smaller dataset, but
 larger inputs are amenable to greater factors in the long run, as the
-large string encoding term ($\mathrm{\bf s}$) can support rule
-introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf n}$) before
-they begin to outweigh the reduction on $\mathrm{\bf s}$.
+large string encoding term ($\mathrm{\bf s}$ decreasing) can support
+rule introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf n}$
+increasing) before they begin to outweigh the reduction on $\mathrm{\bf
+s}$.
 
-Ultimately, exponentially increasing input sizes seem to translate to
+Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 *linearly* increasing compression factors.
 
