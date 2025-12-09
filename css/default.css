@@ -96,6 +96,12 @@ code {
     font-size: calc(var(--font-size-base) * 0.85);
 }
 
+pre {
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+}
+
 /* Mobile Styles */
 @media (max-width: 639px) {
     body {

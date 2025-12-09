@@ -411,7 +411,7 @@ long tail of the execution.
 
 #### Joint Loss Bookkeeping
 
-The next operations which appropriates the bulk of the run-time on large
+The next operations which appropriate the bulk of the run-time on large
 inputs is the evaluation and sorting of all joints according to the
 [loss function](#loss-formula).
 
@@ -588,7 +588,260 @@ Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 *linearly* increasing compression factors.
 
-Data: [`enwik4`](res/chunk/self/enwik4.csv),
+Full output: [`enwik4`](res/chunk/self/enwik4.csv),
 [`enwik5`](res/chunk/self/enwik5.csv),
 [`enwik6`](res/chunk/self/enwik6.csv),
-[`enwik7`](res/chunk/self/enwik7.csv)
+[`enwik7`](res/chunk/self/enwik7.csv).
+
+### Appearance
+
+Chunks produced for `enwikX` datasets are a mix of English morphemes,
+words and phrases as well as markup strings specific to Wikipedia's XML
+schema:
+
+```
+256:  "]"     +  "]"    ==>  "]]"
+257:  "["     +  "["    ==>  "[["
+258:  "t"     +  "h"    ==>  "th"
+259:  "th"    +  "e"    ==>  "the"
+260:  ","     +  " "    ==>  ", "
+261:  "'"     +  "'"    ==>  "''"
+262:  " "     +  "the"  ==>  " the"
+263:  " the"  +  " "    ==>  " the "
+264:  "\n"    +  "*"    ==>  "\n*"
+265:  "q"     +  "u"    ==>  "qu"
+266:  "&"     +  "qu"   ==>  "&qu"
+267:  "i"     +  "n"    ==>  "in"
+268:  "a"     +  "n"    ==>  "an"
+269:  "o"     +  "n"    ==>  "on"
+270:  "an"    +  "d"    ==>  "and"
+271:  "o"     +  "f"    ==>  "of"
+272:  " "     +  "of"   ==>  " of"
+273:  ">"     +  "\n"   ==>  ">\n"
+274:  "in"    +  "g"    ==>  "ing"
+275:  "t"     +  ";"    ==>  "t;"
+276:  "e"     +  "n"    ==>  "en"
+277:  "<"     +  "/"    ==>  "</"
+278:  "1"     +  "9"    ==>  "19"
+279:  "&qu"   +  "o"    ==>  "&quo"
+280:  "&quo"  +  "t;"   ==>  "&quot;"
+...:  ...     +  ...    ==>  ...
+```
+<!-- 1000: "&amp;nbsp"  +  ";"             ==>  "&amp;nbsp;" -->
+<!-- 1001: "19"         +  "4"             ==>  "194" -->
+<!-- 1002: "Ch"         +  "r"             ==>  "Chr" -->
+<!-- 1003: "Chr"        +  "ist"           ==>  "Christ" -->
+<!-- 1004: "Christ"     +  "ian"           ==>  "Christian" -->
+<!-- 1005: "t"          +  "ain"           ==>  "tain" -->
+<!-- 1006: "pro"        +  "v"             ==>  "prov" -->
+<!-- 1007: "most"       +  " "             ==>  "most " -->
+<!-- 1008: ". "         +  "It"            ==>  ". It" -->
+<!-- 1009: "w"          +  "ell"           ==>  "well" -->
+<!-- 1010: ".\n\n=="    +  "="             ==>  ".\n\n===" -->
+<!-- 1011: "u"          +  "ally "         ==>  "ually " -->
+<!-- 1012: "such"       +  " "             ==>  "such " -->
+<!-- 1013: " the"       +  "m"             ==>  " them" -->
+<!-- 1014: "a"          +  "th"            ==>  "ath" -->
+<!-- 1015: "de"         +  "ath"           ==>  "death" -->
+<!-- 1016: "\n*"        +  "[http://www."  ==>  "\n*[http://www." -->
+<!-- 1017: "it"         +  "ies"           ==>  "ities" -->
+<!-- 1018: "th"         +  "um"            ==>  "thum" -->
+<!-- 1019: "|"          +  "thum"          ==>  "|thum" -->
+<!-- ...   ...             ...                  ... --
+<!-- 70000: "rop"         +  "e "           ==>  "rope " -->
+<!-- 70001: "Clock"       +  "wise "        ==>  "Clockwise " -->
+<!-- 70002: "Governor "   +  "       = [["  ==>  "Governor        = [[" -->
+<!-- 70003: "dynamic "    +  "soar"         ==>  "dynamic soar" -->
+<!-- 70004: "soft "       +  "mud"          ==>  "soft mud" -->
+<!-- 70005: "button"      +  "s "           ==>  "buttons " -->
+<!-- 70006: "aband"       +  "on "          ==>  "abandon " -->
+<!-- 70007: "phot"        +  "on "          ==>  "photon " -->
+<!-- 70008: "os"          +  "is"           ==>  "osis" -->
+<!-- 70009: "Azerbaijan"  +  "is"           ==>  "Azerbaijanis" -->
+<!-- 70010: "is"          +  "lav"          ==>  "islav" -->
+<!-- 70011: "galax"       +  "ies"          ==>  "galaxies" -->
+<!-- 70012: "galax"       +  "y"            ==>  "galaxy" -->
+<!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
+<!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
+
+Full output: [`enwik7`](res/chunk/self/enwik7.csv).
+
+Compare these chunks to those that result from a naive combination
+strategy where the most frequent joint is combined into a new symbol
+(e.g. [Re-Pair](https://en.wikipedia.org/wiki/Re-Pair)). The produced
+chunks are shorter and marginally less meaningful, at least at the
+start:
+
+```
+256: "e"   +  " "   ==>  "e "
+257: "t"   +  "h"   ==>  "th"
+258: "s"   +  " "   ==>  "s "
+259: "e"   +  "r"   ==>  "er"
+260: "i"   +  "n"   ==>  "in"
+261: "a"   +  "n"   ==>  "an"
+262: "]"   +  "]"   ==>  "]]"
+263: "["   +  "["   ==>  "[["
+264: "d"   +  " "   ==>  "d "
+265: "o"   +  "n"   ==>  "on"
+266: ","   +  "  "  ==>  ", "
+267: "t"   +  " "   ==>  "t "
+268: "o"   +  "r"   ==>  "or"
+269: "th"  +  "e "  ==>  "the "
+270: "e"   +  "n"   ==>  "en"
+271: "t"   +  "i"   ==>  "ti"
+272: "a"   +  "r"   ==>  "ar"
+273: "a"   +  "l"   ==>  "al"
+274: " "   +  " "   ==>  "  "
+275: "o"   +  "f"   ==>  "of"
+276: "y"   +  " "   ==>  "y "
+277: "of"  +  " "   ==>  "of "
+278: "r"   +  "e"   ==>  "re"
+279: "s"   +  "t"   ==>  "st"
+280: "e"   +  "d "  ==>  "ed "
+...: ...   +  ...   ==>  ...
+```
+<!-- 1000: "w"     +  "ould "  ==>  "would " -->
+<!-- 1001: "op"    +  "h"      ==>  "oph" -->
+<!-- 1002: "2"     +  "5"      ==>  "25" -->
+<!-- 1003: "p"     +  "or"     ==>  "por" -->
+<!-- 1004: "i"     +  " "      ==>  "i " -->
+<!-- 1005: "ic"    +  "t"      ==>  "ict" -->
+<!-- 1006: "pro"   +  "duc"    ==>  "produc" -->
+<!-- 1007: "M"     +  "ar"     ==>  "Mar" -->
+<!-- 1008: "y"     +  "p"      ==>  "yp" -->
+<!-- 1009: "\n\n"  +  "=="     ==>  "\n\n==" -->
+<!-- 1010: "er"    +  "n "     ==>  "ern " -->
+<!-- 1011: "l"     +  "arg"    ==>  "larg" -->
+<!-- 1012: "gu"    +  "st"     ==>  "gust" -->
+<!-- 1013: "er"    +  "\"      ==>  ", er\, " -->
+<!-- 1014: "S"     +  "e"      ==>  "Se" -->
+<!-- 1015: "c"     +  "ap"     ==>  "cap" -->
+<!-- 1016: "[["    +  "P"      ==>  "[[P" -->
+<!-- 1017: "er "   +  "of "    ==>  "er of " -->
+<!-- 1018: "oug"   +  "h"      ==>  "ough" -->
+<!-- 1019: "in"    +  "to "    ==>  "into " -->
+<!-- ...   ...        ...           ... -->
+<!-- 70000: "Build"        +  "ings and "  ==>  "Buildings and " -->
+<!-- 70001: "fronti"       +  "er"         ==>  "frontier" -->
+<!-- 70002: "Cypr"         +  "us]] "      ==>  "Cyprus]] " -->
+<!-- 70003: "description "  +  "| url=http://www."  ==>  "description | url=http://www." -->
+<!-- 70004: "ρι"           +  "στο�"      ==>  "ριστο�" -->
+<!-- 70005: "Characters in Atlas_Shrugged" + "|" ==> "Characters in Atlas_Shrugged|" -->
+<!-- 70006: "homosexual "  +  "sex is "    ==>  "homosexual sex is " -->
+<!-- 70007: "Benjamin "    +  "Tuck"       ==>  "Benjamin Tuck" -->
+<!-- 70008: "in [[leap year]]s"  +  ")\"  ==>  "with , in [[leap year]]s)\, with " -->
+<!-- 70009: "Ba"           +  "ad"         ==>  "Baad" -->
+<!-- 70010: "Ele"          +  "azar"       ==>  "Eleazar" -->
+<!-- 70011: "Fres"         +  "nel,"       ==>  "Fresnel," -->
+<!-- 70012: "UR"           +  "PS "        ==>  "URPS " -->
+<!-- 70013: "dop"          +  "e.com/"     ==>  "dope.com/" -->
+<!-- 70014: "eight"        +  "-"          ==>  "eight-" -->
+<!-- 70015: "gosp"         +  "el"         ==>  "gospel" -->
+<!-- 70016: "march"        +  "ed to "     ==>  "marched to " -->
+<!-- 70017: "tum"          +  "or"         ==>  "tumor" -->
+<!-- 70018: "tum"          +  "ul"         ==>  "tumul" -->
+<!-- 70019: "imprison"     +  "ment"       ==>  "imprisonment" -->
+<!-- 70020: "imprison"     +  "ment "      ==>  "imprisonment " -->
+<!-- 70021: "resembl"      +  "ing "       ==>  "resembling " -->
+<!-- 70022: "his father "  +  "had "       ==>  "his father had " -->
+<!-- 70023: "persec"       +  "ution of "  ==>  "persecution of " -->
+<!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
+
+Full output: [`enwik7-naive`](res/chunk/enwik7-naive.csv).
+
+Naive chunks visibly have a bias towards combining symbols with high
+occurences even if the combination doesn't hold much more meaning than
+the sum of its parts. For example compared to the more meaningful
+
+```
+">\n", "</", "ing", "&quot;",
+```
+
+the following chunks have more occurences and are therefor selected
+earlier by the naive policy:
+
+```
+"e ", "s ", "d ", "t ".
+```
+
+In terms of probability:
+
+$$p(s_0,s_1) \sim p(s_0)p(s_1).$$
+
+Instead, if we are interested in how much a joint occurs *relative* to a
+null hypothesis of independence, we get a ratio:
+
+$$\frac{p(s_0,s_1)}{p(s_0)p(s_1)}$$
+
+which, in information terms, is known as the [pointwise mutual
+information
+(PMI)](https://en.wikipedia.org/wiki/Pointwise_mutual_information):
+
+$$\begin{align} \mathrm{pmi}(s_0;s_1)
+&= \log\left(\frac{p(s_0,s_1)}{p(s_0)p(s_1)}\right) \\[5pt]
+&= \log\left(\frac{n_{01} \cdot N \cdot N}{N \cdot n_0 \cdot n_1}\right) \\[5pt]
+&= \log\left(\frac{n_{01} \, N}{n_0 \, n_1}\right) \\
+\end{align}$$
+
+Using this to score joint candidates, produces the somewhat degenerate
+dictionary containing rare byte pairs that occur almost exclusively
+together:
+
+```
+256: "�"   +  "�"  ==>  "ی"
+257: "�"   +  "�"  ==>  "Ә"
+258: "�"   +  "�"  ==>  "ے"
+259: "@"    +  "@"   ==>  "@@"
+260: "@@"   +  "@@"  ==>  "@@@@"
+261: "@@@@" +  "@@"  ==>  "@@@@@@"
+262: "@@@@" +  "@"   ==>  "@@@@@"
+263: "@@"   +  "@"   ==>  "@@@"
+264: "�"   +  "�"  ==>  "ґ"
+265: "�"   +  "�"  ==>  "��"
+...: ...    +  ...   ==>  ...
+```
+
+We scale this information by the joint count to obtain a function more
+representative of total change in information:
+
+$$\begin{align} \mathrm{spmi}(s_0;s_1) 
+&~=~ n_{01} \cdot \, \mathrm{pmi}(s_0;s_1) \\[5pt]
+&~=~ n_{01} \cdot \, \log\left(\frac{n_{01} \, N}{n_0 \, n_1}\right),
+\end{align}$$
+
+which gives a dictionary starting with:
+
+```
+256:  "]"     +  "]"    ==>  "]]"
+257:  "["     +  "["    ==>  "[["
+258:  "t"     +  "h"    ==>  "th"
+259:  "th"    +  "e"    ==>  "the"
+260:  "i"     +  "n"    ==>  "in"
+261:  "a"     +  "n"    ==>  "an"
+262:  "o"     +  "n"    ==>  "on"
+263:  ","     +  " "    ==>  ", "
+264:  " "     +  "the"  ==>  " the"
+265:  "'"     +  "'"    ==>  "''"
+266:  " the"  +  " "    ==>  " the "
+267:  "o"     +  "f"    ==>  "of"
+268:  "an"    +  "d"    ==>  "and"
+269:  "e"     +  "r"    ==>  "er"
+270:  "e"     +  "n"    ==>  "en"
+271:  "o"     +  "r"    ==>  "or"
+272:  " "     +  "of"   ==>  " of"
+273:  "\n"    +  "*"    ==>  "\n*"
+274:  "a"     +  "r"    ==>  "ar"
+275:  "a"     +  "l"    ==>  "al"
+276:  "e"     +  "d"    ==>  "ed"
+277:  "in"    +  "g"    ==>  "ing"
+278:  "a"     +  "t"    ==>  "at"
+279:  "t"     +  ";"    ==>  "t;"
+280:  "&"     +  "q"    ==>  "&q"
+...:  ...     +  ...    ==>  ...
+```
+
+which is much more similar to the dictionary obtained from our loss
+function.
+
+<!-- In fact, the topic of restoring the bias of PMI for less frequent
+pair has been addressed at length in the field of NLP, -->
