@@ -1,7 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 import os
 from matplotlib.ticker import LogLocator, FuncFormatter
 
@@ -16,18 +15,31 @@ def decimal_notation_formatter(x, pos):
         # if it's not an exact integer, show as decimal
         return f"{x:.4g}"  # four significant figures
 
-# Check command line arguments
-if len(sys.argv) < 2:
-    print("Usage: python script.py <csv_file1> <csv_file2> ... <csv_fileN>")
-    sys.exit(1)
+# Get script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, 'self')
 
-csv_files = sys.argv[1:]
+# Hardcoded file list
+csv_files = [
+    os.path.join(data_dir, 'enwik4.csv'),
+    os.path.join(data_dir, 'enwik5.csv'),
+    os.path.join(data_dir, 'enwik6.csv'),
+    os.path.join(data_dir, 'enwik7.csv')
+]
+
+
+label_offsets = {
+    'enwik4': (100, -0.1),
+    'enwik5': (200, -0.1),
+    'enwik6': (2000, -0.1),
+    'enwik7': (0, -0.1)
+}
 
 # Validate all files exist
 for csv_path in csv_files:
     if not os.path.exists(csv_path):
         print(f"Error: File '{csv_path}' does not exist")
-        sys.exit(1)
+        exit(1)
 
 all_data = []
 labels = []
@@ -70,7 +82,7 @@ for csv_path in csv_files:
 
 if not all_data:
     print("Error: No valid CSV files could be loaded")
-    sys.exit(1)
+    exit(1)
 
 # Find global minimum X and Y values across all files
 global_min_x = min(min(x_data) for x_data, y_data in all_data)
@@ -148,10 +160,6 @@ plt.ylim(bottom=y_bottom, top=y_max * 1.1)  # Add 10% padding on top
 # Configure axis with LogLocator and decimal formatter
 ax = plt.gca()
 
-# # Remove top and right spines to make plot look like it doesn't end
-# ax.spines['top'].set_visible(False)
-# ax.spines['right'].set_visible(False)
-
 # Use LogLocator to show ticks at 1e3, 2e3, 3e3 ...
 ax.xaxis.set_major_locator(LogLocator(base=10.0, subs=np.arange(1, 10)*0.1/0.1, numticks=100))
 ax.xaxis.set_major_formatter(FuncFormatter(decimal_notation_formatter))
@@ -159,14 +167,17 @@ ax.xaxis.set_major_formatter(FuncFormatter(decimal_notation_formatter))
 # Set X tick labels vertical (270 degrees rotation)
 plt.setp(ax.get_xticklabels(), rotation=270, ha="center")
 
-# Add labels in monospace, positioned above and to the left of last data point
+# Add labels in monospace, positioned relative to last data point with manual offsets
 for x_end, y_end, label in line_endpoints:
-    # Position label slightly above and to the left
+    # Get manual offset for this label
+    dx, dy = label_offsets.get(label, (0, 0))
+    
+    # Position label slightly above and to the left, plus manual offset
     x_offset_factor = 0.9  # Move left by reducing X
     
     plt.annotate(label, 
                 xy=(x_end, y_end),
-                xytext=(x_end * x_offset_factor, y_end + 0.2),
+                xytext=(x_end * x_offset_factor + dx, y_end + 0.2 + dy),
                 textcoords='data',
                 fontfamily='monospace',
                 fontsize=12,
@@ -189,7 +200,7 @@ plt.tick_params(axis='both', which='major', labelsize=10)
 plt.tick_params(axis='both', which='minor', labelsize=8)
 
 # Save plot
-output_path = 'evolution.svg'
+output_path = os.path.join(script_dir, 'self.svg')
 plt.tight_layout()
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_path}")
