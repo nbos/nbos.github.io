@@ -574,7 +574,7 @@ with an empty dictionary simply by virtue of the encoding. Final
 compression factors are marked on the Y axis. The X axis is displayed in
 log-scale:
 
-![](res/chunk/self.svg)
+![](res/chunk/self-factor.svg)
 
 For a given number of symbols, greater factors are achieved by smaller
 sets, probably due to the reduced variance of a smaller dataset, but
@@ -841,7 +841,13 @@ which gives a dictionary starting with:
 ```
 
 which is much more similar to the dictionary obtained from our loss
-function.
+function. Full output: [`enwik7-spmi`](res/chunk/enwik7-spmi.csv).
+
+Perhaps surpsisingly, the naive dictionary achieves levels of
+compression comparable to our informational approach, and the SPMI
+dictionary produces nearly identical performance to our loss function:
+
+![](res/chunk/functions-factor.svg)
 
 <!-- In fact, the topic of restoring the bias of PMI for less frequent
 pair has been addressed at length in the field of NLP, -->
