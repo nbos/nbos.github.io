@@ -804,7 +804,7 @@ together:
 We scale this information by the joint count to obtain a function more
 representative of total change in information:
 
-$$\begin{align} \mathrm{spmi}(s_0;s_1) 
+$$\begin{align} \mathrm{spmi}(s_0;s_1)
 &~=~ n_{01} \cdot \, \mathrm{pmi}(s_0;s_1) \\[5pt]
 &~=~ n_{01} \cdot \, \log\left(\frac{n_{01} \, N}{n_0 \, n_1}\right),
 \end{align}$$
@@ -845,9 +845,17 @@ function. Full output: [`enwik7-spmi`](res/chunk/enwik7-spmi.csv).
 
 Perhaps surpsisingly, the naive dictionary achieves levels of
 compression comparable to our informational approach, and the SPMI
-dictionary produces nearly identical performance to our loss function:
+dictionary produces nearly identical performance to ours:
 
 ![](res/chunk/functions-factor.svg)
 
-<!-- In fact, the topic of restoring the bias of PMI for less frequent
-pair has been addressed at length in the field of NLP, -->
+We note the evolution of the average word length:
+
+![](res/chunk/dict/functions-wl.svg)
+
+and the overlap between the scoring functions:
+
+![](res/chunk/dict/overlap.svg)
+
+showing the scaled PMI to produce results between the naive approach and
+ours, but closer to ours.
