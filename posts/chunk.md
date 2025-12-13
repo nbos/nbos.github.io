@@ -1,7 +1,7 @@
 ---
 title: "Information Theoretic Chunking"
 author: Nathaniel Bos
-date: 2025-12-01
+date: 2025-12-13
 ---
 
 One of the more salient features of our cognition is the [organization of
@@ -13,22 +13,19 @@ In the absence of clear statistical principles guiding this drive to
 prediction model greedily in the direction of maximal compression.
 
 For this, a serialization format is defined for text, based on
-combinatorial objects
-(e.g. [permutations](https://en.wikipedia.org/wiki/Permutation))
-[equivalent](count.html) to such a model, which produces codes of known
-lenghts (i.e. [information
+combinatorial objects [equivalent](count.html) to such a model, which
+produces codes of known lenghts (i.e. [information
 content](https://en.wikipedia.org/wiki/Information_content)), from which
 we derive a loss function to guide deterministic construction of
-dictionaries, of which we note the appearance and performance in
+dictionaries, of which we note their appearance and performance in
 compression.
 
 ## Note on Overfitting
 
 When modeling data with an increasing number of parameters, the
 [likelihood](https://en.wikipedia.org/wiki/Likelihood_function) of the
-data can easily reach zero as the complexity of the data merely gets
-transfered to the model instead of getting distilled into underlying
-features.
+data can easily reach zero as the complexity of the data gets transfered
+to the model instead of getting distilled into underlying features.
 
 In machine learning, this is called
 [overfitting](https://en.wikipedia.org/wiki/Overfitting) and is best
@@ -62,13 +59,10 @@ the data and the model*:
 
 $$I(\mathrm{\bf x},\theta) = I(\mathrm{\bf x} \mid \theta) + I(\theta).$$
 
-By including the model in the calculation, we capture any information
-that merely transfers from data (given the model) to the model and avoid
-an increase in parameters that doesn't decrease *total* information.
-
-This sort of inclusion of the model in the measurement is a basic
-requirement for counting information to avoid falling for traps where
-information seems to magically disappear from compression.
+By measuring the information of the model together with the data's, we
+capture any information that merely transfers from data (given the
+model) to the model and avoid an increase in parameters (model
+complexity) that doesn't decrease *total* information.
 
 ## Serializing Combinatorial Objects
 
@@ -76,11 +70,11 @@ As shown [previously](count.html#combinatorial-view),
 [counting](https://en.wikipedia.org/wiki/Combinatorics) the
 [variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)) of
 parametrized systems can produce simple closed formulas of their
-information (code length) w.r.t. optimal encoders.
+information (code length) w.r.t. an optimal encoder.
 
-For example, the information of a sequence of $N$ symbols from an
-alphabet of size $m$ with counts (a.k.a. multiplicities) $n_0, n_1,
-... n_{m-1}$ using an optimal probabilistic model (i.e. an updating
+For example, the information in a sequence of $N$ symbols from an
+alphabet of size $m$ with known counts (a.k.a. multiplicities) $n_0,
+n_1, ... n_{m-1}$ using an optimal probabilistic model (i.e. an updating
 [categorical](https://en.wikipedia.org/wiki/Categorical_distribution)
 [MLE](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation)) is
 simply the $\log$ of the [multinomial
@@ -91,27 +85,29 @@ $$\log {N \choose n_0,n_1,\ldots,n_{m-1}},$$
 
 which is simply the number of ways to order a
 [multiset](https://en.wikipedia.org/wiki/Permutation) of size $N$ with
-multiplicities $n_0,n_1,\ldots,n_{m-1}$.
+multiplicities $n_0,n_1,\ldots,n_{m-1}$
+([proof](count.html#categorical-without-replacement)).
 
 Further, given a total order
 (e.g. [lexicographic](https://en.wikipedia.org/wiki/Lexicographic_order#Finite_subsets))
 on the summoned combinatorial object (here [multiset
 permutations](https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets)),
-one can
-[derive](https://en.wikipedia.org/wiki/Combinatorial_number_system)
-so-called "ranking" and "unranking" algorithms to map to and from
-natural numbers. Interpreting that numbers in binary results in a
-serialization that is equivalent in compression efficiency to entropy
-coding the sequence symbol-by-symbol using derived probabilities.
+one can derive so-called ["ranking" and
+"unranking"]((https://en.wikipedia.org/wiki/Combinatorial_number_system))
+algorithms to map to and from natural numbers.
 
-Combinatorial descriptions can therefore give both information content
-formulae and the codecs (encoder/decoder) to verify them.
+Interpreting these numbers in binary results in a serialization that is
+equivalent in compression efficiency to entropy coding the sequence
+symbol-by-symbol using derived probabilities.
+
+We now define a serialization format for text data and its model using
+such combinatorial codes.
 
 ## Format Description
 
-As just stated, a sequence of $N$ symbols from an alphabet of size $m$
-with counts $n_0,n_1,\ldots,n_{m-1}$ can be encoded as a multiset
-permutation with information:
+As stated, a sequence of $N$ symbols from an alphabet of size $m$ with
+counts $n_0,n_1,\ldots,n_{m-1}$ can be encoded as a multiset permutation
+with information:
 
 $$\underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}},
 \vphantom{\prod_{\displaystyle i}}}
@@ -132,7 +128,8 @@ coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient):
 
 $${N + m - 1 \choose m - 1} = \frac{(N+m-1)!}{N!\,(m-1)!}.$$
 
-We prepend this encoding of counts to the encoding of the sequence:
+We prepend this encoding of counts to the encoding of the ordering of
+the sequence:
 
 $$\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
@@ -158,22 +155,24 @@ $$\underbrace{2\log m\vphantom{\prod_{\displaystyle i}}}
 + \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}$$
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}.$$
 
-which only leaves the dictionary of constructions to be encoded so that
-constructed symbols may be properly interpreted.
+Assuming the data is not random and contains repeating patterns, we can
+reduce the size of this encoding by *chunking* symbols together into new
+symbols (a.k.a. tokens), provided we append these definitions to the
+encoding.
 
 ### Inductive Constructions
 
-We want the dictionary (alphabet) of constructions (symbols) to grow
-inductively, by appending *rules* consisting of two previously defined
-symbols (either atomic or constructed) based on an assumption that *a
-whole can only be statistically significant if both of its parts also
-are*.
+For a sufficiently *universal* method of dictionary construction
+(tokenization) that affords *incremental* *greedy* additions, we opt for
+a dictionary defined inductively with *rules* consisting of two
+previously defined symbols that concatenate to form a new *joint*
+symbol.
 
-By then substituting instances where the parts appear together in the
-string with the new "joint" symbol after each introduction, the
-resulting exploration into the space of
+By incrementally growing the dictionary and substituting instances where
+the parts appear together in the string with joint symbols, the
+exploration into the space of
 [$n$-grams](https://en.wikipedia.org/wiki/Word_n-gram_language_model)
 will remain *sparse*, avoiding the [combinatorial
 explosion](https://en.wikipedia.org/wiki/Curse_of_dimensionality)
@@ -186,7 +185,7 @@ is therefore one among
 $$256 \times 256$$
 
 possible pairs. For the second rule introduction, the set of possible
-pairs is one larger:
+pairs includes the previously introduced symbol and is one larger:
 
 $$256 \times 256 \times 257 \times 257 \times \ldots$$
 
@@ -228,20 +227,21 @@ Evaluating the above formula in whole for each possible addition to the
 model to determine the optimal next step is logically what we want to
 achieve but computationally excessive.
 
-First, the terms for the encoding of $m$ (dictionary size) and
-$\mathrm{\bf r}$ (dictionary) are constant in information regardless of
-*which* symbols are chosen for the next construction. While they
-contribute in determining when the program stops (when the total length
-stops decreasing), they can be dropped when sorting candidate
-joints. Same goes for the encoding of $N$ which is mostly constant
-between introductions and at worse only a few bits in size at specific
-steps between powers of two, which at most one will be crossed as the
-maximum change $N$ can take is to get halved if every pair gets
-constructed into a new symbol.
+The terms for the encoding of $m$ (dictionary size) and $\mathrm{\bf r}$
+(dictionary) are constant in information regardless of *which* symbols
+are chosen for the next construction. While they contribute in
+determining when the program stops (when the total length stops
+decreasing), they can be dropped when sorting candidate joints. Same
+goes for the encoding of parameter $N$ which is mostly constant between
+introductions and at worse only a few bits in size at specific steps
+between powers of two, which at most one will be crossed as the maximum
+change $N$ can take is to get halved if every consecutive pair in the
+working string gets constructed into a new symbol.
 
 For the introduction of a joint symbol with count $n_{01}$, constructed
 from symbols with counts $(n_0,n_1)$, the main terms that affect the
-total information are the term for the counts:
+total information are the term for parameters $\mathrm{\bf n}$ (the
+counts):
 
 $$\begin{align}
 \Delta I_{\mathrm{\bf n}}
@@ -284,7 +284,7 @@ $$\begin{align}
 
 $$$$
 
-Together, some additional terms/factors cancel out:
+Together, some additional factors cancel out:
 
 <div id="loss-formula">
 $$\begin{align}
@@ -321,20 +321,20 @@ $$\log((N - n_{01} + m)!) + \log(n_0!) - \log((N + m - 1)!)~-~...$$
 
 $$$$
 
-Finding the pair of symbols with joint count $n_{01}$ and individual
-counts $(n_0,n_1)$ which minimize this function at each step in the
-evolution of the dictionary is sufficient to find the rule to introduce
-which locally maximizes the compressibility of the whole system.
+Finding the pair of symbols with counts $(n_0,n_1)$ and joint count
+$n_{01}$ which **minimizes** this function is sufficient to find the
+rule to introduce which locally maximizes the compressibility of the
+entire encoding.
 
-As long as this loss---and $N$'s term---offset the increase in code length
-from terms $\{m,\mathrm{\bf r}\}$ incurred by an introduction, we grow
-the dictionary/rule set.
+As long as this loss---together with $N$'s term---offsets the increase
+in code length from terms $\{m,\mathrm{\bf r}\}$ incurred by an
+introduction, we grow the dictionary (rule set).
 
 ## Implementation
 
 We implement a greedy algorithm that, given a text file, repeatedly
 combines the pair of symbols that brings the greatest reduction in the
-overall information content until no pair produces an overall loss below
+overall information content until no pair produces an loss below
 zero. We log the introduced construction rules and information content
 at each step.
 
@@ -347,13 +347,17 @@ The program is written in Haskell:
 A number of additional optimizations were required to run the program to
 completion on inputs of significant length.
 
+They mostly consist of maintaining books on different partial values in
+the correct selection of optimal introduction.
+
 #### Counts Bookkeeping
 
 As most of the symbol counts $n_0,n_1,\ldots,n_{m-1}$ stay constant
-between rule introductions, the count vector ($O(m)$ space) is preserved
-between iterations and only those affected by the introduced rule (the
-counts of the parts and the count of the new symbol) get modified. This
-can be achieved in $O(1)$ time with a dynamic array.
+between rule introductions, the count vector ($O(m)$ space) is obviously
+preserved between iterations and only those affected by the introduced
+rule (the counts of the parts and the count of the new symbol) get
+modified. This can be achieved in $O(1)$ time with a mutable dynamic
+array.
 
 #### Joint Counts Bookkeeping
 
@@ -374,7 +378,7 @@ counts, but in practice where -->
 
 With the above optimizations, the program runs to completion in a
 reasonable amount of time on strings of thousands (KB) up to a million
-(1 MB) symbols.
+(MB) symbols.
 
 At this point, the operation taking by far most of the run time on large
 strings is the $O(N)$ pass over the input required to
@@ -392,26 +396,28 @@ performing uneventful $O(N)$ scans of the working string, looking for
 the few locations where the joint it has already decided to introduce
 appears.
 
-The alternative to this is to store the set construction sites (indexes)
-for each candidate joint and use a string representation that allows
-efficient random access at those locations when a rule is introduced.
+The obvious alternative to this is to store the set construction sites
+(as indexes) for each candidate joint and use a string representation
+that allows $O(1)$ random access at those locations when a rule is
+introduced.
 
 Because the act of rewriting turns two symbols into one symbol, a vector
 of symbols traditionally indexed either accumulates gaps of arbitrary
 length over time, hindering access, or requires on the order of $O(N)$
 rewrites per introduction to close them.
 
-The solution is to use a doubly linked list together and the permanent
-memory addresses of nodes as indexes allowing both random access closing
-gaps in constant time without affecting indexes down the line.
+The solution is to use a doubly linked list and the permanent memory
+addresses (or something equivalent) of nodes as indexes allowing both
+random access and closing gaps in constant time without affecting
+indexes down the line.
 
 In practice, this incurs significant overhead at the begining of the
-execution of the program, but pays for itself many times over in the
-long tail of the execution.
+execution of the program, but pays for itself many times over by
+accelerating the long tail of the execution.
 
 #### Joint Loss Bookkeeping
 
-The next operations which appropriate the bulk of the run-time on large
+The next operations which appropriates the bulk of the run-time on large
 inputs is the evaluation and sorting of all joints according to the
 [loss function](#loss-formula).
 
@@ -436,7 +442,7 @@ $$\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
 \right) & \text{when } s_0 \neq s_1,
 \end{cases}$$
 
-splitting factors according to which term they came from
+splitting factors according to which term they originally came from
 
 $$\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
 \Delta I_\mathrm{\bf n}' + \Delta I_\mathrm{\bf s}'$$
@@ -500,14 +506,14 @@ $$$$
 
 Given these bounds, we can restrict our search for the minimal value of
 $\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})}$ on a certain subset of the
-highest values of $n_01$.
+highest values of $n_{01}$.
 
 The chosen strategy was to sort joints first according to the joint
 count $n_{01}$ and---for joints with the same value of
 $n_{01}$---according to the value of $\Delta I_\mathrm{\bf s}'$. These
 indexes remain constant between rule introductions where $N$ and $m$
-necessarily change value, but most counts and joint counts remain
-constant.
+necessarily change value (which affects all loss calculations), but most
+counts and joint counts remain constant.
 
 Then, at each iteration, given the values of $N$ and $m$, we traverse
 the joints along the spine of $n_{01}$'s, from high to low, computing
@@ -555,14 +561,14 @@ indicated with a marker on the Y axis:
 
 ![](res/chunk/stacked/enwik7.svg)
 
-As one would expect the bulk of the gain in compressability occur with
-the first few introduced symbols and tapers out as they produce fewer
-modifications to the string.
+As one would expect the bulk of the gain in compressibility occur with
+the first few introduced symbols and tapers out as introductions produce
+fewer modifications to the string.
 
-We also notice that greater compressability is achieved with greater
+We also notice that greater compressibility is achieved with greater
 inputs (and larger dictionaries).
 
-We can compare the compressability, or "information density" between
+We can compare the compressibility, or "information density" between
 scales by computing a compression *factor* at each point in the model's
 evolution:
 
@@ -582,20 +588,20 @@ larger inputs are amenable to greater factors in the long run, as the
 large string encoding term ($\mathrm{\bf s}$ decreasing) can support
 rule introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf n}$
 increasing) before they begin to outweigh the reduction on $\mathrm{\bf
-s}$.
+s}$, triggering termination.
 
 Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 *linearly* increasing compression factors.
 
-Full output: [`enwik4`](res/chunk/self/enwik4.csv),
+Full outputs (CSV): [`enwik4`](res/chunk/self/enwik4.csv),
 [`enwik5`](res/chunk/self/enwik5.csv),
 [`enwik6`](res/chunk/self/enwik6.csv),
 [`enwik7`](res/chunk/self/enwik7.csv).
 
 ### Appearance
 
-Chunks produced for `enwikX` datasets are a mix of English morphemes,
+Chunks produced for `enwik` datasets are a mix of English morphemes,
 words and phrases as well as markup strings specific to Wikipedia's XML
 schema:
 
@@ -664,7 +670,7 @@ schema:
 <!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
 <!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
 
-Full output: [`enwik7`](res/chunk/self/enwik7.csv).
+Full output (CSV): [`enwik7`](res/chunk/self/enwik7.csv).
 
 Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is combined into a new symbol
@@ -747,7 +753,7 @@ start:
 <!-- 70023: "persec"       +  "ution of "  ==>  "persecution of " -->
 <!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
 
-Full output: [`enwik7-naive`](res/chunk/enwik7-naive.csv).
+Full output (CSV): [`enwik7-naive`](res/chunk/enwik7-naive.csv).
 
 Naive chunks visibly have a bias towards combining symbols with high
 occurences even if the combination doesn't hold much more meaning than
@@ -766,7 +772,9 @@ earlier by the naive policy:
 
 In terms of probability:
 
-$$p(s_0,s_1) \sim p(s_0)p(s_1).$$
+$$p(s_0,s_1) \sim p(s_0)p(s_1)$$
+
+even when the two symbols are independent.
 
 Instead, if we are interested in how much a joint occurs *relative* to a
 null hypothesis of independence, we get a ratio:
@@ -839,23 +847,37 @@ which gives a dictionary starting with:
 280:  "&"     +  "q"    ==>  "&q"
 ...:  ...     +  ...    ==>  ...
 ```
+Full output (CSV): [`enwik7-spmi`](res/chunk/enwik7-spmi.csv)
 
 which is much more similar to the dictionary obtained from our loss
-function. Full output: [`enwik7-spmi`](res/chunk/enwik7-spmi.csv).
+function.
 
 Perhaps surpsisingly, the naive dictionary achieves levels of
 compression comparable to our informational approach, and the SPMI
-dictionary produces nearly identical performance to ours:
+dictionary's performance is nearly identical to ours:
 
 ![](res/chunk/functions-factor.svg)
 
-We note the evolution of the average word length:
+Measuring the average word lengths across the evolution of the
+dictionary produces a similar pattern:
 
 ![](res/chunk/dict/functions-wl.svg)
 
-and the overlap between the scoring functions:
+where the sudden increase in word length occuring early on is driven by
+the discovery of strings common to all the XML headers of page in the
+dataset (including redirects) like the `<revision>`, `<id>` and
+`<contributor>` tags (and their indentiations) producing words of ~30
+bytes long.
+
+We also compute for each pair of methods discussed, the coefficent of
+overlap
+
+$$\frac{|\mathrm{\bf r}_a \cap \mathrm{\bf r}_b|}{|\mathrm{\bf r}_a|}
+~~~~~~~ \mathrm{where} ~~ |\mathrm{\bf r}_a| = |\mathrm{\bf r}_b|$$
+
+between the dictionaries:
 
 ![](res/chunk/dict/overlap.svg)
 
-showing the scaled PMI to produce results between the naive approach and
-ours, but closer to ours.
+showing the scaled PMI to produce dictionaries between the naive
+approach and ours, but slightly closer to ours.
