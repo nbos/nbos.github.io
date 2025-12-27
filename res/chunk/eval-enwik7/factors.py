@@ -1,0 +1,228 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+from matplotlib.ticker import LogLocator, FuncFormatter
+from matplotlib.ticker import MaxNLocator
+
+def decimal_notation_formatter(x, pos):
+    """Format log ticks using plain decimal notation (e.g. 9e3 -> 9000)."""
+    if x == 0:
+        return "0"
+    # if x is an integer, print without decimals
+    if abs(x - int(x)) < 1e-8:
+        return str(int(x))
+    else:
+        # if it's not an exact integer, show as decimal
+        return f"{x:.4g}"  # four significant figures
+
+# Get script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, '.')
+
+# Hardcoded file list
+csv_files = [
+    os.path.join(data_dir, 'enwik4.csv'),
+    os.path.join(data_dir, 'enwik5.csv'),
+    os.path.join(data_dir, 'enwik6.csv'),
+    os.path.join(data_dir, '../self/enwik7.csv')
+]
+
+
+label_offsets = {
+    'enwik4': (500, -0.23),
+    'enwik5': (2200, -0.23),
+    'enwik6': (0, -0.45)
+}
+
+# Validate all files exist
+for csv_path in csv_files:
+    if not os.path.exists(csv_path):
+        print(f"Error: File '{csv_path}' does not exist")
+        exit(1)
+
+all_data = []
+labels = []
+
+# Read all CSV files
+for csv_path in csv_files:
+    try:
+        df = pd.read_csv(csv_path, escapechar='\\')
+        
+        # Check if CSV has at least 2 columns
+        if df.shape[1] < 2:
+            print(f"Error: CSV file '{csv_path}' must have at least 2 columns")
+            continue
+            
+        # Extract X (first column) and Y (second column)
+        x_data = pd.to_numeric(df.iloc[:, 0], errors='coerce').fillna(0).values
+        y_data = pd.to_numeric(df.iloc[:, 1], errors='coerce').fillna(0).values
+        
+        # Remove any rows where X or Y is invalid
+        valid_mask = ~(np.isnan(x_data) | np.isnan(y_data) | (x_data <= 0))
+        x_data = x_data[valid_mask]
+        y_data = y_data[valid_mask]
+        
+        if len(x_data) == 0:
+            print(f"Warning: No valid data in '{csv_path}', skipping")
+            continue
+            
+        all_data.append((x_data, y_data))
+        
+        # Get label from filename (without .csv extension)
+        basename = os.path.basename(csv_path)
+        label = os.path.splitext(basename)[0]
+        labels.append(label)
+        
+        print(f"Loaded '{csv_path}': {len(x_data)} data points")
+        
+    except Exception as e:
+        print(f"Error reading '{csv_path}': {e}")
+        continue
+
+if not all_data:
+    print("Error: No valid CSV files could be loaded")
+    exit(1)
+
+# Find global minimum X and Y values across all files
+global_min_x = min(min(x_data) for x_data, y_data in all_data)
+global_min_y = min(min(y_data) for x_data, y_data in all_data)
+
+print(f"Global minimum: X={global_min_x}, Y={global_min_y}")
+
+# Process each dataset
+processed_data = []
+
+for i, (x_data, y_data) in enumerate(all_data):
+    # Shift data to start at global minimum
+    x_shifted = x_data - x_data[0] + global_min_x
+    y_shifted = y_data - y_data[0] + global_min_y
+    
+    # Log-scale subsampling if more than 500 points
+    if len(x_shifted) > 500:
+        # Create log-spaced indices for subsampling
+        log_min = np.log10(x_shifted[0])
+        log_max = np.log10(x_shifted[-1])
+        
+        # Create 400 log-spaced X values
+        target_x_values = np.logspace(log_min, log_max, 400)
+        
+        # Find nearest indices in original data
+        indices = []
+        for target_x in target_x_values:
+            idx = np.argmin(np.abs(x_shifted - target_x))
+            if idx not in indices:  # Avoid duplicates
+                indices.append(idx)
+        
+        indices = sorted(indices)
+        x_subsampled = x_shifted[indices]
+        y_subsampled = y_shifted[indices]
+        
+        print(f"Subsampled '{labels[i]}' from {len(x_shifted)} to {len(x_subsampled)} points")
+    else:
+        x_subsampled = x_shifted
+        y_subsampled = y_shifted
+    
+    processed_data.append((x_subsampled, y_subsampled))
+
+# Create the plot
+plt.figure(figsize=(6, 5))
+
+# Plot all lines
+line_endpoints = []
+for i, (x_data, y_data) in enumerate(processed_data):
+    # Use dotted style for enwik7, solid for others
+    if labels[i] == 'enwik7':
+        plt.plot(x_data, y_data, color='black', linewidth=1.5, 
+                linestyle=':', solid_capstyle='round', label='enwik7 (eval = train)')
+    else:
+        plt.plot(x_data, y_data, color='black', linewidth=1.5, solid_capstyle='round')
+
+    # # Add triangle marker at Y axis for end Y value
+    # plt.plot(x_data[0] + 18, y_data[-1], marker='<', markersize=8, 
+    #          color=(0,0,0,0), markeredgecolor='black', markeredgewidth=0.8)
+    
+    # Store endpoint for label positioning (skip enwik7)
+    if labels[i] != 'enwik7':
+        line_endpoints.append((x_data[-1], y_data[-1], labels[i]))
+
+# Set log scale for X axis
+plt.xscale('log')
+
+# Calculate axis limits
+all_x = np.concatenate([x_data for x_data, y_data in processed_data])
+all_y = np.concatenate([y_data for x_data, y_data in processed_data])
+
+x_min = np.min(all_x)
+y_min = np.min(all_y)
+
+# Get X max from enwik6 instead of all data
+enwik6_idx = labels.index('enwik6')
+x_max_enwik6 = np.max(processed_data[enwik6_idx][0])
+
+# Calculate y_max only from data up to x_max_enwik6
+y_values_in_range = []
+for x_data, y_data in processed_data:
+    mask = x_data <= x_max_enwik6
+    y_values_in_range.extend(y_data[mask])
+y_max = np.max(y_values_in_range)
+
+# Extend Y axis below minimum to show more tick labels
+y_range = y_max - y_min
+y_bottom = 1.5  # Extend 20% below minimum
+
+plt.xlim(left=x_min, right=x_max_enwik6)
+plt.ylim(bottom=y_bottom, top=y_max)  # Add 10% padding on top
+
+# Configure axis with LogLocator and decimal formatter
+ax = plt.gca()
+ax.yaxis.set_major_locator(MaxNLocator(nbins=10))
+
+# Use LogLocator to show ticks at 1e3, 2e3, 3e3 ...
+ax.xaxis.set_major_locator(LogLocator(base=10.0, subs=np.arange(1, 10)*0.1/0.1, numticks=100))
+ax.xaxis.set_major_formatter(FuncFormatter(decimal_notation_formatter))
+
+# Set X tick labels vertical (270 degrees rotation)
+plt.setp(ax.get_xticklabels(), rotation=270, ha="center")
+
+# Add labels in monospace, positioned relative to last data point with manual offsets
+for x_end, y_end, label in line_endpoints:
+    # Get manual offset for this label
+    dx, dy = label_offsets.get(label, (0, 0))
+    
+    # Position label slightly above and to the left, plus manual offset
+    x_offset_factor = 0.9  # Move left by reducing X
+    
+    plt.annotate(label, 
+                xy=(x_end, y_end),
+                xytext=(x_end * x_offset_factor + dx, y_end + 0.2 + dy),
+                textcoords='data',
+                fontfamily='monospace',
+                fontsize=12,
+                ha='right',
+                va='bottom')
+
+# Add legend for enwik7
+plt.legend(loc='best', fontsize=14, framealpha=0.9)
+
+# Set axis labels
+plt.xlabel('Number of symbols', fontsize=12)
+plt.ylabel(r"Compression factor ($\mathtt{enwik7}$)", fontsize=12)
+
+# Enable grid
+plt.grid(True, which='both', alpha=0.3)
+#plt.minorticks_on()
+
+# "zero" axes
+plt.axhline(y=y_min, color='k', linestyle='-', alpha=0.3)
+plt.axvline(x=x_min, color='k', linestyle='-', alpha=0.3)
+
+plt.tick_params(axis='both', which='major', labelsize=10)
+plt.tick_params(axis='both', which='minor', labelsize=8)
+
+# Save plot
+output_path = os.path.join(script_dir, 'factors.svg')
+plt.tight_layout()
+plt.savefig(output_path, dpi=300, bbox_inches='tight')
+print(f"Plot saved to: {output_path}")
+plt.show()
