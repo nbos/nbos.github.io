@@ -17,20 +17,22 @@ def decimal_notation_formatter(x, pos):
 
 # Get script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, '.')
+data_dir = os.path.join(script_dir, '../out')
 
 # Hardcoded file list
 csv_files = [
-    os.path.join(data_dir, 'o-enwik4.csv'),
-    os.path.join(data_dir, 'o-enwik5.csv'),
-    os.path.join(data_dir, 'o-enwik6.csv')
+    os.path.join(data_dir, 'enwik4.csv'),
+    os.path.join(data_dir, 'enwik5.csv'),
+    os.path.join(data_dir, 'enwik6.csv'),
+    os.path.join(data_dir, 'enwik7.csv')
 ]
 
 
 label_offsets = {
-    'enwik4': (500, -0.07),
-    'enwik5': (2100, -0.07),
-    'enwik6': (800, -0.11)
+    'enwik4': (100, -0.1),
+    'enwik5': (200, -0.1),
+    'enwik6': (2000, -0.1),
+    'enwik7': (0, -0.1)
 }
 
 # Validate all files exist
@@ -70,9 +72,6 @@ for csv_path in csv_files:
         # Get label from filename (without .csv extension)
         basename = os.path.basename(csv_path)
         label = os.path.splitext(basename)[0]
-        # Remove "o-" prefix if present
-        if label.startswith('o-'):
-            label = label[2:]
         labels.append(label)
         
         print(f"Loaded '{csv_path}': {len(x_data)} data points")
@@ -85,19 +84,25 @@ if not all_data:
     print("Error: No valid CSV files could be loaded")
     exit(1)
 
+# Find global minimum X and Y values across all files
+global_min_x = min(min(x_data) for x_data, y_data in all_data)
+global_min_y = min(min(y_data) for x_data, y_data in all_data)
+
+print(f"Global minimum: X={global_min_x}, Y={global_min_y}")
+
 # Process each dataset
 processed_data = []
 
 for i, (x_data, y_data) in enumerate(all_data):
-    # No shifting - use raw data
-    x_raw = x_data
-    y_raw = y_data
+    # Shift data to start at global minimum
+    x_shifted = x_data - x_data[0] + global_min_x
+    y_shifted = y_data - y_data[0] + global_min_y
     
     # Log-scale subsampling if more than 500 points
-    if len(x_raw) > 500:
+    if len(x_shifted) > 500:
         # Create log-spaced indices for subsampling
-        log_min = np.log10(x_raw[0])
-        log_max = np.log10(x_raw[-1])
+        log_min = np.log10(x_shifted[0])
+        log_max = np.log10(x_shifted[-1])
         
         # Create 400 log-spaced X values
         target_x_values = np.logspace(log_min, log_max, 400)
@@ -105,18 +110,18 @@ for i, (x_data, y_data) in enumerate(all_data):
         # Find nearest indices in original data
         indices = []
         for target_x in target_x_values:
-            idx = np.argmin(np.abs(x_raw - target_x))
+            idx = np.argmin(np.abs(x_shifted - target_x))
             if idx not in indices:  # Avoid duplicates
                 indices.append(idx)
         
         indices = sorted(indices)
-        x_subsampled = x_raw[indices]
-        y_subsampled = y_raw[indices]
+        x_subsampled = x_shifted[indices]
+        y_subsampled = y_shifted[indices]
         
-        print(f"Subsampled '{labels[i]}' from {len(x_raw)} to {len(x_subsampled)} points")
+        print(f"Subsampled '{labels[i]}' from {len(x_shifted)} to {len(x_subsampled)} points")
     else:
-        x_subsampled = x_raw
-        y_subsampled = y_raw
+        x_subsampled = x_shifted
+        y_subsampled = y_shifted
     
     processed_data.append((x_subsampled, y_subsampled))
 
@@ -127,6 +132,10 @@ plt.figure(figsize=(6, 5))
 line_endpoints = []
 for i, (x_data, y_data) in enumerate(processed_data):
     plt.plot(x_data, y_data, color='black', linewidth=1.5, solid_capstyle='round')
+
+    # Add triangle marker at Y axis for end Y value
+    plt.plot(x_data[0] + 18, y_data[-1], marker='<', markersize=8, 
+             color=(0,0,0,0), markeredgecolor='black', markeredgewidth=0.8)
     
     # Store endpoint for label positioning
     line_endpoints.append((x_data[-1], y_data[-1], labels[i]))
@@ -139,10 +148,14 @@ all_x = np.concatenate([x_data for x_data, y_data in processed_data])
 all_y = np.concatenate([y_data for x_data, y_data in processed_data])
 
 x_min, x_max = np.min(all_x), np.max(all_x)
+y_min, y_max = np.min(all_y), np.max(all_y)
 
-# Set Y axis range to 0-1
+# Extend Y axis below minimum to show more tick labels
+y_range = y_max - y_min
+y_bottom = 1.5  # Extend 20% below minimum
+
 plt.xlim(left=x_min, right=x_max)
-plt.ylim(bottom=0, top=1)
+plt.ylim(bottom=y_bottom, top=y_max * 1.1)  # Add 10% padding on top
 
 # Configure axis with LogLocator and decimal formatter
 ax = plt.gca()
@@ -164,7 +177,7 @@ for x_end, y_end, label in line_endpoints:
     
     plt.annotate(label, 
                 xy=(x_end, y_end),
-                xytext=(x_end * x_offset_factor + dx, y_end + 0.04 + dy),
+                xytext=(x_end * x_offset_factor + dx, y_end + 0.2 + dy),
                 textcoords='data',
                 fontfamily='monospace',
                 fontsize=12,
@@ -173,24 +186,21 @@ for x_end, y_end, label in line_endpoints:
 
 # Set axis labels
 plt.xlabel('Number of symbols', fontsize=12)
-plt.ylabel(r"Overlap with $\mathtt{enwik7}$'s dictionary", fontsize=12)
+plt.ylabel('Compression factor', fontsize=12)
 
 # Enable grid
 plt.grid(True, which='both', alpha=0.3)
 #plt.minorticks_on()
 
 # "zero" axes
-y_min = np.min(all_y)
 plt.axhline(y=y_min, color='k', linestyle='-', alpha=0.3)
 plt.axvline(x=x_min, color='k', linestyle='-', alpha=0.3)
 
 plt.tick_params(axis='both', which='major', labelsize=10)
 plt.tick_params(axis='both', which='minor', labelsize=8)
 
-# plt.title(r"Overlap with $\mathtt{enwik7}$'s dictionary")
-
 # Save plot
-output_path = os.path.join(script_dir, 'overlap.svg')
+output_path = os.path.join(script_dir, 'factors.svg')
 plt.tight_layout()
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_path}")

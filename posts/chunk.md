@@ -34,7 +34,7 @@ lines](https://en.wikipedia.org/wiki/Polynomial_regression)
 (predictions) drifting away in wild and unlikely interpolations as more
 parameters are added to the model:
 
-![](res/chunk/overfit.svg)
+![](res/chunk/figs/overfit.svg)
 
 This behavior is undesirable in machine learning as it undermines the
 *generalizability* of the model which is usually an important aspect of
@@ -542,7 +542,7 @@ Benchmark](https://mattmahoney.net/dc/textdata.html) and
 The first $10^9$ bytes of the snapshot are referred to as
 `enwik9`. Truncations of smaller magnitudes are named accordingly:
 
-![](res/chunk/datasets.svg)
+![](res/chunk/figs/datasets.svg)
 
 $$$$
 
@@ -553,13 +553,13 @@ encodings of parameters $m$ and $N$ are too small to be noticeable and
 left out. The size of the encoding at $m=256$ (empty dictionary) is
 indicated with a marker on the Y axis:
 
-![](res/chunk/stacked/enwik4.svg)
+![](res/chunk/plots/codelen-stacked/enwik4-codelen-stacked.svg)
 
-![](res/chunk/stacked/enwik5.svg)
+![](res/chunk/plots/codelen-stacked/enwik5-codelen-stacked.svg)
 
-![](res/chunk/stacked/enwik6.svg)
+![](res/chunk/plots/codelen-stacked/enwik6-codelen-stacked.svg)
 
-![](res/chunk/stacked/enwik7.svg)
+![](res/chunk/plots/codelen-stacked/enwik7-codelen-stacked.svg)
 
 As one would expect the bulk of the gain in compressibility occur with
 the first few introduced symbols and tapers out as introductions produce
@@ -580,7 +580,7 @@ with an empty dictionary simply by virtue of the encoding. Final
 compression factors are marked on the Y axis. The X axis is displayed in
 log-scale:
 
-![](res/chunk/self-factor.svg)
+![](res/chunk/plots/factors.svg)
 
 For a given number of symbols, greater factors are achieved by smaller
 sets, probably due to the reduced variance of a smaller dataset, but
@@ -594,16 +594,15 @@ Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 *linearly* increasing compression factors.
 
-Full outputs (CSV): [`enwik4`](res/chunk/self/enwik4.csv),
-[`enwik5`](res/chunk/self/enwik5.csv),
-[`enwik6`](res/chunk/self/enwik6.csv),
-[`enwik7`](res/chunk/self/enwik7.csv).
+Full outputs (CSV): [`enwik4`](res/chunk/out/enwik4.csv),
+[`enwik5`](res/chunk/out/enwik5.csv),
+[`enwik6`](res/chunk/out/enwik6.csv),
+[`enwik7`](res/chunk/out/enwik7.csv).
 
 ### Appearance
 
 Chunks produced for `enwik` datasets are a mix of English morphemes,
-words and phrases as well as markup strings specific to Wikipedia's XML
-schema:
+words and phrases as well as markup strings from Wikipedia's XML schema:
 
 ```
 256:  "]"     +  "]"    ==>  "]]"
@@ -670,7 +669,7 @@ schema:
 <!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
 <!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
 
-Full output (CSV): [`enwik7`](res/chunk/self/enwik7.csv).
+Full output (CSV): [`enwik7`](res/chunk/out/enwik7.csv).
 
 Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is combined into a new symbol
@@ -753,7 +752,7 @@ start:
 <!-- 70023: "persec"       +  "ution of "  ==>  "persecution of " -->
 <!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
 
-Full output (CSV): [`enwik7-naive`](res/chunk/enwik7-naive.csv).
+Full output (CSV): [`enwik7-naive-loss`](res/chunk/out/enwik7-naive-loss.csv).
 
 Naive chunks visibly have a bias towards combining symbols with high
 occurences even if the combination doesn't hold much more meaning than
@@ -847,21 +846,21 @@ which gives a dictionary starting with:
 280:  "&"     +  "q"    ==>  "&q"
 ...:  ...     +  ...    ==>  ...
 ```
-Full output (CSV): [`enwik7-spmi`](res/chunk/enwik7-spmi.csv)
+Full output (CSV): [`enwik7-spmi-loss`](res/chunk/out/enwik7-spmi-loss.csv)
 
 which is much more similar to the dictionary obtained from our loss
 function.
 
-Perhaps surpsisingly, the naive dictionary achieves levels of
+Perhaps surprisingly, the naive dictionary achieves levels of
 compression comparable to our informational approach, and the SPMI
 dictionary's performance is nearly identical to ours:
 
-![](res/chunk/functions-factor.svg)
+![](res/chunk/plots/factors-functions.svg)
 
 Measuring the average word lengths across the evolution of the
 dictionary produces a similar pattern:
 
-![](res/chunk/dict/functions-wl.svg)
+![](res/chunk/plots/wl-functions.svg)
 
 where the sudden increase in word length occuring early on is driven by
 the discovery of strings common to all the XML headers of page in the
@@ -877,7 +876,7 @@ $$\frac{|\mathrm{\bf r}_a \cap \mathrm{\bf r}_b|}{|\mathrm{\bf r}_a|}
 
 between the dictionaries:
 
-![](res/chunk/dict/overlap.svg)
+![](res/chunk/plots/overlap-functions.svg)
 
 showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.

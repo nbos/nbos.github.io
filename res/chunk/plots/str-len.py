@@ -20,10 +20,10 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Hardcoded file list - files in current directory
 csv_files = [
-    os.path.join(script_dir, 'enwik4.csv'),
-    os.path.join(script_dir, 'enwik5.csv'),
-    os.path.join(script_dir, 'enwik6.csv'),
-    os.path.join(script_dir, 'enwik7.csv')
+    os.path.join(script_dir, '../out/enwik4.csv'),
+    os.path.join(script_dir, '../out/enwik5.csv'),
+    os.path.join(script_dir, '../out/enwik6.csv'),
+    os.path.join(script_dir, '../out/enwik7.csv')
 ]
 
 # Initial values for each file
@@ -205,7 +205,7 @@ plt.tick_params(axis='both', which='major', labelsize=10)
 plt.tick_params(axis='both', which='minor', labelsize=8)
 
 # Save plot
-output_path = os.path.join(script_dir, 'strlen.svg')
+output_path = os.path.join(script_dir, 'str-len.svg')
 plt.tight_layout()
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_path}")

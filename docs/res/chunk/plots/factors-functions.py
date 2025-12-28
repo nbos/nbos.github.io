@@ -1,29 +1,22 @@
+import csv
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import LogLocator, FuncFormatter
 
-def read_word_lengths_with_running_avg(txt_path):
-    """Read integers from file and compute running average using Welford's algorithm."""
+def read_columns(csv_path, x_col=0, y_col=1):
     xs, ys = [], []
-    running_mean = 0.0
-    count = 0
-    
-    with open(txt_path, "r", errors="ignore") as f:
-        for line_idx, line in enumerate(f):
-            line = line.strip()
-            if not line:
+    with open(csv_path, "r", newline="", errors="ignore") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if len(row) <= max(x_col, y_col):
                 continue
             try:
-                value = int(line)
-                count += 1
-                # Welford's online algorithm for numerically stable running mean
-                running_mean += (value - running_mean) / count
-                
-                xs.append(256 + line_idx)
-                ys.append(running_mean)
+                x = float(row[x_col])
+                y = float(row[y_col])
+                xs.append(x)
+                ys.append(y)
             except ValueError:
                 continue
-    
     return xs, ys
 
 def decimal_notation_formatter(x, pos):
@@ -36,7 +29,7 @@ def decimal_notation_formatter(x, pos):
         return f"{x:.4g}"
 
 def main():
-    txt_files = ["enwik7-wl.txt", "enwik7-naive-wl.txt", "enwik7-spmi-wl.txt"]
+    csv_files = ["out/enwik7.csv", "out/enwik7-naive-loss.csv", "out/enwik7-spmi-loss.csv"]
     labels = ["Code length", "Joint count (naive)", "SPMI"]
     
     plt.figure(figsize=(6, 5))
@@ -49,10 +42,10 @@ def main():
 
     all_x, all_y = [], []
 
-    for idx, txt_path in enumerate(txt_files):
-        x, y = read_word_lengths_with_running_avg(txt_path)
+    for idx, csv_path in enumerate(csv_files):
+        x, y = read_columns(csv_path, x_col=0, y_col=1)
         if not x:
-            print(f"Warning: no usable data in {txt_path}")
+            print(f"Warning: no usable data in {csv_path}")
             continue
         all_x.extend(x)
         all_y.extend(y)
@@ -61,7 +54,7 @@ def main():
         plt.plot(x, y, color=color, linestyle=linestyle, linewidth=1.5, label=labels[idx])
 
     if not all_x or not all_y:
-        print("No valid data found in provided text files.")
+        print("No valid data found in provided CSV files.")
         return
 
     xmin = min(v for v in all_x if v > 0)
@@ -69,14 +62,14 @@ def main():
     ymin = min(all_y)
 
     plt.xlabel('Dictionary size', fontsize=12)
-    plt.ylabel('Average Word Length', fontsize=12)
+    plt.ylabel('Compression factor', fontsize=12)
     plt.grid(True, which='both', alpha=0.3)
 
     plt.axhline(y=ymin, color='k', linestyle='-', alpha=0.3)
     plt.axvline(x=xmin, color='k', linestyle='-', alpha=0.3)
 
     plt.xscale('log')
-    plt.xlim(xmin, xmax)
+    plt.xlim(xmin,xmax)
     plt.ylim(bottom=ymin)
 
     ax = plt.gca()
@@ -89,9 +82,9 @@ def main():
     plt.tick_params(axis='both', which='major', labelsize=10)
 
     plt.tight_layout()
-    plt.savefig("functions-wl.svg", dpi=300, bbox_inches='tight')
+    plt.savefig("factors-functions.svg", dpi=300, bbox_inches='tight')
     plt.show()
-    print("Saved plot as functions-wl.svg")
+    print("Saved plot as spmi.svg")
 
 if __name__ == "__main__":
     main()

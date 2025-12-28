@@ -137,7 +137,7 @@ plt.tick_params(axis='both', which='minor', labelsize=8)
 
 # Generate output path (same directory as input, but .svg extension)
 base_path = os.path.splitext(csv_path)[0]
-output_path = base_path + '.svg'
+output_path = base_path + '-codelen-stacked.svg'
 
 # Save and display
 plt.tight_layout()

@@ -22,10 +22,10 @@ data_dir = os.path.join(script_dir, '.')
 
 # Hardcoded file list
 csv_files = [
-    os.path.join(data_dir, 'enwik4.csv'),
-    os.path.join(data_dir, 'enwik5.csv'),
-    os.path.join(data_dir, 'enwik6.csv'),
-    os.path.join(data_dir, '../self/enwik7.csv')
+    os.path.join(data_dir, '../out/enwik4-eval-enwik7.csv'),
+    os.path.join(data_dir, '../out/enwik5-eval-enwik7.csv'),
+    os.path.join(data_dir, '../out/enwik6-eval-enwik7.csv'),
+    os.path.join(data_dir, '../out/enwik7.csv')
 ]
 
 
@@ -221,7 +221,7 @@ plt.tick_params(axis='both', which='major', labelsize=10)
 plt.tick_params(axis='both', which='minor', labelsize=8)
 
 # Save plot
-output_path = os.path.join(script_dir, 'factors.svg')
+output_path = os.path.join(script_dir, 'factors-eval-enwik7.svg')
 plt.tight_layout()
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f"Plot saved to: {output_path}")

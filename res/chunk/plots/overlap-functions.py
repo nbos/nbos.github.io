@@ -29,14 +29,16 @@ def decimal_notation_formatter(x, pos):
         return f"{x:.4g}"
 
 def main():
-    csv_files = ["self/enwik7.csv", "enwik7-naive.csv", "enwik7-spmi.csv"]
-    labels = ["Code length", "Joint count (naive)", "SPMI"]
+    csv_files = ["overlap-functions/length-naive.csv",
+                 "overlap-functions/naive-spmi.csv",
+                 "overlap-functions/spmi-length.csv"]
+    labels = ["Code length - Joint count", "Joint count - SPMI", "SPMI - Code length"]
     
-    plt.figure(figsize=(6, 5))
+    plt.figure(figsize=(6, 4))
 
     line_styles = [
         ('k', '-'),
-        ('k', '--'),
+        ('0.7', '-'),
         ('k', ':'),
     ]
 
@@ -62,14 +64,14 @@ def main():
     ymin = min(all_y)
 
     plt.xlabel('Dictionary size', fontsize=12)
-    plt.ylabel('Compression factor', fontsize=12)
+    plt.ylabel('Overlap', fontsize=12)
     plt.grid(True, which='both', alpha=0.3)
 
     plt.axhline(y=ymin, color='k', linestyle='-', alpha=0.3)
     plt.axvline(x=xmin, color='k', linestyle='-', alpha=0.3)
 
     plt.xscale('log')
-    plt.xlim(xmin,xmax)
+    plt.xlim(xmin, xmax)
     plt.ylim(bottom=ymin)
 
     ax = plt.gca()
@@ -82,9 +84,9 @@ def main():
     plt.tick_params(axis='both', which='major', labelsize=10)
 
     plt.tight_layout()
-    plt.savefig("spmi.svg", dpi=300, bbox_inches='tight')
+    plt.savefig("overlap-functions.svg", dpi=300, bbox_inches='tight')
     plt.show()
-    print("Saved plot as spmi.svg")
+    print("Saved plot as overlap.svg")
 
 if __name__ == "__main__":
     main()
