@@ -46,11 +46,10 @@ function</a>)
 by the arithmetic encoder to turn sequences of symbols (here: letters)
 into binary codes of minimal size.</p>
 <p>But any probability distribution with a well defined <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quantile_function">quantile
-function</a> (the inverse
-of the CDF) can be used for arithmetic coding, even on infinite
-domains. Consider a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a> prior over
-integers to compress sequences of whole numbers:</p>
+function</a> (CDF<span class="math inline">\(^{-1}\)</span>)
+could be used for arithmetic coding, even on infinite domains. Consider
+a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a> prior
+over integers to compress sequences of whole numbers:</p>
 <p><img src="res/gauss/gauss-pdf.svg" /></p>
 <p><img src="res/gauss/gauss-cdf.svg" /></p>
 <p>For each integer <span class="math inline">\(i \in \mathbb{Z}\)</span>, we assign the probability mass
@@ -59,9 +58,9 @@ contained within the interval <span class="math inline">\(i \pm 0.5\)</span> on 
 function</a>)
 of choice.</p>
 <h2 id="an-abstract-arithmetic-coding-interface">An Abstract Arithmetic Coding Interface</h2>
-<p>To support this exploration, we implement a generic arithmetic codec
+<p>To support this exploration, we implement a <em>generic</em> arithmetic codec
 (encoder/decoder) that interfaces with distributions to serialize and
-de-serialize values and provide both categorical and Gaussian
+de-serialize values and provide both the categorical and Gaussian
 implementations.</p>
 <p>The program is written in Rust:</p>
 <ul>
@@ -70,8 +69,8 @@ implementations.</p>
 </ul>
 <p>For probability distributions that can be queried at any fraction of
 their remaining probability mass (<code>quantile</code>) and truncated at those
-fractions (<code>truncate</code>), the algorithm can produce binary serializations
-of any <em>value</em> (indexed in <code>i64</code>) of their domain.</p>
+fractions (<code>truncate</code>), the algorithm produces binary serializations of
+any <em>value</em> (indexed in <code>i64</code>) of their domain.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Index <span class="op">=</span> <span class="dt">i64</span><span class="op">;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> TruncatedDistribution <span class="op">{</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> quantile(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span>) <span class="op">-&gt;</span> (<span class="bu">Index</span><span class="op">,</span> <span class="dt">f64</span>)<span class="op">;</span> <span class="co">// returns (s, s_rem)</span></span>
@@ -94,11 +93,13 @@ requesting the next distribution.</p>
 <p>De-serialization (decoding) uses the same interface with the same order
 of mutating calls such that deterministic implementations of those
 methods result in reversible (decodable) encodings.</p>
-<p>The rest of this post is divided into three parts: 1) we derive bounds
-on the efficiency of modeling integers with Gaussian PDFs to justify the
-approach, 2) comments on implementation details of the Gaussian
-backend, and 3) a few examples proving the implementation works as
-designed.</p>
+<p>The rest of this post is divided into three parts:</p>
+<ol type="1">
+<li><p>We derive bounds on the efficiency of modeling integers with Gaussian
+PDFs justifying the approach,</p></li>
+<li><p>comments on implementation details of the Gaussian backend, and</p></li>
+<li><p>a few examples proving the implementation works as designed.</p></li>
+</ol>
 <h2 id="theoretical-viability">Theoretical Viability</h2>
 <p>The code length achievable by an arithmetic encoder is within two bits
 of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
@@ -126,10 +127,11 @@ based on the fact that:</p>
 <p><span class="math display">\[PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}\]</span></p>
 <p>which is just a statement of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus">fundamental theorem of
 calculus</a>,
-by the fact that the CDF is the integral of the PDF. Practically
-speaking, this means the PDF is a good approximation of the interval-CDF
-when the width of the interval is small or, equivalently (since our
-intervals are all equal to 1), when the variance is large.</p>
+by way of the fact that the CDF is the integral of the PDF.</p>
+<p>Practically speaking, this means the PDF is a good approximation of the
+“interval-CDF” when the width of the interval is small or, equivalently
+(since the intervals we work with are all equal to 1), when the variance
+is large.</p>
 <p>For <span class="math inline">\(\sigma = 1\)</span>, the difference is already forgivable:</p>
 <p><img src="res/gauss/ftc0.svg" /></p>
 <p>As the variance approaches 0, our probability function flattens relative
@@ -166,19 +168,22 @@ stable) is:</p>
 <p>where:</p>
 <p><span class="math display">\[s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}\]</span></p>
 <h3 id="information-of-data-sets">Information of Data Sets</h3>
-<p>The only location of low probability (long codes) on the Gaussian PDF is
-the tails and there are only a few ways to “distribute” data such that
-the extreme values fall at different point in the tails.</p>
+<p>The only locations of low probability (long codes) on the Gaussian PDF
+are the tails and there are only a few ways to “distribute” data such
+that the extreme values fall at different point in the tails.</p>
 <p>Notably, we have sets where <em>all</em> data is the same value. The <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dirac_delta_function">resulting
 Gaussian</a> is
 technically degenerate (<span class="math inline">\(\sigma^2 = 0\)</span>), but the resulting probability
 around the unit interval at that point will be 1 (code length 0) which
 should not be a problem in terms of compression efficiency if the
 implementation handles it properly.</p>
-<p>Other axes of data “distribution” are 1) how spread out and 2) how
-skewed to one side the values are. We model these by instantiating data
-sets without loss of generality and observe their effects on the
-resulting arithmetic codes.</p>
+<p>Other axes of data “distribution” are:</p>
+<ol type="1">
+<li>how spread out, and</li>
+<li>how skewed to one side the values are.</li>
+</ol>
+<p>We model these by instantiating data sets without loss of generality and
+observe their effects on the resulting arithmetic codes.</p>
 <h4 id="multimodal">Multimodal</h4>
 <p>Moving forward from the case of the degenerate Gaussian of a
 distribution containing only 1 value, we model the parameters of
@@ -290,13 +295,13 @@ so-called “worst” conditions.</p>
 <h2 id="implementation">Implementation</h2>
 <p>The <a href="res/doc/src/cont_arith_code/lib.rs.html">implementation of the arithmetic codec
 algorithm</a> is relatively
-straightforward using the abstract interface we defined, making sure
-operations between
+straightforward using the abstract interface we defined, making sure the
+order of operations between the
 <a href="res/doc/src/cont_arith_code/lib.rs.html#158-226">encoding</a> and
 <a href="res/doc/src/cont_arith_code/lib.rs.html#287-355">decoding</a> functions
-are symmetric.</p>
-<p>The less trivial parts of the program are implementation of methods
-<code>quantile</code> and <code>truncate</code> for the trait:</p>
+are the same.</p>
+<p>The less trivial parts of the program are the implementations of the
+distribution trait, in particular the methods <code>quantile</code> and <code>truncate</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Index <span class="op">=</span> <span class="dt">i64</span><span class="op">;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> TruncatedDistribution <span class="op">{</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> quantile(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span>) <span class="op">-&gt;</span> (<span class="bu">Index</span><span class="op">,</span> <span class="dt">f64</span>)<span class="op">;</span> <span class="co">// returns (s, s_rem)</span></span>
@@ -307,41 +312,41 @@ are symmetric.</p>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>What’s important here is that the <code>quantile</code> function maps onto the
 symbol space in amounts commensurate with the given cumulative
-probability <span class="math inline">\(\in [0,1]\)</span>. Inaccuracy in this regard is not prohibitive
+probability <span class="math inline">\(\in [0,1]\)</span>. Inaccuracy in this regard is <em>not</em> prohibitive
 for serialization, but will result in longer codes than necessary
 (assuming models are well fit to the data).</p>
-<p>It is assumed, however, that while a truncated distribution is not yet
-resolved, <code>quantile(0.5)</code> returns an index-remainder pair that is
-different than either <code>quantile(0.0)</code> (the lower-bound) or
-<code>quantile(1.0)</code> (the upper-bound), or the program will loop
-forever. This property can be called <em>progress</em>.</p>
+<p>There is a strong assumption, however, that while a truncated
+distribution is not yet resolved, <code>quantile(0.5)</code> returns an
+index-remainder pair that is different than either <code>quantile(0.0)</code> (the
+lower-bound) or <code>quantile(1.0)</code> (the upper-bound), or the program will
+loop forever. This property can be called <em>progress</em>.</p>
 <h3 id="gaussian-implementation">Gaussian Implementation</h3>
 <p>The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
 \mapsto \infty\)</span>.</p>
 <p><img src="res/gauss/cdfquantile.svg" /></p>
-<p>Using this function to measure probability masses far in the tails (past
-<span class="math inline">\(6\sigma\)</span>) is not possible as the cumulative probabilities approaching
-0.99999… overflow to 1.0.</p>
+<p>Using this function to measure probability masses far in the tails
+(e.g. past <span class="math inline">\(6\sigma\)</span>) is not feasibly with 64-bit floats as the
+cumulative probabilities approaching 0.99999… overflow to 1.0.</p>
 <p>An easy fix to ensure progress might be to fall back to <em>linear</em>
 interpolation whenever the call to the quantile function runs out of
 precision, assuming local linearity.</p>
 <p>While this is a reasonable approximation in the central bulk of the
-distribution, it fails in the tails. To see why, consider the PDF and
-its derivative:</p>
+distribution, it fails in the tails.</p>
+<p>To see why, consider the PDF and its derivative:</p>
 <p><img src="res/gauss/pdfdiff.svg" /></p>
 <p>While both flatten out at the tails, for any given interval in the
 tails, the <em>relative</em> difference becomes greater the further away you
 move from the center. To see this, normalize the (absolute) derivative
 to the value of the function:</p>
 <p><img src="res/gauss/pdfdiffnorm.svg" /></p>
-<p>That is, the tails may be flat in absolute terms, but they become
-steeper relative to themselves the further away you go. Another way to
-demonstrate this is by blowing up the PDF at different scales (here,
-successive factors of 10):</p>
+<p>That is, the tails may be flat in <em>absolute</em> terms, but they become
+steeper <em>relative</em> to themselves the further away you go, preventing an
+easy approximation with straight lines. Another way to demonstrate this
+is by blowing up the PDF at different scales (here, successive factors
+of 10):</p>
 <p><img src="res/gauss/pdfscales.svg" /></p>
-<p>We are forced to find an analytic or at least numeric solution that is
-more faithful to the distribution.</p>
+<p>We are forced to find a solution that is faithful to the distribution.</p>
 <h3 id="tackling-numerical-instability">Tackling Numerical Instability</h3>
 <p>Like is usually the case with precision issues in probability, the
 solution to numerical instability is found in the
@@ -350,8 +355,8 @@ us two analogous functions for the cumulative probability with more
 manageable shapes:</p>
 <p><img src="res/gauss/logcdfquantileexp.svg" /></p>
 <p>Furthermore, we can model all right tail calculations by using the
-left’s and avoid all asymptotes by exploiting the symmetry of the
-Gaussian PDF. This leaves us with two almost linear curves.</p>
+left’s and avoid troublesome asymptotes by exploiting the symmetry of
+the Gaussian PDF. This leaves us with two almost linear curves.</p>
 <p>Fortunately, SciPy has well documented and precise polynomial
 approximations of the log-CDF
 <a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.log_ndtr.html"><code>log_ndtr</code></a>

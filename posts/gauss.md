@@ -24,11 +24,10 @@ by the arithmetic encoder to turn sequences of symbols (here: letters)
 into binary codes of minimal size.
 
 But any probability distribution with a well defined [quantile
-function](https://en.wikipedia.org/wiki/Quantile_function) (the inverse
-of the CDF) can be used for arithmetic coding, even on infinite
-domains. Consider a
-[Gaussian](https://en.wikipedia.org/wiki/Normal_distribution) prior over
-integers to compress sequences of whole numbers:
+function](https://en.wikipedia.org/wiki/Quantile_function) (CDF$^{-1}$)
+could be used for arithmetic coding, even on infinite domains. Consider
+a [Gaussian](https://en.wikipedia.org/wiki/Normal_distribution) prior
+over integers to compress sequences of whole numbers:
 
 ![](res/gauss/gauss-pdf.svg)
 
@@ -42,9 +41,9 @@ of choice.
 
 ## An Abstract Arithmetic Coding Interface
 
-To support this exploration, we implement a generic arithmetic codec
+To support this exploration, we implement a *generic* arithmetic codec
 (encoder/decoder) that interfaces with distributions to serialize and
-de-serialize values and provide both categorical and Gaussian
+de-serialize values and provide both the categorical and Gaussian
 implementations.
 
 The program is written in Rust:
@@ -54,8 +53,8 @@ The program is written in Rust:
 
 For probability distributions that can be queried at any fraction of
 their remaining probability mass (`quantile`) and truncated at those
-fractions (`truncate`), the algorithm can produce binary serializations
-of any *value* (indexed in `i64`) of their domain.
+fractions (`truncate`), the algorithm produces binary serializations of
+any *value* (indexed in `i64`) of their domain.
 
 ```rust
 type Index = i64;
@@ -90,11 +89,14 @@ De-serialization (decoding) uses the same interface with the same order
 of mutating calls such that deterministic implementations of those
 methods result in reversible (decodable) encodings.
 
-The rest of this post is divided into three parts: 1)\ we derive bounds
-on the efficiency of modeling integers with Gaussian PDFs to justify the
-approach, 2)\ comments on implementation details of the Gaussian
-backend, and 3)\ a few examples proving the implementation works as
-designed.
+The rest of this post is divided into three parts: 
+
+1. We derive bounds on the efficiency of modeling integers with Gaussian
+PDFs justifying the approach,
+
+2. comments on implementation details of the Gaussian backend, and
+
+3. a few examples proving the implementation works as designed.
 
 ## Theoretical Viability
 The code length achievable by an arithmetic encoder is within two bits
@@ -132,10 +134,12 @@ $$PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}$$
 
 which is just a statement of the [fundamental theorem of
 calculus](https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus),
-by the fact that the CDF is the integral of the PDF. Practically
-speaking, this means the PDF is a good approximation of the interval-CDF
-when the width of the interval is small or, equivalently (since our
-intervals are all equal to 1), when the variance is large.
+by way of the fact that the CDF is the integral of the PDF. 
+
+Practically speaking, this means the PDF is a good approximation of the
+"interval-CDF" when the width of the interval is small or, equivalently
+(since the intervals we work with are all equal to 1), when the variance
+is large.
 
 For $\sigma = 1$, the difference is already forgivable:
 
@@ -192,9 +196,9 @@ $$s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}$$
 
 ### Information of Data Sets
 
-The only location of low probability (long codes) on the Gaussian PDF is
-the tails and there are only a few ways to "distribute" data such that
-the extreme values fall at different point in the tails.
+The only locations of low probability (long codes) on the Gaussian PDF
+are the tails and there are only a few ways to "distribute" data such
+that the extreme values fall at different point in the tails.
 
 Notably, we have sets where *all* data is the same value. The [resulting
 Gaussian](https://en.wikipedia.org/wiki/Dirac_delta_function) is
@@ -203,10 +207,13 @@ around the unit interval at that point will be 1 (code length 0) which
 should not be a problem in terms of compression efficiency if the
 implementation handles it properly.
 
-Other axes of data "distribution" are 1) how spread out and 2) how
-skewed to one side the values are. We model these by instantiating data
-sets without loss of generality and observe their effects on the
-resulting arithmetic codes.
+Other axes of data "distribution" are:
+
+1. how spread out, and 
+2. how skewed to one side the values are. 
+
+We model these by instantiating data sets without loss of generality and
+observe their effects on the resulting arithmetic codes.
 
 #### Multimodal
 
@@ -351,14 +358,14 @@ so-called "worst" conditions.
 ## Implementation
 The [implementation of the arithmetic codec
 algorithm](res/doc/src/cont_arith_code/lib.rs.html) is relatively
-straightforward using the abstract interface we defined, making sure
-operations between
+straightforward using the abstract interface we defined, making sure the
+order of operations between the
 [encoding](res/doc/src/cont_arith_code/lib.rs.html#158-226) and
 [decoding](res/doc/src/cont_arith_code/lib.rs.html#287-355) functions
-are symmetric.
+are the same.
 
-The less trivial parts of the program are implementation of methods
-`quantile` and `truncate` for the trait:
+The less trivial parts of the program are the implementations of the
+distribution trait, in particular the methods `quantile` and `truncate`:
 
 ```rust
 type Index = i64;
@@ -373,15 +380,15 @@ pub trait TruncatedDistribution {
 
 What's important here is that the `quantile` function maps onto the
 symbol space in amounts commensurate with the given cumulative
-probability $\in [0,1]$. Inaccuracy in this regard is not prohibitive
+probability $\in [0,1]$. Inaccuracy in this regard is *not* prohibitive
 for serialization, but will result in longer codes than necessary
 (assuming models are well fit to the data).
 
-It is assumed, however, that while a truncated distribution is not yet
-resolved, `quantile(0.5)` returns an index-remainder pair that is
-different than either `quantile(0.0)` (the lower-bound) or
-`quantile(1.0)` (the upper-bound), or the program will loop
-forever. This property can be called *progress*.
+There is a strong assumption, however, that while a truncated
+distribution is not yet resolved, `quantile(0.5)` returns an
+index-remainder pair that is different than either `quantile(0.0)` (the
+lower-bound) or `quantile(1.0)` (the upper-bound), or the program will
+loop forever. This property can be called *progress*.
 
 ### Gaussian Implementation
 
@@ -391,17 +398,18 @@ and has finite value everywhere except at $0 \mapsto -\infty$ and $1
 
 ![](res/gauss/cdfquantile.svg)
 
-Using this function to measure probability masses far in the tails (past
-$6\sigma$) is not possible as the cumulative probabilities approaching
-0.99999... overflow to 1.0.
+Using this function to measure probability masses far in the tails
+(e.g. past $6\sigma$) is not feasibly with 64-bit floats as the
+cumulative probabilities approaching 0.99999... overflow to 1.0.
 
 An easy fix to ensure progress might be to fall back to *linear*
 interpolation whenever the call to the quantile function runs out of
 precision, assuming local linearity.
 
 While this is a reasonable approximation in the central bulk of the
-distribution, it fails in the tails. To see why, consider the PDF and
-its derivative:
+distribution, it fails in the tails. 
+
+To see why, consider the PDF and its derivative:
 
 ![](res/gauss/pdfdiff.svg)
 
@@ -412,15 +420,15 @@ to the value of the function:
 
 ![](res/gauss/pdfdiffnorm.svg)
 
-That is, the tails may be flat in absolute terms, but they become
-steeper relative to themselves the further away you go. Another way to
-demonstrate this is by blowing up the PDF at different scales (here,
-successive factors of 10):
+That is, the tails may be flat in *absolute* terms, but they become
+steeper *relative* to themselves the further away you go, preventing an
+easy approximation with straight lines. Another way to demonstrate this
+is by blowing up the PDF at different scales (here, successive factors
+of 10):
 
 ![](res/gauss/pdfscales.svg)
 
-We are forced to find an analytic or at least numeric solution that is
-more faithful to the distribution.
+We are forced to find a solution that is faithful to the distribution.
 
 ### Tackling Numerical Instability
 
@@ -433,8 +441,8 @@ manageable shapes:
 ![](res/gauss/logcdfquantileexp.svg)
 
 Furthermore, we can model all right tail calculations by using the
-left's and avoid all asymptotes by exploiting the symmetry of the
-Gaussian PDF. This leaves us with two almost linear curves.
+left's and avoid troublesome asymptotes by exploiting the symmetry of
+the Gaussian PDF. This leaves us with two almost linear curves.
 
 Fortunately, SciPy has well documented and precise polynomial
 approximations of the log-CDF

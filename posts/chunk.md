@@ -966,15 +966,15 @@ This one operation quickly takes a majority share of the
 computation-time and, for all but the smallest strings, makes simply
 starting with the larger string the more time efficient alternative:
 
-	Data                    Time (relative)
+             Data           Time (relative)
 
-	enwik4                     1.0
-	enwik4-5 (progressive)     3.3
-	enwik5                     4.9
-	enwik5-6 (progressive)    77.3
-	enwik6                    66.3
-	enwik6-7 (progressive)  2868.2
-	enwik7                  1488.6
+	enwik4                        1.0
+	enwik4-5 (progressive)        3.3
+	enwik5                        4.9
+	enwik5-6 (progressive)       77.3
+	enwik6                       66.3
+	enwik6-7 (progressive)     2868.2
+	enwik7                     1488.6
 
 which demotes the method from a potential entry into processing much
 larger strings into one that only shifts part of the space complexity to
