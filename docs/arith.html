@@ -35,24 +35,25 @@
     <p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arithmetic_coding">Arithmetic coding</a>
 (a.k.a. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Range_coding">range coding</a>) is
 probably the best introduction to information theory out
-there. Understanding it requires one to familiarize themselves with all
-the basics and its proximity to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem">source coding
+there. Understanding it requires a familiarization with all the basics
+and its proximity to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem">source coding
 theorem</a>
 makes it a useful building block for understanding <em>information</em> and
 further concepts.</p>
-<p>Here is my take on an explanation.</p>
+<p>Here is my version of an explanation.</p>
 <h2 id="symbol-by-symbol-coding">Symbol-by-symbol Coding</h2>
 <p>Fundamentally, the problem at hand is that of converting a sequence of
-symbols between two alphabets. In practice, however, we only consider
-binary encodings, where the target alphabet is of size 2: <span class="math inline">\(\{0,1\}\)</span>, but
-everything presented here will equally apply to alphabets of larger
-sizes (e.g. 10: <span class="math inline">\(\{0,1,...,9\}\)</span>) with respective <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Changing_the_base">changes of
+symbols between two alphabets.</p>
+<p>In practice, however, we only consider binary encodings, where the
+target alphabet is of size 2: <span class="math inline">\(\{0,1\}\)</span>, but everything presented here
+equally applies to alphabets of larger sizes (e.g. 10: <span class="math inline">\(\{0,1,...,9\}\)</span>)
+with respective <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Changing_the_base">changes of
 base</a>
 from 2 (to e.g. 10).</p>
 <h3 id="block-coding">Block Coding</h3>
-<p>If the source and target alphabets are of the same size, the conversion
-can be made trivially by assigning a single target symbol to each source
-symbol. Consider an alphabet of two symbols <span class="math inline">\(\{A,B\}\)</span>:</p>
+<p>When the source and target alphabets are of the same size, a conversion
+algorithm can be made trivially by assigning one target symbol to each
+source symbol. Consider an alphabet of two symbols <span class="math inline">\(\{A,B\}\)</span>:</p>
 <p><img src="res/arith/01AB.svg" /></p>
 <p>According to this assignment, the sequence <span class="math inline">\(ABA\)</span> would encode into
 <span class="math inline">\('010'\)</span> and vice versa for decoding.</p>
@@ -84,31 +85,30 @@ distinguishing between symbols anymore and can be dropped, leaving us
 with the 4-bit code <span class="math inline">\('0000'\)</span>.</p>
 <p>We can absorb this extra code-space into symbols that are the most
 likely to occur to maximizing efficiency. For example, in English text,
-the most common letters are <span class="math inline">\(\{A,E,I,N,O,T\}\)</span> so assigning more
-code-space to these symbols will result in shorter binary encodings in
-the long run:</p>
+the six most common letters are typically <span class="math inline">\(\{A,E,I,N,O,T\}\)</span> so assigning
+more code-space to these symbols will result in shorter binary encodings
+in the long run:</p>
 <p><img src="res/arith/alphabet-fill-0.svg" />
 <img src="res/arith/alphabet-fill-1.svg" /></p>
 <p>Symbols being assigned 5-bits are effectively given <span class="math inline">\(\frac{1}{32}\)</span> of
 the code-space, and the more likely 4-bit symbols are given
 <span class="math inline">\(\frac{2}{32} = \frac{1}{16}\)</span> of the code-space. Encoding the string
-<span class="math inline">\(ABA\)</span> according to this assignment would produce a code
-<span class="math inline">\('0000~00010~0000'\)</span>.</p>
+<span class="math inline">\(ABA\)</span> according to this assignment produces a code <span class="math inline">\('0000~00010~0000'\)</span>.</p>
 <p>This notion of assigning smaller codes to more common symbols and longer
-codes to less common symbols <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem">can be
-shown</a>
-to produce codes of <em>minimal</em> length when the proportion of code-space
-assigned to each symbol is equal to its proportion in the message
-(i.e. string of symbols) to be encoded.</p>
+codes to less common symbols can be <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem">shown to produce codes of <em>minimal</em>
+length</a>
+when the proportion of code-space assigned to each symbol is equal to
+its proportion (or probability) in the message (i.e. string of symbols)
+to be encoded.</p>
 <h3 id="huffman-coding">Huffman Coding</h3>
 <p>Given a probability distribution over symbols, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Huffman_coding">Huffman’s
-algorithm</a> will
-efficiently produce an assignments of codes to symbols which
-consistently minimizes the length of encodings that are sampled from
-that same probability distribution.</p>
+algorithm</a> efficiently
+produces an assignments of codes to symbols which consistently minimizes
+the length of encodings that are sampled from that same probability
+distribution.</p>
 <p>So if we consider the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
 distribution</a>
-over letters as they typically appear in English text:</p>
+over letters as they could appear in English text:</p>
 <p><img src="res/arith/frequency-bars.svg" /></p>
 <p><img src="res/arith/frequency-table.svg" /></p>
 <p>Huffman’s algorithm will produce a “tree” corresponding to a code
@@ -119,25 +119,28 @@ assignment like so (unlabeled symbols at the very end are, in order,
 <p>This simple algorithm aligns each symbol to a binary slice of the code
 space reasonably close to its share in the distribution. Encoding the
 string <span class="math inline">\(ABA\)</span> according to this assignment would produce
-<span class="math inline">\('0000~111000~0000'\)</span>.</p>
+<span class="math inline">\('0000~111000~0000'\)</span> because the letter <span class="math inline">\(B\)</span> is relatively rare accordig
+to our distribution.</p>
 <p>The length of individual symbol codes in this example range between 3
 bits for the most frequent letters <span class="math inline">\(\{E,T\}\)</span> to 10 bits for the least
 frequent <span class="math inline">\(\{J,Z\}\)</span>.</p>
 <p>This assignment of codes to symbols is optimal insofar as it is an
 <em>assignment</em>, meaning that each symbol gets its own fixed code. It can
-only give shares of code-space that are powers of <span class="math inline">\(\frac{1}{2}\)</span>. The
+only give shares of code-space which are powers of <span class="math inline">\(\frac{1}{2}\)</span>. The
 efficiency of Huffman codes depends directly on the degree to which this
 produced distribution accurately models the true distribution (true in
 black, modeled in gray):</p>
-<p><img src="res/arith/huffman-bars.svg" /></p>
+<p><img src="res/arith/huffman-bars.svg" />
+$$$$</p>
 <p>Whenever the probability distribution doesn’t align exactly along powers
-of <span class="math inline">\(\frac{1}{2},\)</span> we can outperform methods like Huffman by giving up
-this “alignment” of symbols to the code-space entirely and working
-directly with the true distribution.</p>
+of <span class="math inline">\(\frac{1}{2},\)</span> it becomes possible to outperform methods like Huffman
+by giving up this “alignment” of symbols to the code-space and working
+instead directly with the true distribution.</p>
+<p>This is arithmetic coding.</p>
 <h2 id="arithmetic-coding">Arithmetic Coding</h2>
-<p>Arithmetic coding is not a symbol-by-symbol coding scheme. Instead,
-messages are directly assigned binary expansions that are precise enough
-to uniquely identify them.</p>
+<p>Arithmetic coding is not a symbol-by-symbol coding scheme. Instead, each
+possible messages is assigned a binary expansions that is precise enough
+to uniquely identify it.</p>
 <p>The same way every binary sequence corresponds to a finite interval of
 code-space by nesting divisions by 2 in the unit interval:</p>
 <p><img src="res/arith/binary.svg" /></p>
@@ -148,17 +151,18 @@ over two symbols <span class="math inline">\(\{A \mapsto 0.67, B \mapsto 0.33\}\
 <p><img src="res/arith/ab.svg" /></p>
 <p>To arithmetically encode a sequence of symbols given a distribution, it
 suffices to find the <strong>first binary interval that fits entirely within
-the interval determined by the sequence we want to encode</strong>. The
-decoder, using the same distribution, can reverse this operation by
+the interval determined by the sequence we want to encode</strong>.</p>
+<p>The decoder, using the same distribution, can reverse this operation by
 finding the smallest message interval that can fit a given binary code’s
 interval.</p>
 <h3 id="example-1">Example 1</h3>
 <p>To encode the sequence <span class="math inline">\(ABA\)</span> according to the toy distribution <span class="math inline">\(\{A
-\mapsto 0.67, B \mapsto 0.33\}\)</span>, we find that the code <span class="math inline">\('1000'\)</span> uniquely
-determines the sequence <span class="math inline">\(ABA\)</span> by being the first binary sequence whose
-interval fits entirely within the interval of the symbol sequence:</p>
+\mapsto 0.67, B \mapsto 0.33\}\)</span> we showed above, we find that the code
+<span class="math inline">\('1000'\)</span> uniquely determines the sequence <span class="math inline">\(ABA\)</span> by being the first
+binary sequence whose interval fits entirely within the interval of the
+symbol sequence:</p>
 <p><img src="res/arith/ABA-arith-0.svg" /></p>
-<p>For a closer view:</p>
+<p>Zoomed in on the <span class="math inline">\((0.25,0.75)\)</span> interval:</p>
 <p><img src="res/arith/ABA-arith-1.svg" /></p>
 <p>The exact way in which this mapping between the code- and symbol-space
 is computed will vary by implementation with different trade-offs
@@ -166,8 +170,8 @@ between precision, memory requirements and types of probability
 distribution. But this correspondence between intervals is what is
 computed by an arithmetic coder.</p>
 <h3 id="example-2">Example 2</h3>
-<p>More realistic examples are somewhat challenging to demonstrate
-graphically.</p>
+<p>More realistic examples, with longer codes, are somewhat challenging to
+demonstrate graphically.</p>
 <p>Consider encoding the sequence of letters <span class="math inline">\(NOT\)</span> from a 26 letter
 alphabet with associated probabilities. Below, message space is
 separated between letters in alphabetical order and each truncation of
@@ -197,9 +201,9 @@ sampling</a>
 each of its symbols in sequence:</p>
 <p><span class="math display">\[P(\mathrm{\bf x}) = \prod_i{P(x_i)}\]</span></p>
 <p>Knowing this width (i.e. probability), we know that the length of the
-code’s interval must be contained within, meaning the arithmetic code
-itself <em>cannot be shorter</em> than the number of times it takes to split
-the unit interval in half to reach that width, i.e. the logarithm
+code’s interval must be fully contained within, meaning the arithmetic
+code itself <em>cannot be shorter</em> than the number of times it takes to
+split the unit interval in half to reach that width, i.e. the logarithm
 base-<span class="math inline">\(\frac{1}{2}\)</span> of the probability, i.e. the negative logarithm
 base-2:</p>
 <p><span class="math display">\[\begin{align}
@@ -209,8 +213,8 @@ base-2:</p>
 \end{align}\]</span></p>
 <p>Or simply:</p>
 <p><span class="math display">\[\mathrm{len}(\mathrm{\bf x})_2 ~\ge -\log_2P(\mathrm{\bf x})\]</span></p>
-<p>This lower-bound on the length of an encoding is precisely the
-definition the
+<p>We find that this lower-bound on the length of an encoding is precisely
+the definition the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information</a> of an
 event <span class="math inline">\(x\)</span> with probability <span class="math inline">\(P(x)\)</span>:</p>
 <p><span class="math display">\[I(x) = -\log P(x)\]</span></p>
@@ -218,6 +222,7 @@ event <span class="math inline">\(x\)</span> with probability <span class="math 
 lower-bound</a>
 to any compression method on a stream of data with probability
 distribution <span class="math inline">\(P\)</span>.</p>
+<h3 id="efficiency">Efficiency</h3>
 <p>Alongside this lower-bound, we can derive an <em>upper-bound</em> for the
 length of an arithmetic encoding. Consider the level of binary divisions
 immediately smaller than the width of the message (we round the
@@ -226,28 +231,32 @@ logarithm up to the next integer):</p>
 ~\ge~ \left\lceil-\log_2P(\mathrm{\bf x})\right\rceil\]</span></p>
 <p>Notice that, although it is possible that no binary interval immediately
 smaller than the message’s interval fits within it if divisions in each
-space are not in perfect phase with each other (as in one of the
-examples above):</p>
+space are not in perfect phase with each other—as in one of the
+examples above where the width of a 3-bit code (<span class="math inline">\(0.5^3 = 0.125\)</span>) is less
+than the with of our message (<span class="math inline">\(0.67 * 0.33 * 0.67 \approx 0.148\)</span>):</p>
 <p><img src="res/arith/ABA-arith-phase.svg" /></p>
-<p>Subdividing the space only once more is guaranteed to produce a binary
-interval within the message interval. Since we have defined the
+<p>There is no valid code at that resolution for alignment reasons.</p>
+<p>Subdividing the space only once more is always guaranteed to produce a
+binary interval within the message interval. Since we have defined the
 arithmetic encoding as the <em>first</em> binary interval fully within the
 message’s interval, we get the upper-bound:</p>
 <p><span class="math display">\[\mathrm{len}(\mathrm{\bf x})_2
 ~\le~ \left\lceil-\log_2P(\mathrm{\bf x})\right\rceil + 1\]</span></p>
-<p>which makes an arithmetic encoding <em>at most</em> 1-bit longer than the
-minimum it (and any other algorithm) can possibly achieve.</p>
-<h2 id="eom">EOM</h2>
-<p>A caveat to the above calculations is that for some distributions,
-namely if the probability of some symbols in the distribution is more
-than <span class="math inline">\(\frac{1}{2}\)</span>, then individual bits can fail to discriminate
-between two successive levels of the nested symbol space.</p>
+<p>which makes an arithmetic encoding <em>at most</em> 1 bit longer than the
+minimum it (and any other algorithm) can possibly achieve, or <em>at most</em>
+2 bits more than the integer part of the logarithm.</p>
+<h2 id="eom-symbol">EOM Symbol</h2>
+<p>A caveat to the above algorithm and calculations is that for some
+distributions, namely if the probability of some symbols in the
+distribution is more than <span class="math inline">\(\frac{1}{2}\)</span>, then individual bits can fail
+to discriminate between two successive levels of the nested symbol
+space.</p>
 <p>For example, the interval of code <span class="math inline">\('00'\)</span> is the first binary interval to
 be fully within the bounds of both messages <span class="math inline">\(AA\)</span> and <span class="math inline">\(AAA\)</span> using the
-distribution <span class="math inline">\(\{A \mapsto 0.67, B \mapsto 0.33\}\)</span>, which results in
-ambiguity on the decoding side:</p>
+distribution <span class="math inline">\(\{A \mapsto 0.67, B \mapsto 0.33\}\)</span> because of the high
+probability of <span class="math inline">\(A\)</span>, which results in ambiguity on the decoder side:</p>
 <p><img src="res/arith/AB-caveat.svg" /></p>
-<p>The usually stated workaround to this issue is to include a special
+<p>The usually presented workaround to this issue is to include a special
 end-of-message (<strong>EOM</strong>) symbol to the distribution with a probability
 of <span class="math inline">\(\frac{1}{n}\)</span> where <span class="math inline">\(n\)</span> is the length of the message and use it as a
 terminating symbol, resolving the ambiguity.</p>
@@ -263,12 +272,15 @@ overall informational cost equivalent to encoding <span class="math inline">\(n\
 \end{align}\]</span></p>
 <p>Which grows on the order of <span class="math inline">\(O(\log n)\)</span>:</p>
 <p><img src="res/arith/ologn.svg" /></p>
-<p>I find this solution unsatisfactory as either (a) the <strong>EOM</strong> symbol’s
-probability is not exactly <span class="math inline">\(\frac{1}{n}\)</span> making the code more than <span class="math inline">\(\log
-n\)</span> longer, or (b) the probability is exactly <span class="math inline">\(\frac{1}{n}\)</span> in which case
-the decoder already knows the length of the message by way of the
-probability and the introduction of an <strong>EOM</strong> symbol becomes
-unnecessary.</p>
+<p>I find this solution unsatisfactory as either:</p>
+<ol type="a">
+<li><p>the probability is exactly <span class="math inline">\(\frac{1}{n}\)</span> in which case the decoder
+already knows the length of the message by way of the probability and
+the introduction of an <strong>EOM</strong> symbol becomes unnecessary, or</p></li>
+<li><p>the <strong>EOM</strong> symbol’s assigned probability is either less or more
+than <span class="math inline">\(\frac{1}{n}\)</span> which, in either case, makes the code more than <span class="math inline">\(\log
+n\)</span> longer.</p></li>
+</ol>
 <p>The more elegant alternative is to assume the length of each message
 must be prepended to each message in binary, letting the decoder know
 exactly where to stop the recursion. A direct binary encoding of a
@@ -286,16 +298,12 @@ property</a>) and also take on
 the order of <span class="math inline">\(O(\log n)\)</span> bits (with a constant factor between 1 and 2)
 for any <span class="math inline">\(n \in \mathbb{N}\)</span>.</p>
 <h2 id="adaptive-coding">Adaptive Coding</h2>
-<p>So far, we have assumed that, over the span of a message, <em>identical</em>
-distributions are nested within each other. This doesn’t have to be the
-case.</p>
-<p>If instead of sharing a single distribution, the encoder and decoder
-share a “model” that updates its probability distribution over symbols
-after each successive symbol, the likelihood of plausible <em>messages</em> can
-be increased.</p>
-<p>These more likely messages are thus addressable by shorter codes,
-increasing the achieved compression factor by however much better the
-adaptive model is able to predict symbols than the fixed distribution.</p>
+<p>Up to now, the probability distrbutions have been assumed to remain
+constant between iterations. This doesn’t have to be the case.</p>
+<p>If instead of sharing one distribution, the encoder and decoder share a
+“model” that updates its probability distribution over symbols after
+each successive symbol, the likelihood of plausible <em>messages</em> can be
+increased, and code length decreased.</p>
 <p>The existence and optimality of arithmetic coding (including adaptive)
 means the effectiveness of different lossless compression schemes can be
 shifted to the predictive power of the underlying models, instead of
