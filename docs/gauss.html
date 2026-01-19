@@ -33,23 +33,25 @@
   </section>
   <section>
     <p><a href="arith.html">Arithmetic codes</a> are pretty useful for compression.</p>
-<p>Implementations usually operate using the equivalent of a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
+<p>Implementations usually operate with probability tables, equivalent to a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
 distribution</a>. For
 example, using a 26 letter alphabet with probabilities proportional to
 their frequency in English text:</p>
 <p><img src="res/gauss/frequency-bars.svg" /></p>
-<p>Each letter gets an explicitly probability assignment and an equivalent
+<p>Each letter gets an explicit probability assignment and an equivalent
 section of the unit interval like so:</p>
 <p><img src="res/gauss/alphabet.svg" /></p>
-<p>This unit interval is then used as a CDF (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cumulative distribution
+<p>This unit interval is then used as a CDF (a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cumulative distribution
 function</a>)
-by the arithmetic encoder to turn sequences of symbols (here: letters)
+by the arithmetic encoder to turn sequences of symbols (here letters)
 into binary codes of minimal size.</p>
-<p>But any probability distribution with a well defined <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quantile_function">quantile
-function</a> (CDF<span class="math inline">\(^{-1}\)</span>)
-could be used for arithmetic coding, even on infinite domains. Consider
-a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a> prior
-over integers to compress sequences of whole numbers:</p>
+<p>However, any probability distribution with a well defined <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quantile_function">quantile
+function</a> (i.e.
+CDF<span class="math inline">\(^{-1}\)</span>) could be used for arithmetic coding, even on infinite
+domains. Consider a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a> prior over
+integers to compress sequences of whole numbers:</p>
 <p><img src="res/gauss/gauss-pdf.svg" /></p>
 <p><img src="res/gauss/gauss-cdf.svg" /></p>
 <p>For each integer <span class="math inline">\(i \in \mathbb{Z}\)</span>, we assign the probability mass
@@ -59,18 +61,17 @@ function</a>)
 of choice.</p>
 <h2 id="an-abstract-arithmetic-coding-interface">An Abstract Arithmetic Coding Interface</h2>
 <p>To support this exploration, we implement a <em>generic</em> arithmetic codec
-(encoder/decoder) that interfaces with distributions to serialize and
-de-serialize values and provide both the categorical and Gaussian
-implementations.</p>
+(encoder/decoder) that interfaces with distributions over any indexed
+domain and provide both the categorical and Gaussian implementations.</p>
 <p>The program is written in Rust:</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/nbos/cont-arith-code">Source (GitHub)</a></li>
 <li><a href="res/doc/cont_arith_code/index.html">Documentation</a></li>
 </ul>
 <p>For probability distributions that can be queried at any fraction of
-their remaining probability mass (<code>quantile</code>) and truncated at those
-fractions (<code>truncate</code>), the algorithm produces binary serializations of
-any <em>value</em> (indexed in <code>i64</code>) of their domain.</p>
+their remaining probability mass (function <code>quantile</code>) and truncated at
+those fractions (function <code>truncate</code>), the algorithm produces binary
+serializations of any value (indexed as an <code>i64</code>) of their domain.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Index <span class="op">=</span> <span class="dt">i64</span><span class="op">;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> TruncatedDistribution <span class="op">{</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> quantile(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> cp<span class="op">:</span> <span class="dt">f64</span>) <span class="op">-&gt;</span> (<span class="bu">Index</span><span class="op">,</span> <span class="dt">f64</span>)<span class="op">;</span> <span class="co">// returns (s, s_rem)</span></span>
@@ -79,10 +80,10 @@ any <em>value</em> (indexed in <code>i64</code>) of their domain.</p>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> hi(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the upper-bound is in</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> is_resolved(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span> <span class="kw">self</span><span class="op">.</span>lo() <span class="op">==</span> <span class="kw">self</span><span class="op">.</span>hi() <span class="op">}</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>To serialize <em>sequences</em> of values, a trait for a “model” is defined
-that emits distributions which are truncated until resolution whereby
-the resulting symbol is fed back to the model (updating it) before
-requesting the next distribution.</p>
+<p>To serialize <em>sequences</em> of values, a trait <code>Model</code> is defined to emit
+distributions which are truncated until resolution whereby the resolved
+symbol is fed back to the model (updating it) before requesting the next
+distribution.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> Model<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> next_distr(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> UnivariateDistribution<span class="op">&gt;;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> push(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span><span class="op">,</span> s<span class="op">:</span> <span class="bu">Index</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;</span>T<span class="op">&gt;;</span></span>
@@ -95,10 +96,10 @@ of mutating calls such that deterministic implementations of those
 methods result in reversible (decodable) encodings.</p>
 <p>The rest of this post is divided into three parts:</p>
 <ol type="1">
-<li><p>We derive bounds on the efficiency of modeling integers with Gaussian
-PDFs justifying the approach,</p></li>
+<li><p>We share bounds on the efficiency of modeling integers with Gaussian
+PDFs that justify the approach,</p></li>
 <li><p>comments on implementation details of the Gaussian backend, and</p></li>
-<li><p>a few examples proving the implementation works as designed.</p></li>
+<li><p>examples proving the implementation works as designed.</p></li>
 </ol>
 <h2 id="theoretical-viability">Theoretical Viability</h2>
 <p>The code length achievable by an arithmetic encoder is within two bits
@@ -112,10 +113,8 @@ mass within an interval <span class="math inline">\(x \pm 0.5\)</span> of the Ga
 computed as</p>
 <p><span class="math display">\[\begin{align}P(x) &amp;= CDF(x)|_{x-0.5}^{x+0.5}\\[6pt]
 	&amp;= CDF(x+0.5) - CDF(x-0.5)\end{align}\]</span></p>
-<p>in terms of the CDF (the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cumulative distribution
-function</a>)
-of the Gaussian which, for the parametrized distribution
-<span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span> is equal to:</p>
+<p>in terms of the CDF of the Gaussian which, for the parametrized
+distribution <span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span> is equal to:</p>
 <p><span class="math display">\[CDF(x) = \frac {1}{2}\left[1+\operatorname {erf} \left({\frac {x-\mu
 }{\sigma {\sqrt {2}}}}\right)\right]\]</span></p>
 <p>which is expressed in terms of a non-elementary, sigmoid-shaped, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Error_function">error
@@ -125,7 +124,7 @@ doesn’t factor or reduce well enough to be useful for us going further.</p>
 <p>Conveniently, the PDF already approximates the <span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span>
 based on the fact that:</p>
 <p><span class="math display">\[PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}\]</span></p>
-<p>which is just a statement of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus">fundamental theorem of
+<p>which is a case of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus">fundamental theorem of
 calculus</a>,
 by way of the fact that the CDF is the integral of the PDF.</p>
 <p>Practically speaking, this means the PDF is a good approximation of the
@@ -175,9 +174,10 @@ that the extreme values fall at different point in the tails.</p>
 Gaussian</a> is
 technically degenerate (<span class="math inline">\(\sigma^2 = 0\)</span>), but the resulting probability
 around the unit interval at that point will be 1 (code length 0) which
-should not be a problem in terms of compression efficiency if the
+is not a problem in terms of compression efficiency if the
 implementation handles it properly.</p>
-<p>Other axes of data “distribution” are:</p>
+<p>The other axes of data “distribution” w.r.t. to a unidimensional
+Gaussian are:</p>
 <ol type="1">
 <li>how spread out, and</li>
 <li>how skewed to one side the values are.</li>
@@ -186,8 +186,8 @@ implementation handles it properly.</p>
 observe their effects on the resulting arithmetic codes.</p>
 <h4 id="multimodal">Multimodal</h4>
 <p>Moving forward from the case of the degenerate Gaussian of a
-distribution containing only 1 value, we model the parameters of
-Gaussian distributions equally distributed between 2, 3, 4,
+distribution containing only one value, we model the parameters of
+Gaussian distributions equally distributed between two, three, four,
 etc. equidistant modes:</p>
 <p><span class="math display">\[\renewcommand{\arraystretch}{1.5}
 \begin{array}{l|c|c|c}
@@ -241,8 +241,8 @@ I(n)_{multimodal}
 <p><img src="res/gauss/multimodalinfo.svg" /></p>
 <p>This is within expectations. Dividing by <span class="math inline">\(n\)</span>, we get code lengths of
 <span class="math inline">\(O(\log n)\)</span> <em>per integer</em>, which is no more than the complexity of
-distinguishing one among a set of <span class="math inline">\(n\)</span>, which is, informationally
-speaking, needed as the Gaussian prior spreads to cover <span class="math inline">\(O(n)\)</span> values.</p>
+distinguishing one among a set of <span class="math inline">\(n\)</span>, which is—informationally
+speaking—needed as the Gaussian prior spreads to cover <span class="math inline">\(O(n)\)</span> values.</p>
 <h4 id="outlier-case">Outlier case</h4>
 <p>For a more degenerate case, consider the probability density at an
 outlier by setting the majority on one value (e.g. 0) and a single
@@ -310,11 +310,11 @@ distribution trait, in particular the methods <code>quantile</code> and <code>tr
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> hi(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="bu">Index</span><span class="op">;</span> <span class="co">// symbol the upper-bound is in</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> is_resolved(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span> <span class="kw">self</span><span class="op">.</span>lo() <span class="op">==</span> <span class="kw">self</span><span class="op">.</span>hi() <span class="op">}</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>What’s important here is that the <code>quantile</code> function maps onto the
-symbol space in amounts commensurate with the given cumulative
-probability <span class="math inline">\(\in [0,1]\)</span>. Inaccuracy in this regard is <em>not</em> prohibitive
-for serialization, but will result in longer codes than necessary
-(assuming models are well fit to the data).</p>
+<p>It is important that the <code>quantile</code> function maps onto the symbol space
+faithfully to the distribution given cumulative probabilities <span class="math inline">\(\in
+[0,1]\)</span>. Inaccuracy in this regard is <em>not</em> prohibitive for
+serialization, but will result in longer codes than necessary (assuming
+models are well fit to the data).</p>
 <p>There is a strong assumption, however, that while a truncated
 distribution is not yet resolved, <code>quantile(0.5)</code> returns an
 index-remainder pair that is different than either <code>quantile(0.0)</code> (the
@@ -326,7 +326,7 @@ and has finite value everywhere except at <span class="math inline">\(0 \mapsto 
 \mapsto \infty\)</span>.</p>
 <p><img src="res/gauss/cdfquantile.svg" /></p>
 <p>Using this function to measure probability masses far in the tails
-(e.g. past <span class="math inline">\(6\sigma\)</span>) is not feasibly with 64-bit floats as the
+(e.g. past <span class="math inline">\(6\sigma\)</span>) is not feasible with 64-bit floats as the
 cumulative probabilities approaching 0.99999… overflow to 1.0.</p>
 <p>An easy fix to ensure progress might be to fall back to <em>linear</em>
 interpolation whenever the call to the quantile function runs out of
@@ -346,19 +346,19 @@ easy approximation with straight lines. Another way to demonstrate this
 is by blowing up the PDF at different scales (here, successive factors
 of 10):</p>
 <p><img src="res/gauss/pdfscales.svg" /></p>
-<p>We are forced to find a solution that is faithful to the distribution.</p>
+<p>We are forced to find a more complete solution.</p>
 <h3 id="tackling-numerical-instability">Tackling Numerical Instability</h3>
 <p>Like is usually the case with precision issues in probability, the
 solution to numerical instability is found in the
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Log_probability">log-domain</a>. This gives
-us two analogous functions for the cumulative probability with more
-manageable shapes:</p>
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Log_probability">log-domain</a>.</p>
+<p>This gives us two analogous functions for the cumulative probability
+with more manageable shapes:</p>
 <p><img src="res/gauss/logcdfquantileexp.svg" /></p>
 <p>Furthermore, we can model all right tail calculations by using the
 left’s and avoid troublesome asymptotes by exploiting the symmetry of
 the Gaussian PDF. This leaves us with two almost linear curves.</p>
-<p>Fortunately, SciPy has well documented and precise polynomial
-approximations of the log-CDF
+<p>SciPy has well documented and precise polynomial approximations of the
+log-CDF
 <a target="_blank" rel="noopener" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.log_ndtr.html"><code>log_ndtr</code></a>
 (<a target="_blank" rel="noopener" href="https://github.com/scipy/scipy/blob/ab84560b96cf5816be0015b0ee3a41cef708f675/scipy/special/xsf/stats.h#L84">source</a>)
 and quantile-exp

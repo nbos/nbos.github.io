@@ -6,28 +6,30 @@ date: 2025-10-26
 
 [Arithmetic codes](arith.html) are pretty useful for compression.
 
-Implementations usually operate using the equivalent of a [categorical
+Implementations usually operate with probability tables, equivalent to a
+[categorical
 distribution](https://en.wikipedia.org/wiki/Categorical_distribution). For
 example, using a 26 letter alphabet with probabilities proportional to
 their frequency in English text:
 
 ![](res/gauss/frequency-bars.svg)
 
-Each letter gets an explicitly probability assignment and an equivalent
+Each letter gets an explicit probability assignment and an equivalent
 section of the unit interval like so:
 
 ![](res/gauss/alphabet.svg)
 
-This unit interval is then used as a CDF ([cumulative distribution
+This unit interval is then used as a CDF (a [cumulative distribution
 function](https://en.wikipedia.org/wiki/Cumulative_distribution_function))
-by the arithmetic encoder to turn sequences of symbols (here: letters)
+by the arithmetic encoder to turn sequences of symbols (here letters)
 into binary codes of minimal size.
 
-But any probability distribution with a well defined [quantile
-function](https://en.wikipedia.org/wiki/Quantile_function) (CDF$^{-1}$)
-could be used for arithmetic coding, even on infinite domains. Consider
-a [Gaussian](https://en.wikipedia.org/wiki/Normal_distribution) prior
-over integers to compress sequences of whole numbers:
+However, any probability distribution with a well defined [quantile
+function](https://en.wikipedia.org/wiki/Quantile_function) (i.e.
+CDF$^{-1}$) could be used for arithmetic coding, even on infinite
+domains. Consider a
+[Gaussian](https://en.wikipedia.org/wiki/Normal_distribution) prior over
+integers to compress sequences of whole numbers:
 
 ![](res/gauss/gauss-pdf.svg)
 
@@ -42,9 +44,8 @@ of choice.
 ## An Abstract Arithmetic Coding Interface
 
 To support this exploration, we implement a *generic* arithmetic codec
-(encoder/decoder) that interfaces with distributions to serialize and
-de-serialize values and provide both the categorical and Gaussian
-implementations.
+(encoder/decoder) that interfaces with distributions over any indexed
+domain and provide both the categorical and Gaussian implementations.
 
 The program is written in Rust:
 
@@ -52,9 +53,9 @@ The program is written in Rust:
 - [Documentation](res/doc/cont_arith_code/index.html)
 
 For probability distributions that can be queried at any fraction of
-their remaining probability mass (`quantile`) and truncated at those
-fractions (`truncate`), the algorithm produces binary serializations of
-any *value* (indexed in `i64`) of their domain.
+their remaining probability mass (function `quantile`) and truncated at
+those fractions (function `truncate`), the algorithm produces binary
+serializations of any value (indexed as an `i64`) of their domain.
 
 ```rust
 type Index = i64;
@@ -67,10 +68,10 @@ pub trait TruncatedDistribution {
 }
 ```
 
-To serialize *sequences* of values, a trait for a "model" is defined
-that emits distributions which are truncated until resolution whereby
-the resulting symbol is fed back to the model (updating it) before
-requesting the next distribution.
+To serialize *sequences* of values, a trait `Model` is defined to emit
+distributions which are truncated until resolution whereby the resolved
+symbol is fed back to the model (updating it) before requesting the next
+distribution.
 
 ```rust
 pub trait Model<T> {
@@ -89,14 +90,14 @@ De-serialization (decoding) uses the same interface with the same order
 of mutating calls such that deterministic implementations of those
 methods result in reversible (decodable) encodings.
 
-The rest of this post is divided into three parts: 
+The rest of this post is divided into three parts:
 
-1. We derive bounds on the efficiency of modeling integers with Gaussian
-PDFs justifying the approach,
+1. We share bounds on the efficiency of modeling integers with Gaussian
+PDFs that justify the approach,
 
 2. comments on implementation details of the Gaussian backend, and
 
-3. a few examples proving the implementation works as designed.
+3. examples proving the implementation works as designed.
 
 ## Theoretical Viability
 The code length achievable by an arithmetic encoder is within two bits
@@ -114,10 +115,8 @@ computed as
 $$\begin{align}P(x) &= CDF(x)|_{x-0.5}^{x+0.5}\\[6pt]
 	&= CDF(x+0.5) - CDF(x-0.5)\end{align}$$
 
-in terms of the CDF (the [cumulative distribution
-function](https://en.wikipedia.org/wiki/Cumulative_distribution_function))
-of the Gaussian which, for the parametrized distribution
-$\mathcal{N}(\mu,\sigma^2)$ is equal to:
+in terms of the CDF of the Gaussian which, for the parametrized
+distribution $\mathcal{N}(\mu,\sigma^2)$ is equal to:
 
 $$CDF(x) = \frac {1}{2}\left[1+\operatorname {erf} \left({\frac {x-\mu
 }{\sigma {\sqrt {2}}}}\right)\right]$$
@@ -132,9 +131,9 @@ based on the fact that:
 
 $$PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}$$
 
-which is just a statement of the [fundamental theorem of
+which is a case of the [fundamental theorem of
 calculus](https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus),
-by way of the fact that the CDF is the integral of the PDF. 
+by way of the fact that the CDF is the integral of the PDF.
 
 Practically speaking, this means the PDF is a good approximation of the
 "interval-CDF" when the width of the interval is small or, equivalently
@@ -204,13 +203,14 @@ Notably, we have sets where *all* data is the same value. The [resulting
 Gaussian](https://en.wikipedia.org/wiki/Dirac_delta_function) is
 technically degenerate ($\sigma^2 = 0$), but the resulting probability
 around the unit interval at that point will be 1 (code length 0) which
-should not be a problem in terms of compression efficiency if the
+is not a problem in terms of compression efficiency if the
 implementation handles it properly.
 
-Other axes of data "distribution" are:
+The other axes of data "distribution" w.r.t. to a unidimensional
+Gaussian are:
 
-1. how spread out, and 
-2. how skewed to one side the values are. 
+1. how spread out, and
+2. how skewed to one side the values are.
 
 We model these by instantiating data sets without loss of generality and
 observe their effects on the resulting arithmetic codes.
@@ -218,8 +218,8 @@ observe their effects on the resulting arithmetic codes.
 #### Multimodal
 
 Moving forward from the case of the degenerate Gaussian of a
-distribution containing only 1 value, we model the parameters of
-Gaussian distributions equally distributed between 2, 3, 4,
+distribution containing only one value, we model the parameters of
+Gaussian distributions equally distributed between two, three, four,
 etc. equidistant modes:
 
 $$\renewcommand{\arraystretch}{1.5}
@@ -287,8 +287,8 @@ which is $O(n\log n)$:
 
 This is within expectations. Dividing by $n$, we get code lengths of
 $O(\log n)$ *per integer*, which is no more than the complexity of
-distinguishing one among a set of $n$, which is, informationally
-speaking, needed as the Gaussian prior spreads to cover $O(n)$ values.
+distinguishing one among a set of $n$, which is---informationally
+speaking---needed as the Gaussian prior spreads to cover $O(n)$ values.
 
 #### Outlier case
 
@@ -378,11 +378,11 @@ pub trait TruncatedDistribution {
 }
 ```
 
-What's important here is that the `quantile` function maps onto the
-symbol space in amounts commensurate with the given cumulative
-probability $\in [0,1]$. Inaccuracy in this regard is *not* prohibitive
-for serialization, but will result in longer codes than necessary
-(assuming models are well fit to the data).
+It is important that the `quantile` function maps onto the symbol space
+faithfully to the distribution given cumulative probabilities $\in
+[0,1]$. Inaccuracy in this regard is *not* prohibitive for
+serialization, but will result in longer codes than necessary (assuming
+models are well fit to the data).
 
 There is a strong assumption, however, that while a truncated
 distribution is not yet resolved, `quantile(0.5)` returns an
@@ -399,7 +399,7 @@ and has finite value everywhere except at $0 \mapsto -\infty$ and $1
 ![](res/gauss/cdfquantile.svg)
 
 Using this function to measure probability masses far in the tails
-(e.g. past $6\sigma$) is not feasibly with 64-bit floats as the
+(e.g. past $6\sigma$) is not feasible with 64-bit floats as the
 cumulative probabilities approaching 0.99999... overflow to 1.0.
 
 An easy fix to ensure progress might be to fall back to *linear*
@@ -407,7 +407,7 @@ interpolation whenever the call to the quantile function runs out of
 precision, assuming local linearity.
 
 While this is a reasonable approximation in the central bulk of the
-distribution, it fails in the tails. 
+distribution, it fails in the tails.
 
 To see why, consider the PDF and its derivative:
 
@@ -428,15 +428,16 @@ of 10):
 
 ![](res/gauss/pdfscales.svg)
 
-We are forced to find a solution that is faithful to the distribution.
+We are forced to find a more complete solution.
 
 ### Tackling Numerical Instability
 
 Like is usually the case with precision issues in probability, the
 solution to numerical instability is found in the
-[log-domain](https://en.wikipedia.org/wiki/Log_probability). This gives
-us two analogous functions for the cumulative probability with more
-manageable shapes:
+[log-domain](https://en.wikipedia.org/wiki/Log_probability).
+
+This gives us two analogous functions for the cumulative probability
+with more manageable shapes:
 
 ![](res/gauss/logcdfquantileexp.svg)
 
@@ -444,8 +445,8 @@ Furthermore, we can model all right tail calculations by using the
 left's and avoid troublesome asymptotes by exploiting the symmetry of
 the Gaussian PDF. This leaves us with two almost linear curves.
 
-Fortunately, SciPy has well documented and precise polynomial
-approximations of the log-CDF
+SciPy has well documented and precise polynomial approximations of the
+log-CDF
 [`log_ndtr`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.log_ndtr.html)
 ([source](https://github.com/scipy/scipy/blob/ab84560b96cf5816be0015b0ee3a41cef708f675/scipy/special/xsf/stats.h#L84))
 and quantile-exp
