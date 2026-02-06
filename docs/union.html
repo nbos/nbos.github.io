@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chunking with Unions</title>
+     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Posts</a>
+        <a href="./hackage.html">Hackage</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Chunking with Unions</h1>
+      <article>
+  <section class="header">
+    Posted on February  6, 2026
+    
+    by Nathaniel Bos
+    
+  </section>
+  <section>
+    <p>In a <a href="chunk.html">previous post</a>, we showed how greedily appending to a
+simple
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical</a>
+text model in the direction of maximal compression lead to meaningful
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">chunking</a> of the
+data.</p>
+<p>To bring the model closer to one capable of learning a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Formal_grammar">grammar</a>, we <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Algebraic_data_type">complete
+the logic</a> by
+incorporating the dual of chunking:
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cognitive_categorization">categorization</a>.</p>
+<p>While chunking was formalized as “joint” symbols—consecutive symbols
+concatenated together—categories are formalized as sets of possible
+symbols called “unions”<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<h2 id="union-semantics">Union Semantics</h2>
+<p>Unlike chunking, introducing classes of symbols under a categorical
+model doesn’t immediately produce savings in code length.</p>
+<h3 id="information-of-joint-intro.-recap">Information of Joint Intro. (Recap)</h3>
+<p>Encoding a categorical model with counts <span class="math inline">\(n_0, n_1, ... n_{m-1}\)</span> and
+instantiating it into a string of symbols <a href="chunk.html#format-description">takes information
+approximately equal to</a>:</p>
+<p><span class="math display">\[\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}
+~~~\text{where } N = \sum_i n_i.\]</span></p>
+<p>Introducing a joint symbol means docking a joint count <span class="math inline">\(n_{01}\)</span> from
+symbol counts <span class="math inline">\(n_0\)</span> and <span class="math inline">\(n_1\)</span> and appending count <span class="math inline">\(n_{01}\)</span> <a href="chunk.html#loss-function">resulting
+in</a> an increase in the description length of
+the counts vector:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I_{\mathrm{\bf n}}
+&amp;= \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
+&amp;= \log \left(\frac{(N + m - n_{01})!\,N!}
+	{(N + m - 1)!\,m\,(N - n_{01})!}\right) \\[5pt]
+\end{align}\]</span></p>
+<p>and a decrease in the length of string permutation:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I_\mathrm{\bf s}
+&amp;= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
+	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
+&amp;= \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
+	\log \left(\frac{\displaystyle 1}{\displaystyle (n_0 - 2n_{01})!} \right)
+	&amp; \text{when } s_0 = s_1 \\
+	\log \left(\frac{\displaystyle n_1!}
+	{\displaystyle (n_0 - n_{01})!\,(n_1 - n_{01})!} \right)
+	&amp; \text{when } s_0 \neq s_1
+	\end{cases}
+\end{align}\]</span></p>
+<p>which, together, is negative only if the joint count <span class="math inline">\(n_{01}\)</span> is
+sufficently large compared to what would be expected by independence.</p>
+<h3 id="information-of-union-intro.-naive">Information of Union Intro. (Naive)</h3>
+<p>Because of the way permutations (and their coefficients) compose,
+changing a categorical distribution by re-classifying symbols, then
+adding appropriate codes to disambiguate the produced union-symbols has
+little to no effect on the total code length.</p>
+<p>Say we place <span class="math inline">\(\ell\)</span> symbols under a union <span class="math inline">\(S_{0\ell} =
+\{s_0,s_1,...,s_{\ell-1}\}\)</span> with a cummulative count <span class="math display">\[n_{0\ell} =
+\sum_{i=0}^{\ell-1}n_i~~,\]</span></p>
+<p>moving their counts to a secondary counts vector (as required to
+interpret the code of their permutation) produces a combined description
+length:</p>
+<p><span class="math display">\[\begin{align}
+I_{\mathrm{\bf n}}
+&amp;= \log {N - n_{0\ell} + m - \ell - 1 \choose m - \ell - 1}
+	+ \log {n_{0\ell} + \ell - 1 \choose \ell - 1}\\[5pt]
+&amp;= \log \left( {N - n_{0\ell} + m - \ell - 1 \choose m - \ell - 1}
+	{n_{0\ell} + \ell - 1 \choose \ell - 1} \right).
+\end{align}\]</span></p>
+<p>Similarly, removing those counts from the encoding of the permutation
+and adding them to a disambiguating permutation separates the
+coefficient:</p>
+<p><span class="math display">\[\begin{align}
+I_{\mathrm{\bf s}}
+&amp;= \log {N - n_{0\ell}\choose n_\ell,n_{\ell+1},\ldots,n_{m-1}}
+	+ \log {n_{0\ell}\choose n_0,n_1,\ldots,n_{\ell-1}} \\[5pt]
+&amp;= \log \left( {N - n_{0\ell}\choose n_\ell,n_{\ell+1},\ldots,n_{m-1}}
+	{n_{0\ell}\choose n_0,n_1,\ldots,n_{\ell-1}} \right),
+\end{align}\]</span></p>
+<p>which, by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Vandermonde%27s_identity">Vandermonde’s
+identity</a></p>
+<p><span class="math display">\[{m+n \choose r}=\sum _{k=0}^{r}{m \choose k}{n \choose r-k},\]</span></p>
+<p>are approximately equal to the initial code length, modulo an additional
+<span class="math inline">\(O(\log m)\)</span> term which matches the length a code would take to specify
+which of the <span class="math inline">\(m-\ell\)</span> symbols is a union.</p>
+<p>The bottom line is that the counting of permutations remains constant
+under hierarchical decompositions of the set of symbols, indicating that
+categories get their meaning from something beyond themselves.</p>
+<h3 id="joints-of-unions">Joints-of-Unions</h3>
+<p>The way to make unions do work for us is to put them into joints.</p>
+<p>The naive approach being of looking for a cluser of symbols according to
+an arbitraty attribute:</p>
+<p><img src="res/union/figs/subset.svg" /></p>
+<p>we instead look for clusters in pairs—a “joint-of-unions”—such that
+they have a relatively high number of joints between them.</p>
+<p>As a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Graph_theory">graph</a>, the set of
+joint occurences of symbols in a string form edges in a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bipartite_graph">bipartite
+graph</a> connecting left
+and right symbols. Then, we are looking for a subgraph with high
+connectivity. Visually:</p>
+<p><img src="res/union/figs/bipartite.svg" /></p>
+<p>Properly speaking, the unions still don’t do work themselves to reduce
+the size of codes—that is still done by the introduction of the joint,
+but unions will allow joints to be defined between groups of symbols
+which, individually, would lack the numbers to justify the introduction
+of construction rule for each combination of joint that our
+joint-of-unions covers. This is another way (together with <a href="chunk.html#inductive-constructions">the sparsity
+of our chunks dictionary</a>) that we
+overcome the taditional limitations of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-gram
+model</a>
+regarding exponentially large datasets required to support words of
+increasing size.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Whereas product operators
+(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Record_(computer_science)">structs</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Intersection_(set_theory)">intersections</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Logical_conjunction">conjunction</a>) all
+seem to carry connotations that make them hard to apply to our case,
+leading us to opt instead for the term “joints” <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Joint_probability_distribution">from probability
+theory</a>
+which shares aspects of co-occurence and independence, sum operators
+(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Enumerated_type">enum</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Union_(set_theory)">union</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Logical_disjunction">disjunction</a>) all
+pretty much have the same semantics of choice, so we go for the term
+“union” for its ubiquity.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+  </section>
+  <footer>
+    <a href="./">Return</a>
+  </footer>
+</article>
+
+    </main>
+
+  </body>
+</html>
