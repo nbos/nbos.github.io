@@ -44,7 +44,7 @@ in](chunk.html#loss-function) an increase in the description length of
 the counts vector:
 
 $$\begin{align}
-\Delta I_{\mathrm{\bf n}}
+\Delta I^*_{\mathrm{\bf n}}
 &= \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
 &= \log \left(\frac{(N + m - n_{01})!\,N!}
 	{(N + m - 1)!\,m\,(N - n_{01})!}\right) \\[5pt]
@@ -53,7 +53,7 @@ $$\begin{align}
 and a decrease in the length of string permutation:
 
 $$\begin{align}
-\Delta I_\mathrm{\bf s}
+\Delta I^*_\mathrm{\bf s}
 &= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
 	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
 &= \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
@@ -86,7 +86,7 @@ interpret the code of their permutation) produces a combined description
 length:
 
 $$\begin{align}
-I_{\mathrm{\bf n}}
+I^*_{\mathrm{\bf n}}
 &= \log {N - n_{0\ell} + m - \ell - 1 \choose m - \ell - 1}
 	+ \log {n_{0\ell} + \ell - 1 \choose \ell - 1}\\[5pt]
 &= \log \left( {N - n_{0\ell} + m - \ell - 1 \choose m - \ell - 1}
@@ -98,7 +98,7 @@ and adding them to a disambiguating permutation separates the
 coefficient:
 
 $$\begin{align}
-I_{\mathrm{\bf s}}
+I^*_{\mathrm{\bf s}}
 &= \log {N - n_{0\ell}\choose n_\ell,n_{\ell+1},\ldots,n_{m-1}}
 	+ \log {n_{0\ell}\choose n_0,n_1,\ldots,n_{\ell-1}} \\[5pt]
 &= \log \left( {N - n_{0\ell}\choose n_\ell,n_{\ell+1},\ldots,n_{m-1}}
@@ -118,7 +118,7 @@ The bottom line is that the counting of permutations remains constant
 under hierarchical decompositions of the set of symbols, indicating that
 categories get their meaning from something beyond themselves.
 
-### Joints-of-Unions
+### Joints of Unions
 
 The way to make unions do work for us is to put them into joints.
 
@@ -145,7 +145,7 @@ joints corresponding to the [Cartesian
 product](https://en.wikipedia.org/wiki/Cartesian_product) of the left
 and right union type:
 
-$$\frac{a \in A ~~~~ b \in B}{(a,b) \in A \times B}$$
+$$\frac{s_0 \in U ~~~~ s_1 \in V}{(s_0,s_1) \in U \times V}.$$
 
 Properly speaking, the unions still don't do work themselves to reduce
 the size of codes---that is only done through the introduction of the
@@ -158,3 +158,99 @@ taditional limitations of the [$n$-gram
 model](https://en.wikipedia.org/wiki/Word_n-gram_language_model)
 regarding exponentially large datasets required to support words of
 increasing size.
+
+
+## Format Description
+
+Starting from the format used in the joints-only logic as a sum of code
+lengths
+
+$$\begin{align}
+I^*(m,{\bf n})
+\leq~&~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle m \vphantom{\prod}}
++ \underbrace{2\log \left(\frac{(m-1)!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{Rules} \vphantom{\prod}}
++ \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle N \vphantom{\prod}}\\[10pt]
+&+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}},
+\end{align}$$
+
+the $\mathrm{Rules}$ term is replaced with one defining the joint
+$\mathrm{Types}$ and for each, a code that resolves $n_i$ joints from
+that type.
+
+### Types
+
+For introducing individual joints (one left symbol, one right symbol),
+two indexes with information $\log(m)$ were sufficient to specify a
+construction rule, where $m$ is the number of symbols before the
+introduction.
+
+Cummulatively for a total of $m$ symbols, that came out to
+
+$$I^*_{\bf r}(m) = 2\log\left(\frac{(m-1)!}{255!}\right)$$
+
+assuming we start with 256 atomic symbols (stream of bytes).
+
+To encode a joint type, each symbol needs to be potentially included or
+excluded, twice (once for each side), pushing the information per
+introduction from $2\log(m)$ to $2m$. Still assuming 256 atomic symbols,
+we get a total
+
+$$\begin{align}
+I_T(m)
+&= 2 \cdot 256 + 2 \cdot 257 + \ldots + 2 \cdot (m - 1) \\[5pt]
+&= 2 \left( \sum_{i=1}^{m-1}i - \sum_{i=1}^{255}i \right) \\[5pt]
+&= 2 \left( \frac{(m-1)m}{2} - \frac{255 \cdot 256}{2} \right) \\[5pt]
+&= (m-1)m - 255 \cdot 256\\[5pt]
+&= m^2 - m - 65280
+\end{align}$$
+
+### Resolution
+
+Given the final string of symbols, the definition of composite symbols
+is no longer sufficient to expand them back into a string of atoms.
+
+For each symbol $s_i$, its
+[variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)) $\ell_i$
+is
+
+$$\ell_i = \begin{cases}
+1 & \text{when atomic} \\
+|U_i| \cdot |V_i| & \text{when joint type } U_i \times V_i
+\end{cases}
+$$
+
+which, for joint types, is the number of joints under the type, i.e. the
+product of the sizes of its unions.
+
+Then, for each composite symbol $s_i$, a code of length $\log \ell_i$ is
+required to disambiguate each of the $n_i$ joints it is to expand
+into. The sum of the lengths of all those codes makes:
+
+$$I_{\bf r}({\bf n}, {\bf l}) = \sum_i n_i \log \ell_i$$
+
+Together, we have the total length of the encoding:
+
+$$\begin{align}
+I(m,{\bf n},{\bf l})
+\leq~&~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle m \vphantom{\prod}}
++ \underbrace{m^2 - m - 65280\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{Types} \vphantom{\prod}}
++ \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle N \vphantom{\prod}}\\[10pt]
+&+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}}\\[10pt]
+&+ \underbrace{\sum_i n_i \log \ell_i \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{{\bf r} : Resolution} \vphantom{\prod}}
+\end{align}$$
+
+which by reducing in value through type introduction will result in
+compression.

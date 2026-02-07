@@ -63,14 +63,14 @@ symbol counts <span class="math inline">\(n_0\)</span> and <span class="math inl
 in</a> an increase in the description length of
 the counts vector:</p>
 <p><span class="math display">\[\begin{align}
-\Delta I_{\mathrm{\bf n}}
+\Delta I^*_{\mathrm{\bf n}}
 &amp;= \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
 &amp;= \log \left(\frac{(N + m - n_{01})!\,N!}
 	{(N + m - 1)!\,m\,(N - n_{01})!}\right) \\[5pt]
 \end{align}\]</span></p>
 <p>and a decrease in the length of string permutation:</p>
 <p><span class="math display">\[\begin{align}
-\Delta I_\mathrm{\bf s}
+\Delta I^*_\mathrm{\bf s}
 &amp;= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
 	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
 &amp;= \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
@@ -96,7 +96,7 @@ an insignificant effect on the total code length.</p>
 interpret the code of their permutation) produces a combined description
 length:</p>
 <p><span class="math display">\[\begin{align}
-I_{\mathrm{\bf n}}
+I^*_{\mathrm{\bf n}}
 &amp;= \log {N - n_{0\ell} + m - \ell - 1 \choose m - \ell - 1}
 	+ \log {n_{0\ell} + \ell - 1 \choose \ell - 1}\\[5pt]
 &amp;= \log \left( {N - n_{0\ell} + m - \ell - 1 \choose m - \ell - 1}
@@ -106,7 +106,7 @@ I_{\mathrm{\bf n}}
 and adding them to a disambiguating permutation separates the
 coefficient:</p>
 <p><span class="math display">\[\begin{align}
-I_{\mathrm{\bf s}}
+I^*_{\mathrm{\bf s}}
 &amp;= \log {N - n_{0\ell}\choose n_\ell,n_{\ell+1},\ldots,n_{m-1}}
 	+ \log {n_{0\ell}\choose n_0,n_1,\ldots,n_{\ell-1}} \\[5pt]
 &amp;= \log \left( {N - n_{0\ell}\choose n_\ell,n_{\ell+1},\ldots,n_{m-1}}
@@ -121,7 +121,7 @@ which of the <span class="math inline">\(m-\ell\)</span> symbols is a union.</p>
 <p>The bottom line is that the counting of permutations remains constant
 under hierarchical decompositions of the set of symbols, indicating that
 categories get their meaning from something beyond themselves.</p>
-<h3 id="joints-of-unions">Joints-of-Unions</h3>
+<h3 id="joints-of-unions">Joints of Unions</h3>
 <p>The way to make unions do work for us is to put them into joints.</p>
 <p>The naive (ineffective) approach being of looking for a cluser of
 symbols according to some arbitraty attribute:</p>
@@ -140,7 +140,7 @@ type</a> containing the set of
 joints corresponding to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian
 product</a> of the left
 and right union type:</p>
-<p><span class="math display">\[\frac{a \in A ~~~~ b \in B}{(a,b) \in A \times B}\]</span></p>
+<p><span class="math display">\[\frac{s_0 \in U ~~~~ s_1 \in V}{(s_0,s_1) \in U \times V}.\]</span></p>
 <p>Properly speaking, the unions still don’t do work themselves to reduce
 the size of codes—that is only done through the introduction of the
 joint, but unions will allow joint types to be defined between groups of
@@ -152,6 +152,80 @@ taditional limitations of the <a target="_blank" rel="noopener" href="https://en
 model</a>
 regarding exponentially large datasets required to support words of
 increasing size.</p>
+<h2 id="format-description">Format Description</h2>
+<p>Starting from the format used in the joints-only logic as a sum of code
+lengths</p>
+<p><span class="math display">\[\begin{align}
+I^*(m,{\bf n})
+\leq~&amp;~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle m \vphantom{\prod}}
++ \underbrace{2\log \left(\frac{(m-1)!}{255!}\right)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{Rules} \vphantom{\prod}}
++ \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle N \vphantom{\prod}}\\[10pt]
+&amp;+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}},
+\end{align}\]</span></p>
+<p>the <span class="math inline">\(\mathrm{Rules}\)</span> term is replaced with one defining the joint
+<span class="math inline">\(\mathrm{Types}\)</span> and for each, a code that resolves <span class="math inline">\(n_i\)</span> joints from
+that type.</p>
+<h3 id="types">Types</h3>
+<p>For introducing individual joints (one left symbol, one right symbol),
+two indexes with information <span class="math inline">\(\log(m)\)</span> were sufficient to specify a
+construction rule, where <span class="math inline">\(m\)</span> is the number of symbols before the
+introduction.</p>
+<p>Cummulatively for a total of <span class="math inline">\(m\)</span> symbols, that came out to</p>
+<p><span class="math display">\[I^*_{\bf r}(m) = 2\log\left(\frac{(m-1)!}{255!}\right)\]</span></p>
+<p>assuming we start with 256 atomic symbols (stream of bytes).</p>
+<p>To encode a joint type, each symbol needs to be potentially included or
+excluded, twice (once for each side), pushing the information per
+introduction from <span class="math inline">\(2\log(m)\)</span> to <span class="math inline">\(2m\)</span>. Still assuming 256 atomic symbols,
+we get a total</p>
+<p><span class="math display">\[\begin{align}
+I_T(m)
+&amp;= 2 \cdot 256 + 2 \cdot 257 + \ldots + 2 \cdot (m - 1) \\[5pt]
+&amp;= 2 \left( \sum_{i=1}^{m-1}i - \sum_{i=1}^{255}i \right) \\[5pt]
+&amp;= 2 \left( \frac{(m-1)m}{2} - \frac{255 \cdot 256}{2} \right) \\[5pt]
+&amp;= (m-1)m - 255 \cdot 256\\[5pt]
+&amp;= m^2 - m - 65280
+\end{align}\]</span></p>
+<h3 id="resolution">Resolution</h3>
+<p>Given the final string of symbols, the definition of composite symbols
+is no longer sufficient to expand them back into a string of atoms.</p>
+<p>For each symbol <span class="math inline">\(s_i\)</span>, its
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> <span class="math inline">\(\ell_i\)</span>
+is</p>
+<p><span class="math display">\[\ell_i = \begin{cases}
+1 &amp; \text{when atomic} \\
+|U_i| \cdot |V_i| &amp; \text{when joint type } U_i \times V_i
+\end{cases}
+\]</span></p>
+<p>which, for joint types, is the number of joints under the type, i.e. the
+product of the sizes of its unions.</p>
+<p>Then, for each composite symbol <span class="math inline">\(s_i\)</span>, a code of length <span class="math inline">\(\log \ell_i\)</span> is
+required to disambiguate each of the <span class="math inline">\(n_i\)</span> joints it is to expand
+into. The sum of the lengths of all those codes makes:</p>
+<p><span class="math display">\[I_{\bf r}({\bf n}, {\bf l}) = \sum_i n_i \log \ell_i\]</span></p>
+<p>Together, we have the total length of the encoding:</p>
+<p><span class="math display">\[\begin{align}
+I(m,{\bf n},{\bf l})
+\leq~&amp;~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle m \vphantom{\prod}}
++ \underbrace{m^2 - m - 65280\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{Types} \vphantom{\prod}}
++ \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle N \vphantom{\prod}}\\[10pt]
+&amp;+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
++ \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}}\\[10pt]
+&amp;+ \underbrace{\sum_i n_i \log \ell_i \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle \mathrm{{\bf r} : Resolution} \vphantom{\prod}}
+\end{align}\]</span></p>
+<p>which by reducing in value through type introduction will result in
+compression.</p>
   </section>
   <footer>
     <a href="./">Return</a>
