@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chunking with Unions</title>
+    <title>Chunking with Types</title>
      <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
     <link rel="stylesheet" href="./css/default.css">
     <link rel="stylesheet" href="./css/syntax.css">
@@ -23,7 +23,7 @@
     </header>
 
     <main role="main">
-      <h1>Chunking with Unions</h1>
+      <h1>Chunking with Types</h1>
       <article>
   <section class="header">
     Posted on February  6, 2026
@@ -45,7 +45,7 @@ incorporating the dual of chunking:
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cognitive_categorization">categorization</a>.</p>
 <p>While chunking was formalized as “joint” symbols—consecutive symbols
 concatenated together—categories are formalized as sets of possible
-symbols called “unions”<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+symbols called “unions”.</p>
 <h2 id="union-semantics">Union Semantics</h2>
 <p>Unlike chunking, introducing classes of symbols under a categorical
 model doesn’t immediately produce savings in code length.</p>
@@ -58,7 +58,7 @@ approximately equal to</a>:</p>
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle\mathrm{String} \vphantom{\prod}}
 ~~~\text{where } N = \sum_i n_i.\]</span></p>
-<p>Introducing a joint symbol means docking a joint count <span class="math inline">\(n_{01}\)</span> from
+<p>Introducing a new joint symbol means docking a joint count <span class="math inline">\(n_{01}\)</span> from
 symbol counts <span class="math inline">\(n_0\)</span> and <span class="math inline">\(n_1\)</span> and appending count <span class="math inline">\(n_{01}\)</span> <a href="chunk.html#loss-function">resulting
 in</a> an increase in the description length of
 the counts vector:</p>
@@ -81,16 +81,17 @@ the counts vector:</p>
 	&amp; \text{when } s_0 \neq s_1
 	\end{cases}
 \end{align}\]</span></p>
-<p>which, together, is negative only if the joint count <span class="math inline">\(n_{01}\)</span> is
-sufficently large compared to what would be expected by independence.</p>
+<p>which, together, is negative (i.e. reduces total information) only if
+the joint count <span class="math inline">\(n_{01}\)</span> is sufficently large compared to what would be
+expected by independence.</p>
 <h3 id="information-of-union-intro.-naive">Information of Union Intro. (Naive)</h3>
 <p>Because of the way permutations (and their coefficients) compose,
 changing a categorical distribution by re-classifying symbols, then
 adding appropriate codes to disambiguate the produced union-symbols has
-little to no effect on the total code length.</p>
+an insignificant effect on the total code length.</p>
 <p>Say we place <span class="math inline">\(\ell\)</span> symbols under a union <span class="math inline">\(S_{0\ell} =
-\{s_0,s_1,...,s_{\ell-1}\}\)</span> with a cummulative count <span class="math display">\[n_{0\ell} =
-\sum_{i=0}^{\ell-1}n_i~~,\]</span></p>
+\{s_0,s_1,...,s_{\ell-1}\}\)</span> with a cummulative count <span class="math inline">\(n_{0\ell}\)</span> where</p>
+<p><span class="math display">\[n_{0\ell} = \sum_{i=0}^{\ell-1}n_i~~,\]</span></p>
 <p>moving their counts to a secondary counts vector (as required to
 interpret the code of their permutation) produces a combined description
 length:</p>
@@ -122,9 +123,9 @@ under hierarchical decompositions of the set of symbols, indicating that
 categories get their meaning from something beyond themselves.</p>
 <h3 id="joints-of-unions">Joints-of-Unions</h3>
 <p>The way to make unions do work for us is to put them into joints.</p>
-<p>The naive approach being of looking for a cluser of symbols according to
-an arbitraty attribute:</p>
-<p><img src="res/union/figs/subset.svg" /></p>
+<p>The naive (ineffective) approach being of looking for a cluser of
+symbols according to some arbitraty attribute:</p>
+<p><img src="res/types/figs/subset.svg" /></p>
 <p>we instead look for clusters in pairs—a “joint-of-unions”—such that
 they have a relatively high number of joints between them.</p>
 <p>As a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Graph_theory">graph</a>, the set of
@@ -132,36 +133,25 @@ joint occurences of symbols in a string form edges in a <a target="_blank" rel="
 graph</a> connecting left
 and right symbols. Then, we are looking for a subgraph with high
 connectivity. Visually:</p>
-<p><img src="res/union/figs/bipartite.svg" /></p>
+<p><img src="res/types/figs/bipartite.svg" /></p>
+<p>Logically, this is a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Type_theory">type</a>
+of joint, specifically a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Product_type">product
+type</a> containing the set of
+joints corresponding to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian
+product</a> of the left
+and right union type:</p>
+<p><span class="math display">\[\frac{a \in A ~~~~ b \in B}{(a,b) \in A \times B}\]</span></p>
 <p>Properly speaking, the unions still don’t do work themselves to reduce
-the size of codes—that is still done by the introduction of the joint,
-but unions will allow joints to be defined between groups of symbols
-which, individually, would lack the numbers to justify the introduction
-of construction rule for each combination of joint that our
-joint-of-unions covers. This is another way (together with <a href="chunk.html#inductive-constructions">the sparsity
-of our chunks dictionary</a>) that we
-overcome the taditional limitations of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-gram
+the size of codes—that is only done through the introduction of the
+joint, but unions will allow joint types to be defined between groups of
+symbols which, individually, would lack the numbers to justify the
+introduction of construction rule for all the joints that the type
+covers. This is another way (together with <a href="chunk.html#inductive-constructions">the sparsity of our chunks
+dictionary</a>) that we overcome the
+taditional limitations of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-gram
 model</a>
 regarding exponentially large datasets required to support words of
 increasing size.</p>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Whereas product operators
-(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Record_(computer_science)">structs</a>,
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Intersection_(set_theory)">intersections</a>,
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Logical_conjunction">conjunction</a>) all
-seem to carry connotations that make them hard to apply to our case,
-leading us to opt instead for the term “joints” <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Joint_probability_distribution">from probability
-theory</a>
-which shares aspects of co-occurence and independence, sum operators
-(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Enumerated_type">enum</a>,
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Union_(set_theory)">union</a>,
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Logical_disjunction">disjunction</a>) all
-pretty much have the same semantics of choice, so we go for the term
-“union” for its ubiquity.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section>
   </section>
   <footer>
     <a href="./">Return</a>
