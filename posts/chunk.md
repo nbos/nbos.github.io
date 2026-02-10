@@ -569,11 +569,11 @@ indicated with a marker on the Y axis:
 
 ![](res/chunk/plots/codelen-stacked/enwik7-codelen-stacked.svg)
 
-As one would expect the bulk of the gain in compressibility occurs with
-the first few introduced symbols and tapers out as introductions produce
-fewer modifications to the string. We also notice that greater
-compressibility is achieved with greater inputs (and larger
-dictionaries).
+As one would expect from a greedy descent, the bulk of the gain in
+compressibility occurs with the first few introduced symbols and tapers
+out as introductions produce fewer modifications to the string. We also
+confirm that greater inputs allow for larger dictionaries and greater
+compressibility.
 
 We can compare the compressibility, or "information density" between
 scales by computing a compression *factor* at each point in the model's
@@ -892,17 +892,16 @@ approach and ours, but slightly closer to ours.
 
 ## Progressive Sampling
 
-In its current state, the program cannot process the larger strings
-`enwik8` (100MB) or `enwik9` (1GB) on 16GB of RAM without thrashing
-because of the large amount of bookkeeping that was implemented to speed
-up execution.
+With all this bookkeeping, the memory requirements for processing larger
+strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of 16GB
+and lead to thrashing on the test computer.
 
-Unfortunately, there seems to be little value in stretching smaller
-samples to model the compression of larger strings. For example, simply
-scaling the collected statistics---assuming sample homogeneity---breaks
-down in the tail of the execution resulting in poor chunk choices the
-closer we get to joint counts of 1, in some sort of reverse law of large
-numbers.
+Unfortunately, there seems to be little value in stretching or scaling
+smaller samples to model the compression of larger strings. For example,
+simply scaling the collected statistics---assuming sample
+homogeneity---breaks down in the tail of the execution resulting in poor
+chunk choices the closer we get to joint counts of 1, in some sort of
+reverse law of large numbers.
 
 Consider the factors achieved on the compression (eval.) of a large
 string (`enwik7`) given dictionaries derived from (trained on) shorter
@@ -918,15 +917,15 @@ dictionaries earlier than would have been optimal for the larger string.
 
 The gap in performance worsens further into the execution we go, but
 early in the execution, the difference is relatively modest. The overlap
-is also significant:
+between the dictionaries is also significant:
 
 ![](res/chunk/plots/overlap.svg)
 
 Could the key to processing very large strings be to *subsample* the
-statistics, at least at the beginning of the execution, maintaining a
-smaller, manageable, but still statistically significant sample? Since
-the working string shrinks in size over the course of execution,
-especially for larger ones:
+statistics in the beginning of the execution, maintaining a smaller,
+manageable, but still statistically significant sample? Since the
+working string shrinks in size over the course of execution, especially
+for larger ones:
 
 ![](res/chunk/plots/str-len.svg)
 

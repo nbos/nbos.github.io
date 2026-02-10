@@ -66,7 +66,7 @@ the counts vector:</p>
 \Delta I^*_{\mathrm{\bf n}}
 &amp;= \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
 &amp;= \log \left(\frac{(N + m - n_{01})!\,N!}
-	{(N + m - 1)!\,m\,(N - n_{01})!}\right) \\[5pt]
+	{m\,(N + m - 1)!\,(N - n_{01})!}\right) \\[5pt]
 \end{align}\]</span></p>
 <p>and a decrease in the length of string permutation:</p>
 <p><span class="math display">\[\begin{align}
@@ -132,21 +132,21 @@ they have a relatively high number of joints between them.</p>
 joint occurences of symbols in a string form edges in a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bipartite_graph">bipartite
 graph</a> connecting left
 and right symbols. Then, we are looking for a subgraph with high
-connectivity. Visually:</p>
+connectivity.</p>
 <p><img src="res/types/figs/bipartite.svg" /></p>
 <p>Logically, this is a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Type_theory">type</a>
 of joint, specifically a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Product_type">product
 type</a> containing the set of
 joints corresponding to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian
 product</a> of the left
-and right union type:</p>
-<p><span class="math display">\[\frac{s_0 \in U ~~~~ s_1 \in V}{(s_0,s_1) \in U \times V}.\]</span></p>
+and right union types:</p>
+<p><span class="math display">\[\frac{s_0 \in A ~~~~ s_1 \in B}{(s_0,s_1) \in A \times B}.\]</span></p>
 <p>Properly speaking, the unions still don’t do work themselves to reduce
 the size of codes—that is only done through the introduction of the
 joint, but unions will allow joint types to be defined between groups of
 symbols which, individually, would lack the numbers to justify the
 introduction of construction rule for all the joints that the type
-covers. This is another way (together with <a href="chunk.html#inductive-constructions">the sparsity of our chunks
+covers. This is another way (together with <a href="chunk.html#inductive-constructions">the sparsity of a
 dictionary</a>) that we overcome the
 taditional limitations of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-gram
 model</a>
@@ -166,66 +166,135 @@ I^*(m,{\bf n})
 &amp;+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}},
+	_{\displaystyle\mathrm{{\bf s} : String} \vphantom{\prod}},
 \end{align}\]</span></p>
 <p>the <span class="math inline">\(\mathrm{Rules}\)</span> term is replaced with one defining the joint
-<span class="math inline">\(\mathrm{Types}\)</span> and for each, a code that resolves <span class="math inline">\(n_i\)</span> joints from
-that type.</p>
+<span class="math inline">\(\mathrm{Types}\)</span> and a new term that counts the information required to
+resolve each type back into joints.</p>
 <h3 id="types">Types</h3>
 <p>For introducing individual joints (one left symbol, one right symbol),
 two indexes with information <span class="math inline">\(\log(m)\)</span> were sufficient to specify a
 construction rule, where <span class="math inline">\(m\)</span> is the number of symbols before the
 introduction.</p>
-<p>Cummulatively for a total of <span class="math inline">\(m\)</span> symbols, that came out to</p>
+<p>Cummulatively for a dictionary of <span class="math inline">\(m\)</span> symbols, that came out to</p>
 <p><span class="math display">\[I^*_{\bf r}(m) = 2\log\left(\frac{(m-1)!}{255!}\right)\]</span></p>
 <p>assuming we start with 256 atomic symbols (stream of bytes).</p>
-<p>To encode a joint type, each symbol needs to be potentially included or
-excluded, twice (once for each side), pushing the information per
-introduction from <span class="math inline">\(2\log(m)\)</span> to <span class="math inline">\(2m\)</span>. Still assuming 256 atomic symbols,
-we get a total</p>
+<p>To encode a joint type inductively, each symbol defined so far needs to
+be potentially included or excluded, twice (once for each side), pushing
+the information per introduction from <span class="math inline">\(2\log(m)\)</span> to <span class="math inline">\(2m\)</span>. Still assuming
+256 atomic symbols, we get a total</p>
 <p><span class="math display">\[\begin{align}
-I_T(m)
+I_{\bf t}(m)
 &amp;= 2 \cdot 256 + 2 \cdot 257 + \ldots + 2 \cdot (m - 1) \\[5pt]
 &amp;= 2 \left( \sum_{i=1}^{m-1}i - \sum_{i=1}^{255}i \right) \\[5pt]
 &amp;= 2 \left( \frac{(m-1)m}{2} - \frac{255 \cdot 256}{2} \right) \\[5pt]
 &amp;= (m-1)m - 255 \cdot 256\\[5pt]
-&amp;= m^2 - m - 65280
+&amp;= \underbrace{m^2 - m - 65280 \vphantom{\prod}}
+	_{\displaystyle\mathrm{Types} \vphantom{\prod}}
 \end{align}\]</span></p>
 <h3 id="resolution">Resolution</h3>
 <p>Given the final string of symbols, the definition of composite symbols
 is no longer sufficient to expand them back into a string of atoms.</p>
-<p>For each symbol <span class="math inline">\(s_i\)</span>, its
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> <span class="math inline">\(\ell_i\)</span>
+<p>For each symbol <span class="math inline">\(t_i\)</span>, its
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a>
 is</p>
-<p><span class="math display">\[\ell_i = \begin{cases}
-1 &amp; \text{when atomic} \\
-|U_i| \cdot |V_i| &amp; \text{when joint type } U_i \times V_i
+<p><span class="math display">\[v_i = V(t_i) = \begin{cases}
+1 &amp; \text{when }t_i\text{ atomic} \\
+|A| \cdot |B| &amp; \text{when }t_i\text{ joint type } A \times B
 \end{cases}
 \]</span></p>
 <p>which, for joint types, is the number of joints under the type, i.e. the
 product of the sizes of its unions.</p>
-<p>Then, for each composite symbol <span class="math inline">\(s_i\)</span>, a code of length <span class="math inline">\(\log \ell_i\)</span> is
-required to disambiguate each of the <span class="math inline">\(n_i\)</span> joints it is to expand
-into. The sum of the lengths of all those codes makes:</p>
-<p><span class="math display">\[I_{\bf r}({\bf n}, {\bf l}) = \sum_i n_i \log \ell_i\]</span></p>
+<p>For each composite symbol <span class="math inline">\(t_i\)</span>, a code of length <span class="math display">\[\log v_i\]</span> is
+required to disambiguate each of the joints it is to instantiate
+into. The number of instantiation is <span class="math inline">\(n_i\)</span> at the moment of
+introduction, but as subsequent introductions create chunks out of this
+symbol, <span class="math inline">\(n_i\)</span> goes down while the number of joints to disambiguates
+remain constant, as their disambiguation has to cascade through all
+parent definitions. We call this initial count <span class="math inline">\(k_i\)</span>.</p>
+<p>The sum of the lengths of all those codes is therefore:</p>
+<p><span class="math display">\[I_{\bf r}({\bf k}, {\bf v}) = \underbrace{\sum_i k_i \log v_i}
+_{\displaystyle \mathrm{Resolution} \vphantom{\prod}}\]</span></p>
+<p>and the vector of counts <span class="math inline">\(\bf\)</span> can be reconstructed at decode-time given
+the vector of counts <span class="math inline">\(\bf n\)</span> and the definition of the types <span class="math inline">\(\bf t\)</span>.</p>
 <p>Together, we have the total length of the encoding:</p>
 <p><span class="math display">\[\begin{align}
-I(m,{\bf n},{\bf l})
+I(m,{\bf n},{\bf k},{\bf v})
 \leq~&amp;~ \underbrace{2\log (m-256)\vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle m \vphantom{\prod}}
 + \underbrace{m^2 - m - 65280\vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{Types} \vphantom{\prod}}
+	_{\displaystyle\mathrm{{\bf t} : Types} \vphantom{\prod}}
 + \underbrace{2\log N\vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle N \vphantom{\prod}}\\[10pt]
 &amp;+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}}\\[10pt]
-&amp;+ \underbrace{\sum_i n_i \log \ell_i \vphantom{\prod_{\displaystyle i}}}
+	_{\displaystyle\mathrm{{\bf s} : String} \vphantom{\prod}}\\[10pt]
+&amp;+ \underbrace{\sum_i^{m-1} k_i \log v_i \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle \mathrm{{\bf r} : Resolution} \vphantom{\prod}}
 \end{align}\]</span></p>
-<p>which by reducing in value through type introduction will result in
-compression.</p>
+<p>which by reducing in value through strategic type introduction will
+result in compression.</p>
+<h2 id="loss-function">Loss Function</h2>
+<p>To guide search, we formulate the difference in information produced by
+a single joint type introduction.</p>
+<p>First, we ignore the length of the encodings of <span class="math inline">\(m\)</span> and the type
+definitions which are constant regardless of which joint type is
+introduced. Changes in the length of <span class="math inline">\(N\)</span> are minimal and occur
+deterministically at intervals of powers of two regardless of the chosen
+type structure so we also ignore it.</p>
+<p>We generalize the difference in length of <span class="math inline">\(\bf n\)</span> and <span class="math inline">\(\bf s\)</span> from the
+introduction of a joint <span class="math inline">\((t_0,t_1) \mapsto t_m\)</span>
+<a href="chunk.html#loss-function">from</a>:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I^*_{(\mathrm{\bf n},\mathrm{\bf s})}
+&amp;= \log \left(\frac
+	{(N + m - n_m)!}
+	{m\,(N + m - 1)!\,n_m!} \right)\\
+&amp;~~~~~ + \begin{cases}
+	\log \left(\frac{\displaystyle n_0!}{\displaystyle (n_0 - 2n_m)!} \right)
+	&amp; \text{when } t_0 = t_1 \\
+	\log \left(\frac{\displaystyle n_0!\,n_1!}
+	{\displaystyle (n_0 - n_m)!\,(n_1 - n_m)!} \right)
+	&amp; \text{when } t_0 \neq t_1
+\end{cases}
+\end{align}\]</span></p>
+<p>to the introduction</p>
+<p><span class="math display">\[\forall (a,b)\!:\! A\!\times\! B. (a,b) \mapsto t_m\]</span></p>
+<p>of a joint type <span class="math inline">\(t_m\)</span>:</p>
+<p><span class="math display">\[\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
+\log \left(\frac
+	{(N + m - n_m)!}
+	{m\,(N + m - 1)!\,n_m!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)\]</span></p>
+<p>where <span class="math inline">\(n_i'\)</span> is the updated entry in the counts vector <span class="math inline">\(\bf n\)</span> after the
+type introduction, i.e. with however many times symbol <span class="math inline">\(t_i\)</span> appears as
+either <span class="math inline">\(a\)</span> or <span class="math inline">\(b\)</span> (as <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> may intersect) subtracted from its
+previous count <span class="math inline">\(n_i\)</span>.</p>
+<p>To this we add the difference in length of resolutions, which is only
+the addition of resolutions for <span class="math inline">\(t_m\)</span>:</p>
+<p><span class="math display">\[\begin{align}\Delta I_{\bf r}
+&amp;= \sum_i^m k_i \log v_i - \sum_i^{m-1} k_i \log v_i\\
+&amp;= k_m \log v_m
+\end{align}\]</span></p>
+<p>which, at the time of introduction, is the same as</p>
+<p><span class="math display">\[n_m \log v_m\]</span></p>
+<p>All together, we get:</p>
+<p><span class="math display">\[\begin{align}
+\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} &amp;=
+\log \left(\frac
+	{(N + m - n_m)!}
+	{m\,(N + m - 1)!\,n_m!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
++ n_m \log v_m
+\end{align}\]</span></p>
+<p>which we can simplify further, removing the <span class="math inline">\(-\log(m\,(N+m-1)!)\)</span> terms
+which don’t depend on the choice of introduction, giving us a simple
+function to minimize:</p>
+<p><span class="math display">\[\mathcal{L}(N,m,{\bf n},{\bf n'},v_m) =
+\log \left(\frac{(N + m - n_m)!}{n_m!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
++ n_m \log v_m.\]</span></p>
   </section>
   <footer>
     <a href="./">Return</a>

@@ -486,11 +486,11 @@ indicated with a marker on the Y axis:</p>
 <p><img src="res/chunk/plots/codelen-stacked/enwik5-codelen-stacked.svg" /></p>
 <p><img src="res/chunk/plots/codelen-stacked/enwik6-codelen-stacked.svg" /></p>
 <p><img src="res/chunk/plots/codelen-stacked/enwik7-codelen-stacked.svg" /></p>
-<p>As one would expect the bulk of the gain in compressibility occurs with
-the first few introduced symbols and tapers out as introductions produce
-fewer modifications to the string. We also notice that greater
-compressibility is achieved with greater inputs (and larger
-dictionaries).</p>
+<p>As one would expect from a greedy descent, the bulk of the gain in
+compressibility occurs with the first few introduced symbols and tapers
+out as introductions produce fewer modifications to the string. We also
+confirm that greater inputs allow for larger dictionaries and greater
+compressibility.</p>
 <p>We can compare the compressibility, or “information density” between
 scales by computing a compression <em>factor</em> at each point in the model’s
 evolution:</p>
@@ -753,16 +753,15 @@ overlap</p>
 <p>showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.</p>
 <h2 id="progressive-sampling">Progressive Sampling</h2>
-<p>In its current state, the program cannot process the larger strings
-<code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) on 16GB of RAM without thrashing
-because of the large amount of bookkeeping that was implemented to speed
-up execution.</p>
-<p>Unfortunately, there seems to be little value in stretching smaller
-samples to model the compression of larger strings. For example, simply
-scaling the collected statistics—assuming sample homogeneity—breaks
-down in the tail of the execution resulting in poor chunk choices the
-closer we get to joint counts of 1, in some sort of reverse law of large
-numbers.</p>
+<p>With all this bookkeeping, the memory requirements for processing larger
+strings like <code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) are in excess of 16GB
+and lead to thrashing on the test computer.</p>
+<p>Unfortunately, there seems to be little value in stretching or scaling
+smaller samples to model the compression of larger strings. For example,
+simply scaling the collected statistics—assuming sample
+homogeneity—breaks down in the tail of the execution resulting in poor
+chunk choices the closer we get to joint counts of 1, in some sort of
+reverse law of large numbers.</p>
 <p>Consider the factors achieved on the compression (eval.) of a large
 string (<code>enwik7</code>) given dictionaries derived from (trained on) shorter
 strings:</p>
@@ -774,13 +773,13 @@ the code length of a smaller string, we interrupt the derivation of the
 dictionaries earlier than would have been optimal for the larger string.</p>
 <p>The gap in performance worsens further into the execution we go, but
 early in the execution, the difference is relatively modest. The overlap
-is also significant:</p>
+between the dictionaries is also significant:</p>
 <p><img src="res/chunk/plots/overlap.svg" /></p>
 <p>Could the key to processing very large strings be to <em>subsample</em> the
-statistics, at least at the beginning of the execution, maintaining a
-smaller, manageable, but still statistically significant sample? Since
-the working string shrinks in size over the course of execution,
-especially for larger ones:</p>
+statistics in the beginning of the execution, maintaining a smaller,
+manageable, but still statistically significant sample? Since the
+working string shrinks in size over the course of execution, especially
+for larger ones:</p>
 <p><img src="res/chunk/plots/str-len.svg" /></p>
 <p>we could maintain a string of a <em>fixed size</em> and append more symbols as
 the introduction of new construction rules shrinks it. It would have the
