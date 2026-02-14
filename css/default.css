@@ -188,3 +188,18 @@ pre {
         max-width: 70%;
     }
 }
+
+html.dark-mode {
+    background-color: black;
+}
+
+html.dark-mode body {
+    filter: invert(100%);
+    background-color: white;
+}
+
+#dark-toggle {
+    cursor: pointer;
+    user-select: none;
+    text-decoration: none;
+}

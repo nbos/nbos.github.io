@@ -5,11 +5,32 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chunking with Types</title>
-     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+
+    <script>
+      (function() {
+	  function applyDark() {
+	      var isDark = localStorage.getItem('darkMode') === 'true';
+	      document.documentElement.classList.toggle('dark-mode', isDark);
+	      var el = document.getElementById('dark-toggle');
+	      if (el) el.textContent = isDark ? '☾' : '☀';
+	  }
+
+	  // Immediate (prevents flash on fresh loads)
+	  applyDark();
+
+	  // Re-apply when restored from bfcache (back/forward navigation)
+	  window.addEventListener('pageshow', function(e) {
+	      if (e.persisted) applyDark();
+	  });
+      })();
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
     <link rel="stylesheet" href="./css/default.css">
     <link rel="stylesheet" href="./css/syntax.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   </head>
+
   <body>
     <header>
       <div class="logo">
@@ -19,6 +40,7 @@
         <a href="./">Posts</a>
         <a href="./hackage.html">Hackage</a>
         <a href="./contact.html">Contact</a>
+	<a href="#" id="dark-toggle" onclick="toggleDark(event)" title="Toggle dark mode">☀</a>
       </nav>
     </header>
 
@@ -302,6 +324,23 @@ function to minimize:</p>
 </article>
 
     </main>
+
+    <script>
+      function toggleDark(e) {
+	  e.preventDefault();
+	  var isDark = document.documentElement.classList.toggle('dark-mode');
+	  localStorage.setItem('darkMode', isDark);
+	  updateIcon(isDark);
+      }
+
+      function updateIcon(isDark) {
+	  var el = document.getElementById('dark-toggle');
+	  if (el) el.textContent = isDark ? '☾' : '☀';
+      }
+
+      // Set correct icon on load
+      updateIcon(document.documentElement.classList.contains('dark-mode'));
+    </script>
 
   </body>
 </html>
