@@ -48,7 +48,7 @@
       <h1>Chunking with Types</h1>
       <article>
   <section class="header">
-    Posted on February  6, 2026
+    Posted on February 17, 2026
     
     by Nathaniel Bos
     
@@ -308,15 +308,78 @@ the addition of resolutions for <span class="math inline">\(t_m\)</span>:</p>
 	{(N + m - n_m)!}
 	{m\,(N + m - 1)!\,n_m!} \right)
 + \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
-+ n_m \log v_m
++ n_m \log v_m.
 \end{align}\]</span></p>
-<p>which we can simplify further, removing the <span class="math inline">\(-\log(m\,(N+m-1)!)\)</span> terms
-which don’t depend on the choice of introduction, giving us a simple
-function to minimize:</p>
-<p><span class="math display">\[\mathcal{L}(N,m,{\bf n},{\bf n'},v_m) =
-\log \left(\frac{(N + m - n_m)!}{n_m!} \right)
-+ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
-+ n_m \log v_m.\]</span></p>
+<h2 id="strategy">Strategy</h2>
+<p>Of course, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Power_set">enumerating all subsets of a
+set</a> of size, say, above 50, is
+computationally infeasible and in general exponential in the size of the
+set, which means we don’t have a way to find the type that will reduce
+our code length the most.</p>
+<p>We therefore opt for classical optimization methods like <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hill_climbing">hill
+climbing</a> and
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">EM</a>,
+with a set number of random initializations to navigate the space of
+types efficiently.</p>
+<p>To do so, we need to (1) generate random types and (2) mutate those
+types until local maxima are reached. We explore instantiations of these
+two operations and their effects on search.</p>
+<h3 id="random-initialization">Random Initialization</h3>
+<h4 id="the-problem">The Problem</h4>
+<p>Although the concatenation of possible symbols for a right and left
+union form a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">simple
+0/1-basis</a> for the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hamming_space">space</a> of possible types,
+e.g.</p>
+<pre><code> ---------- A ----------
+|                       |
+{s0, s1, s2, s3, s4, ...} × {s0, s1, s2, s3, s4, ...}
+ 0   0   0   0   1   ...     1   1   0   0   1   ...
+                            |                       |
+                             ---------- B ----------</code></pre>
+<p>Randomly sampling this space and then counting covered joints by:</p>
+<p><span class="math display">\[\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}\]</span></p>
+<p>won’t produce types that are “tight” with respect to their joints,
+meaning that some symbols included in either union types could have no
+joint with any of the symbols of the opposite union (unconnected vertex
+in the bipartite graph), meaning the introduction could immediately be
+improved by dropping this, and any such symbols, thereby reducing the
+length of the <a href="#resolution">resolution</a>.</p>
+<p>Normalizing the randomly generated type by dropping those symbols as an
+additional step in the generation or, equivalently, enforcing
+“tightness” by including random neighbors for every dangling vertex,
+will produce a biased generation either towards or away from including
+symbols with few associated joints.</p>
+<p>For a truly uniform sampling of the space, we could re-sample every time
+“tightness” is violated, but this is not reliable. We <a target="_blank" rel="noopener" href="https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4">try this
+method</a>
+on our dataset of choice: <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">a 2006 snapshot of the English
+Wikipedia</a> (XML format)
+truncated at different magnitudes from the start:</p>
+<pre><code> Filename   Size (N)   Size (bytes)
+
+  enwik1      10^1        10 B
+  enwik2      10^2       100 B
+  enwik3      10^3         1 KB
+  enwik4      10^4        10 KB
+  enwik5      10^5       100 KB
+   ...        ...          ...</code></pre>
+<p>For each, we collect all joint occurences of pairs of symbols in the
+string, form left and right unions, randomly select symbols with a <code>0.5</code>
+probability in each union and check the “tightness” property.</p>
+<p>The unlikelihood of generating “tightness” by accident is immediately
+noticeable on a large enough dataset:</p>
+<pre><code> Filename   P_tight (%)
+
+  enwik1     1.56208 %
+  enwik2     0.00157 %
+  enwik3     0.06044 %
+  enwik4     0.54991 %
+  enwik5     0.00000 %</code></pre>
+<p>At some point, for a sufficiently diverse dataset, there are enough
+symbols which form isolated joints (two symbols that only appear in one
+joint together) that a random assignment either selects both or neither
+<em>in every case</em> approaches exponentially close to 0.</p>
   </section>
   <footer>
     <a href="./">Return</a>

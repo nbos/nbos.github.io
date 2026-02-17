@@ -1,7 +1,7 @@
 ---
 title: "Chunking with Types"
 author: Nathaniel Bos
-date: 2026-02-06
+date: 2026-02-17
 ---
 
 In a [previous post](chunk.html), we showed how greedily appending to a
@@ -332,14 +332,99 @@ $$\begin{align}
 	{(N + m - n_m)!}
 	{m\,(N + m - 1)!\,n_m!} \right)
 + \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
-+ n_m \log v_m
++ n_m \log v_m.
 \end{align}$$
 
-which we can simplify further, removing the $-\log(m\,(N+m-1)!)$ terms
-which don't depend on the choice of introduction, giving us a simple
-function to minimize:
+## Strategy
 
-$$\mathcal{L}(N,m,{\bf n},{\bf n'},v_m) =
-\log \left(\frac{(N + m - n_m)!}{n_m!} \right)
-+ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
-+ n_m \log v_m.$$
+Of course, [enumerating all subsets of a
+set](https://en.wikipedia.org/wiki/Power_set) of size, say, above 50, is
+computationally infeasible and in general exponential in the size of the
+set, which means we don't have a way to find the type that will reduce
+our code length the most.
+
+We therefore opt for classical optimization methods like [hill
+climbing](https://en.wikipedia.org/wiki/Hill_climbing) and
+[EM](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm),
+with a set number of random initializations to navigate the space of
+types efficiently.
+
+To do so, we need to (1) generate random types and (2) mutate those
+types until local maxima are reached. We explore instantiations of these
+two operations and their effects on search.
+
+### Random Initialization
+
+#### The Problem
+
+Although the concatenation of possible symbols for a right and left
+union form a [simple
+0/1-basis](https://en.wikipedia.org/wiki/Indicator_function) for the
+[space](https://en.wikipedia.org/wiki/Hamming_space) of possible types,
+e.g.
+
+```
+ ---------- A ----------
+|                       |
+{s0, s1, s2, s3, s4, ...} × {s0, s1, s2, s3, s4, ...}
+ 0   0   0   0   1   ...     1   1   0   0   1   ...
+                            |                       |
+                             ---------- B ----------
+```
+
+Randomly sampling this space and then counting covered joints by:
+
+$$\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}$$
+
+won't produce types that are "tight" with respect to their joints,
+meaning that some symbols included in either union types could have no
+joint with any of the symbols of the opposite union (unconnected vertex
+in the bipartite graph), meaning the introduction could immediately be
+improved by dropping this, and any such symbols, thereby reducing the
+length of the [resolution](#resolution).
+
+Normalizing the randomly generated type by dropping those symbols as an
+additional step in the generation or, equivalently, enforcing
+"tightness" by including random neighbors for every dangling vertex,
+will produce a biased generation either towards or away from including
+symbols with few associated joints.
+
+For a truly uniform sampling of the space, we could re-sample every time
+"tightness" is violated, but this is not reliable. We [try this
+method](https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4)
+on our dataset of choice: [a 2006 snapshot of the English
+Wikipedia](https://mattmahoney.net/dc/textdata.html) (XML format)
+truncated at different magnitudes from the start:
+
+```
+ Filename   Size (N)   Size (bytes)
+
+  enwik1      10^1        10 B
+  enwik2      10^2       100 B
+  enwik3      10^3         1 KB
+  enwik4      10^4        10 KB
+  enwik5      10^5       100 KB
+   ...        ...          ...
+```
+
+For each, we collect all joint occurences of pairs of symbols in the
+string, form left and right unions, randomly select symbols with a `0.5`
+probability in each union and check the "tightness" property.
+
+The unlikelihood of generating "tightness" by accident is immediately
+noticeable on a large enough dataset:
+
+```
+ Filename   P_tight (%)
+
+  enwik1     1.56208 %
+  enwik2     0.00157 %
+  enwik3     0.06044 %
+  enwik4     0.54991 %
+  enwik5     0.00000 %
+```
+
+At some point, for a sufficiently diverse dataset, there are enough
+symbols which form isolated joints (two symbols that only appear in one
+joint together) that a random assignment either selects both or neither
+*in every case* approaches exponentially close to 0.
