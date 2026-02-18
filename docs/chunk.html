@@ -558,10 +558,10 @@ s}\)</span>, triggering termination.</p>
 <p>Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 <em>linearly</em> increasing compression factors.</p>
-<p>Full outputs (CSV): <a href="res/chunk/out/enwik4.csv"><code>enwik4</code></a>,
-<a href="res/chunk/out/enwik5.csv"><code>enwik5</code></a>,
-<a href="res/chunk/out/enwik6.csv"><code>enwik6</code></a>,
-<a href="res/chunk/out/enwik7.csv"><code>enwik7</code></a>.</p>
+<p>Full outputs: <a href="res/chunk/out/enwik4.csv"><code>enwik4.csv</code></a> (32.70 KiB),
+<a href="res/chunk/out/enwik5.csv"><code>enwik5.csv</code></a> (209.79 KiB),
+<a href="res/chunk/out/enwik6.csv"><code>enwik6.csv</code></a> (1.28 MiB),
+<a href="res/chunk/out/enwik7.csv"><code>enwik7.csv</code></a> (8.04 MiB).</p>
 <h3 data-number="6.1" id="appearance"><span class="header-section-number">6.1</span> Appearance</h3>
 <p>Chunks produced for <code>enwik</code> datasets are a mix of English morphemes,
 words and phrases as well as markup strings from Wikipedia’s XML schema:</p>
@@ -627,11 +627,11 @@ words and phrases as well as markup strings from Wikipedia’s XML schema:</p>
 <!-- 70012: "galax"       +  "y"            ==>  "galaxy" -->
 <!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
 <!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
-<p>Full output (CSV): <a href="res/chunk/out/enwik7.csv"><code>enwik7</code></a>.</p>
+<p>Full output: <a href="res/chunk/out/enwik7.csv"><code>enwik7.csv</code></a> (8.04 MiB).</p>
 <p>Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is combined into a new symbol
 (e.g. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Re-Pair">Re-Pair</a>). The produced
-chunks are shorter and marginally less meaningful, at least at the
+chunks are shorter and (marginally) less meaningful, at least at the
 start:</p>
 <pre><code>256: &quot;e&quot;   +  &quot; &quot;   ==&gt;  &quot;e &quot;
 257: &quot;t&quot;   +  &quot;h&quot;   ==&gt;  &quot;th&quot;
@@ -705,7 +705,7 @@ start:</p>
 <!-- 70022: "his father "  +  "had "       ==>  "his father had " -->
 <!-- 70023: "persec"       +  "ution of "  ==>  "persecution of " -->
 <!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
-<p>Full output (CSV): <a href="res/chunk/out/enwik7-naive-loss.csv"><code>enwik7-naive-loss</code></a>.</p>
+<p>Full output: <a href="res/chunk/out/enwik7-naive-loss.csv"><code>enwik7-naive-loss.csv</code></a> (7.61 MiB).</p>
 <p>Naive chunks visibly have a bias towards combining symbols with high
 occurrences even if the combination doesn’t hold much more meaning than
 the sum of its parts. For example compared to the more meaningful</p>
@@ -774,7 +774,7 @@ representative of <em>total</em> change in information:</p>
 279:  &quot;t&quot;     +  &quot;;&quot;    ==&gt;  &quot;t;&quot;
 280:  &quot;&amp;&quot;     +  &quot;q&quot;    ==&gt;  &quot;&amp;q&quot;
 ...:  ...     +  ...    ==&gt;  ...</code></pre>
-<p>Full output (CSV): <a href="res/chunk/out/enwik7-spmi-loss.csv"><code>enwik7-spmi-loss</code></a></p>
+<p>Full output: <a href="res/chunk/out/enwik7-spmi-loss.csv"><code>enwik7-spmi-loss.csv</code></a> (8.01 MiB)</p>
 <p>which is much more similar to the dictionary obtained from our
 informational loss function.</p>
 <p>Perhaps surprisingly, the naive dictionary achieves levels of
@@ -798,6 +798,7 @@ overlap</p>
 <p>showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.</p>
 <h2 data-number="7" id="progressive-sampling"><span class="header-section-number">7</span> Progressive Sampling</h2>
+<p><em>(tl;dr this is about a feature that ended up not working)</em></p>
 <p>With all this bookkeeping, the memory requirements for processing larger
 strings like <code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) are in excess of 16GB
 and lead to thrashing on the test computer.</p>

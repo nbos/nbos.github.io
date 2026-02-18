@@ -603,7 +603,7 @@ Ultimately, exponentially increasing input sizes translate to roughly
 exponentially increasing dictionary sizes (and running time), and
 *linearly* increasing compression factors.
 
-Full outputs (CSV): [`enwik4`](res/chunk/out/enwik4.csv),
+Full outputs: [`enwik4`](res/chunk/out/enwik4.csv),
 [`enwik5`](res/chunk/out/enwik5.csv),
 [`enwik6`](res/chunk/out/enwik6.csv),
 [`enwik7`](res/chunk/out/enwik7.csv).
@@ -678,12 +678,12 @@ words and phrases as well as markup strings from Wikipedia's XML schema:
 <!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
 <!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
 
-Full output (CSV): [`enwik7`](res/chunk/out/enwik7.csv).
+Full output: [`enwik7`](res/chunk/out/enwik7.csv).
 
 Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is combined into a new symbol
 (e.g. [Re-Pair](https://en.wikipedia.org/wiki/Re-Pair)). The produced
-chunks are shorter and marginally less meaningful, at least at the
+chunks are shorter and (marginally) less meaningful, at least at the
 start:
 
 ```
@@ -761,7 +761,7 @@ start:
 <!-- 70023: "persec"       +  "ution of "  ==>  "persecution of " -->
 <!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
 
-Full output (CSV): [`enwik7-naive-loss`](res/chunk/out/enwik7-naive-loss.csv).
+Full output: [`enwik7-naive-loss`](res/chunk/out/enwik7-naive-loss.csv).
 
 Naive chunks visibly have a bias towards combining symbols with high
 occurrences even if the combination doesn't hold much more meaning than
@@ -855,7 +855,7 @@ which gives a dictionary starting with:
 280:  "&"     +  "q"    ==>  "&q"
 ...:  ...     +  ...    ==>  ...
 ```
-Full output (CSV): [`enwik7-spmi-loss`](res/chunk/out/enwik7-spmi-loss.csv)
+Full output: [`enwik7-spmi-loss`](res/chunk/out/enwik7-spmi-loss.csv)
 
 which is much more similar to the dictionary obtained from our
 informational loss function.
@@ -891,6 +891,8 @@ showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.
 
 ## Progressive Sampling
+
+*(tl;dr this is about a feature that ended up not working)*
 
 With all this bookkeeping, the memory requirements for processing larger
 strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of 16GB
