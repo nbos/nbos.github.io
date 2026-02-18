@@ -54,7 +54,8 @@
     
   </section>
   <section>
-    <p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arithmetic_coding">Arithmetic coding</a>
+    
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arithmetic_coding">Arithmetic coding</a>
 (a.k.a. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Range_coding">range coding</a>) is
 probably the best introduction to information theory out
 there. Understanding it requires a familiarization with all the basics
@@ -63,7 +64,30 @@ theorem</a>
 makes it a useful building block for understanding <em>information</em> and
 further concepts.</p>
 <p>Here is my version of an explanation.</p>
-<h2 id="symbol-by-symbol-coding">Symbol-by-symbol Coding</h2>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#symbol-by-symbol-coding" id="toc-symbol-by-symbol-coding"><span class="toc-section-number">1</span> Symbol-by-symbol Coding</a>
+<ul>
+<li><a href="#block-coding" id="toc-block-coding"><span class="toc-section-number">1.1</span> Block Coding</a></li>
+<li><a href="#variable-length-coding" id="toc-variable-length-coding"><span class="toc-section-number">1.2</span> Variable Length Coding</a></li>
+<li><a href="#huffman-coding" id="toc-huffman-coding"><span class="toc-section-number">1.3</span> Huffman Coding</a></li>
+</ul></li>
+<li><a href="#arithmetic-coding" id="toc-arithmetic-coding"><span class="toc-section-number">2</span> Arithmetic Coding</a>
+<ul>
+<li><a href="#example-1" id="toc-example-1"><span class="toc-section-number">2.1</span> Example 1</a></li>
+<li><a href="#example-2" id="toc-example-2"><span class="toc-section-number">2.2</span> Example 2</a></li>
+</ul></li>
+<li><a href="#measuring-information" id="toc-measuring-information"><span class="toc-section-number">3</span> Measuring Information</a>
+<ul>
+<li><a href="#efficiency" id="toc-efficiency"><span class="toc-section-number">3.1</span> Efficiency</a></li>
+</ul></li>
+<li><a href="#eom-symbol" id="toc-eom-symbol"><span class="toc-section-number">4</span> EOM Symbol</a></li>
+<li><a href="#adaptive-coding" id="toc-adaptive-coding"><span class="toc-section-number">5</span> Adaptive Coding</a></li>
+</ul>
+</div>
+<h2 data-number="1" id="symbol-by-symbol-coding"><span class="header-section-number">1</span> Symbol-by-symbol Coding</h2>
 <p>Fundamentally, the problem at hand is that of converting a sequence of
 symbols between two alphabets.</p>
 <p>In practice, however, we only consider binary encodings, where the
@@ -72,7 +96,7 @@ equally applies to alphabets of larger sizes (e.g. 10: <span class="math inline
 with respective <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Changing_the_base">changes of
 base</a>
 from 2 (to e.g. 10).</p>
-<h3 id="block-coding">Block Coding</h3>
+<h3 data-number="1.1" id="block-coding"><span class="header-section-number">1.1</span> Block Coding</h3>
 <p>When the source and target alphabets are of the same size, a conversion
 algorithm can be made trivially by assigning one target symbol to each
 source symbol. Consider an alphabet of two symbols <span class="math inline">\(\{A,B\}\)</span>:</p>
@@ -99,7 +123,7 @@ short
 (i.e. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Lossless_compression">compressed</a>)
 encodings, there are ways of making more <em>efficient</em> use of the
 code-space.</p>
-<h3 id="variable-length-coding">Variable Length Coding</h3>
+<h3 data-number="1.2" id="variable-length-coding"><span class="header-section-number">1.2</span> Variable Length Coding</h3>
 <p>Consider assigning the extra space to symbols in a way that <em>shrinks</em>
 the length of their assigned codes: if we assign both 5-bit codes
 <span class="math inline">\('00000'\)</span> and <span class="math inline">\('00001'\)</span> to symbol <span class="math inline">\(A\)</span>, the last bit isn’t doing any work
@@ -122,7 +146,7 @@ length</a>
 when the proportion of code-space assigned to each symbol is equal to
 its proportion (or probability) in the message (i.e. string of symbols)
 to be encoded.</p>
-<h3 id="huffman-coding">Huffman Coding</h3>
+<h3 data-number="1.3" id="huffman-coding"><span class="header-section-number">1.3</span> Huffman Coding</h3>
 <p>Given a probability distribution over symbols, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Huffman_coding">Huffman’s
 algorithm</a> efficiently
 produces an assignments of codes to symbols which consistently minimizes
@@ -159,7 +183,7 @@ of <span class="math inline">\(\frac{1}{2},\)</span> it becomes possible to outp
 by giving up this “alignment” of symbols to the code-space and working
 instead directly with the true distribution.</p>
 <p>This is arithmetic coding.</p>
-<h2 id="arithmetic-coding">Arithmetic Coding</h2>
+<h2 data-number="2" id="arithmetic-coding"><span class="header-section-number">2</span> Arithmetic Coding</h2>
 <p>Arithmetic coding is not a symbol-by-symbol coding scheme. Instead, each
 possible messages is assigned a binary expansions that is precise enough
 to uniquely identify it.</p>
@@ -177,7 +201,7 @@ the interval determined by the sequence we want to encode</strong>.</p>
 <p>The decoder, using the same distribution, can reverse this operation by
 finding the smallest message interval that can fit a given binary code’s
 interval.</p>
-<h3 id="example-1">Example 1</h3>
+<h3 data-number="2.1" id="example-1"><span class="header-section-number">2.1</span> Example 1</h3>
 <p>To encode the sequence <span class="math inline">\(ABA\)</span> according to the toy distribution <span class="math inline">\(\{A
 \mapsto 0.67, B \mapsto 0.33\}\)</span> we showed above, we find that the code
 <span class="math inline">\('1000'\)</span> uniquely determines the sequence <span class="math inline">\(ABA\)</span> by being the first
@@ -191,7 +215,7 @@ is computed will vary by implementation with different trade-offs
 between precision, memory requirements and types of probability
 distribution. But this correspondence between intervals is what is
 computed by an arithmetic coder.</p>
-<h3 id="example-2">Example 2</h3>
+<h3 data-number="2.2" id="example-2"><span class="header-section-number">2.2</span> Example 2</h3>
 <p>More realistic examples, with longer codes, are somewhat challenging to
 demonstrate graphically.</p>
 <p>Consider encoding the sequence of letters <span class="math inline">\(NOT\)</span> from a 26 letter
@@ -211,7 +235,7 @@ interval for the first two:</p>
 <p><img src="res/arith/NOT-arith-5.svg" /></p>
 <p>We find the word <span class="math inline">\('NOT'\)</span> to be uniquely determined by <span class="math inline">\('100100110111'\)</span>,
 the size of which is <span class="math inline">\(12\)</span> bits.</p>
-<h2 id="measuring-information">Measuring Information</h2>
+<h2 data-number="3" id="measuring-information"><span class="header-section-number">3</span> Measuring Information</h2>
 <p>By nesting distributions within symbol intervals, the proportion of the
 unit interval taken by subsequent symbols is scaled by the width of the
 interval they are nested in.</p>
@@ -244,7 +268,7 @@ event <span class="math inline">\(x\)</span> with probability <span class="math 
 lower-bound</a>
 to any compression method on a stream of data with probability
 distribution <span class="math inline">\(P\)</span>.</p>
-<h3 id="efficiency">Efficiency</h3>
+<h3 data-number="3.1" id="efficiency"><span class="header-section-number">3.1</span> Efficiency</h3>
 <p>Alongside this lower-bound, we can derive an <em>upper-bound</em> for the
 length of an arithmetic encoding. Consider the level of binary divisions
 immediately smaller than the width of the message (we round the
@@ -267,7 +291,7 @@ message’s interval, we get the upper-bound:</p>
 <p>which makes an arithmetic encoding <em>at most</em> 1 bit longer than the
 minimum it (and any other algorithm) can possibly achieve, or <em>at most</em>
 2 bits more than the integer part of the logarithm.</p>
-<h2 id="eom-symbol">EOM Symbol</h2>
+<h2 data-number="4" id="eom-symbol"><span class="header-section-number">4</span> EOM Symbol</h2>
 <p>A caveat to the above algorithm and calculations is that for some
 distributions, namely if the probability of some symbols in the
 distribution is more than <span class="math inline">\(\frac{1}{2}\)</span>, then individual bits can fail
@@ -319,7 +343,7 @@ used which have an unambiguous ending (the <a target="_blank" rel="noopener" hre
 property</a>) and also take on
 the order of <span class="math inline">\(O(\log n)\)</span> bits (with a constant factor between 1 and 2)
 for any <span class="math inline">\(n \in \mathbb{N}\)</span>.</p>
-<h2 id="adaptive-coding">Adaptive Coding</h2>
+<h2 data-number="5" id="adaptive-coding"><span class="header-section-number">5</span> Adaptive Coding</h2>
 <p>Up to now, the probability distrbutions have been assumed to remain
 constant between iterations. This doesn’t have to be the case.</p>
 <p>If instead of sharing one distribution, the encoder and decoder share a

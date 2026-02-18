@@ -54,7 +54,8 @@
     
   </section>
   <section>
-    <p>One of the more salient features of our cognition is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">organization of
+    
+<p>One of the more salient features of our cognition is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">organization of
 related parts into
 wholes</a>.</p>
 <p>In the absence of clear statistical principles guiding this drive to
@@ -67,7 +68,29 @@ content</a>), from which
 we derive a loss function to guide deterministic construction of
 dictionaries, of which we note their appearance and performance in
 compression.</p>
-<h2 id="note-on-overfitting">Note on Overfitting</h2>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#note-on-overfitting" id="toc-note-on-overfitting"><span class="toc-section-number">1</span> Note on Overfitting</a></li>
+<li><a href="#serializing-combinatorial-objects" id="toc-serializing-combinatorial-objects"><span class="toc-section-number">2</span> Serializing Combinatorial Objects</a></li>
+<li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">3</span> Format Description</a>
+<ul>
+<li><a href="#inductive-constructions" id="toc-inductive-constructions"><span class="toc-section-number">3.1</span> Inductive Constructions</a></li>
+</ul></li>
+<li><a href="#loss-function" id="toc-loss-function"><span class="toc-section-number">4</span> Loss Function</a></li>
+<li><a href="#implementation" id="toc-implementation"><span class="toc-section-number">5</span> Implementation</a>
+<ul>
+<li><a href="#optimizations" id="toc-optimizations"><span class="toc-section-number">5.1</span> Optimizations</a></li>
+</ul></li>
+<li><a href="#results" id="toc-results"><span class="toc-section-number">6</span> Results</a>
+<ul>
+<li><a href="#appearance" id="toc-appearance"><span class="toc-section-number">6.1</span> Appearance</a></li>
+</ul></li>
+<li><a href="#progressive-sampling" id="toc-progressive-sampling"><span class="toc-section-number">7</span> Progressive Sampling</a></li>
+</ul>
+</div>
+<h2 data-number="1" id="note-on-overfitting"><span class="header-section-number">1</span> Note on Overfitting</h2>
 <p>When modeling data with increasing numbers of parameters, the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Likelihood_function">likelihood</a> of the
 data can easily reach zero as the complexity of the data gets transferred
@@ -104,7 +127,7 @@ model) to the model and avoid an increase in parameters (model
 complexity) that doesn’t decrease the <em>total</em> information.</p>
 <!-- In the spirit of this principle we define a model for text data
 that -->
-<h2 id="serializing-combinatorial-objects">Serializing Combinatorial Objects</h2>
+<h2 data-number="2" id="serializing-combinatorial-objects"><span class="header-section-number">2</span> Serializing Combinatorial Objects</h2>
 <p>As shown <a href="count.html#combinatorial-view">previously</a>,
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> of
@@ -137,7 +160,7 @@ equivalent in compression efficiency to entropy coding the sequence
 symbol-by-symbol using derived probabilities.</p>
 <p>We now define a serialization format for text data and its model using
 such combinatorial codes.</p>
-<h2 id="format-description">Format Description</h2>
+<h2 data-number="3" id="format-description"><span class="header-section-number">3</span> Format Description</h2>
 <p>As stated, a sequence of <span class="math inline">\(N\)</span> symbols from an alphabet of size <span class="math inline">\(m\)</span> with
 counts <span class="math inline">\(n_0,n_1,\ldots,n_{m-1}\)</span> can be encoded as a multiset permutation
 with information:</p>
@@ -182,7 +205,7 @@ taking at most <span class="math inline">\(2\log_2 n\)</span> bits:</p>
 reduce the size of this encoding by <em>chunking</em> symbols together into new
 symbols (a.k.a. tokens), provided we append these definitions to the
 encoding.</p>
-<h3 id="inductive-constructions">Inductive Constructions</h3>
+<h3 data-number="3.1" id="inductive-constructions"><span class="header-section-number">3.1</span> Inductive Constructions</h3>
 <p>For a sufficiently <em>universal</em> method of dictionary construction
 (tokenization) that affords <em>incremental</em> <em>greedy</em> additions, we opt for
 a dictionary defined inductively with <em>rules</em> consisting of two
@@ -227,7 +250,7 @@ I_{(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})}
 \end{align}\]</span></p>
 <p>which is only a function of dictionary size <span class="math inline">\(m\)</span> and counts vector
 <span class="math inline">\(\mathrm{\bf n}: n_0, n_1, ..., n_{m-1}\)</span> since <span class="math inline">\(N = \sum\mathrm{\bf n}\)</span>.</p>
-<h2 id="loss-function">Loss Function</h2>
+<h2 data-number="4" id="loss-function"><span class="header-section-number">4</span> Loss Function</h2>
 <p>Evaluating the above formula in whole for each possible addition to the
 model to determine the optimal next step is logically what we want to
 achieve but computationally excessive.</p>
@@ -323,7 +346,7 @@ entire encoding.</p>
 <p>As long as this loss—together with <span class="math inline">\(N\)</span>’s term—offsets the increase
 in code length from terms <span class="math inline">\(\{m,\mathrm{\bf r}\}\)</span> incurred by an
 introduction, we grow the dictionary (rule set).</p>
-<h2 id="implementation">Implementation</h2>
+<h2 data-number="5" id="implementation"><span class="header-section-number">5</span> Implementation</h2>
 <p>We implement a greedy algorithm that, given a text file, repeatedly
 combines the pair of symbols that brings the greatest reduction in the
 overall information content until no pair produces a loss below zero. We
@@ -333,19 +356,19 @@ step.</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/nbos/diagram_">Source (GitHub)</a></li>
 </ul>
-<h3 id="optimizations">Optimizations</h3>
+<h3 data-number="5.1" id="optimizations"><span class="header-section-number">5.1</span> Optimizations</h3>
 <p>A number of additional optimizations were required to run the program on
 inputs of significant length in a reasonable amount of time.</p>
 <p>They mostly consist of maintaining different partial values required in
 the selection of optimal introductions.</p>
-<h4 id="counts-bookkeeping">Counts Bookkeeping</h4>
+<h4 data-number="5.1.1" id="counts-bookkeeping"><span class="header-section-number">5.1.1</span> Counts Bookkeeping</h4>
 <p>First, as most of the symbol counts <span class="math inline">\(n_0,n_1,\ldots,n_{m-1}\)</span> stay
 constant between rule introductions, the count vector (<span class="math inline">\(O(m)\)</span> space) is
 obviously preserved between iterations and only those affected by the
 introduced rule (the counts of the parts and the count of the new
 symbol) get modified. This can be achieved in <span class="math inline">\(O(1)\)</span> time with a mutable
 dynamic array.</p>
-<h4 id="joint-counts-bookkeeping">Joint Counts Bookkeeping</h4>
+<h4 data-number="5.1.2" id="joint-counts-bookkeeping"><span class="header-section-number">5.1.2</span> Joint Counts Bookkeeping</h4>
 <p>Similarly, the joint counts (number of times each pair of symbols appear
 together) vary only slightly between iterations. The whole joint count
 map (<span class="math inline">\(O(m^2)\)</span> space) is therefore preserved as each is a potential
@@ -356,7 +379,7 @@ s_{01}\)</span>, symbols occurring immediately before <span class="math inline">
 decremented and the joint count with <span class="math inline">\(s_{01}\)</span> incremented.</p>
 <!-- At worst, this has the same complexity as re-counting all joint
 counts, but in practice where -->
-<h4 id="joint-positions-bookkeeping">Joint Positions Bookkeeping</h4>
+<h4 data-number="5.1.3" id="joint-positions-bookkeeping"><span class="header-section-number">5.1.3</span> Joint Positions Bookkeeping</h4>
 <p>With the above optimizations, the program can handle strings of
 thousands (KB) up to a million (MB) symbols.</p>
 <p>At this point, the operation taking by far most of the run time on large
@@ -388,7 +411,7 @@ indexes down the line.</p>
 <p>In practice, this incurs significant time overhead at the beginning of
 the execution of the program, but pays for itself many times over by
 accelerating the long tail of the execution.</p>
-<h4 id="joint-loss-bookkeeping">Joint Loss Bookkeeping</h4>
+<h4 data-number="5.1.4" id="joint-loss-bookkeeping"><span class="header-section-number">5.1.4</span> Joint Loss Bookkeeping</h4>
 <p>The next operations which appropriates the bulk of the run-time on large
 inputs is the evaluation and sorting of all joints according to the
 <a href="#loss-formula">loss function</a>.</p>
@@ -459,11 +482,11 @@ which is</p>
 <li>is minimal given <span class="math inline">\(n_{01}\)</span> when <span class="math inline">\(n_0\)</span> and <span class="math inline">\(n_1\)</span> are also minimal,
 which is
 <span class="math display">\[\mathrm{argmin}~\Delta I_\mathrm{\bf s}'(n_0,n_1 \mid n_{01}) =
- 	\begin{cases}
- 		n_0 := 2n_{01}  &amp; \text{when } s_0 = s_1 \\
- 		(n_0,n_1) := (n_{01},n_{01}) &amp; \text{when } s_0 \neq s_1,
- 	\end{cases}
- \]</span></li>
+	\begin{cases}
+		n_0 := 2n_{01}  &amp; \text{when } s_0 = s_1 \\
+		(n_0,n_1) := (n_{01},n_{01}) &amp; \text{when } s_0 \neq s_1,
+	\end{cases}
+\]</span></li>
 </ol>
 <p>$$$$</p>
 <p>Given these bounds, we can restrict our search for the minimal value of
@@ -488,7 +511,7 @@ traversal when</p>
 <p>This way, retrieving the joint with the minimal loss is almost instant
 at the cost of having to maintain the indexes of joints for which any of
 <span class="math inline">\(n_0\)</span>, <span class="math inline">\(n_1\)</span>, or <span class="math inline">\(n_{01}\)</span> gets changed after each introduction.</p>
-<h2 id="results">Results</h2>
+<h2 data-number="6" id="results"><span class="header-section-number">6</span> Results</h2>
 <p>The dataset of choice is a <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">2006 snapshot of the English
 Wikipedia</a> (XML format),
 following the example of the <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">Large Text Compression
@@ -539,7 +562,7 @@ exponentially increasing dictionary sizes (and running time), and
 <a href="res/chunk/out/enwik5.csv"><code>enwik5</code></a>,
 <a href="res/chunk/out/enwik6.csv"><code>enwik6</code></a>,
 <a href="res/chunk/out/enwik7.csv"><code>enwik7</code></a>.</p>
-<h3 id="appearance">Appearance</h3>
+<h3 data-number="6.1" id="appearance"><span class="header-section-number">6.1</span> Appearance</h3>
 <p>Chunks produced for <code>enwik</code> datasets are a mix of English morphemes,
 words and phrases as well as markup strings from Wikipedia’s XML schema:</p>
 <pre><code>256:  &quot;]&quot;     +  &quot;]&quot;    ==&gt;  &quot;]]&quot;
@@ -774,7 +797,7 @@ overlap</p>
 <p><img src="res/chunk/plots/overlap-functions.svg" /></p>
 <p>showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.</p>
-<h2 id="progressive-sampling">Progressive Sampling</h2>
+<h2 data-number="7" id="progressive-sampling"><span class="header-section-number">7</span> Progressive Sampling</h2>
 <p>With all this bookkeeping, the memory requirements for processing larger
 strings like <code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) are in excess of 16GB
 and lead to thrashing on the test computer.</p>

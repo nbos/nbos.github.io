@@ -54,7 +54,8 @@
     
   </section>
   <section>
-    <p>In data compression with <a href="arith.html">arithmetic coding</a>, the length of
+    
+<p>In data compression with <a href="arith.html">arithmetic coding</a>, the length of
 the produced code is within 2 bits of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
 content</a> of the
 encoded data, which you get from the probability:</p>
@@ -63,7 +64,20 @@ encoded data, which you get from the probability:</p>
 sequence of events or symbols is just the sum of the information
 contents of each, just as the concatenated codes will have length equal
 to the sum of individual codes.</p>
-<h2 id="information-of-the-categorical-mle">Information of the Categorical MLE</h2>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#information-of-the-categorical-mle" id="toc-information-of-the-categorical-mle"><span class="toc-section-number">1</span> Information of the Categorical MLE</a></li>
+<li><a href="#categorical-without-replacement" id="toc-categorical-without-replacement"><span class="toc-section-number">2</span> Categorical Without Replacement</a></li>
+<li><a href="#discussion" id="toc-discussion"><span class="toc-section-number">3</span> Discussion</a>
+<ul>
+<li><a href="#combinatorial-view" id="toc-combinatorial-view"><span class="toc-section-number">3.1</span> Combinatorial View</a></li>
+<li><a href="#information-from-variety" id="toc-information-from-variety"><span class="toc-section-number">3.2</span> Information From Variety</a></li>
+</ul></li>
+</ul>
+</div>
+<h2 data-number="1" id="information-of-the-categorical-mle"><span class="header-section-number">1</span> Information of the Categorical MLE</h2>
 <p>For a sequence of <span class="math inline">\(N\)</span> symbols with individual frequencies <span class="math inline">\(n_0, n_1,
 n_2, ...\)</span>, such that</p>
 <p><span class="math display">\[\sum_i{n_i} = N,\]</span></p>
@@ -97,7 +111,7 @@ sequence of symbols is essentially the one between sampling a
 distribution <em>“with replacement”</em> (keeping the distribution the same for
 the next sample) or <em>“without replacement”</em> (removing the sampled
 element from the distribution).</p>
-<h2 id="categorical-without-replacement">Categorical Without Replacement</h2>
+<h2 data-number="2" id="categorical-without-replacement"><span class="header-section-number">2</span> Categorical Without Replacement</h2>
 <p>I can’t derive the equivalent formula for the information content of the
 categorical <em>without replacement</em>, but a proof that it is equal to</p>
 <p><span class="math display">\[\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...\]</span></p>
@@ -146,7 +160,7 @@ clearing them out for the rest of the inference, or not) has no bearing
 on the information content of a <em>without replacement</em> strategy. It is
 uniquely determined by the length (<span class="math inline">\(N\)</span>) and bin sizes (<span class="math inline">\(n_0, n_1, n_2,
 ...\)</span>) with no regard to the actual structure of the sequence.</p>
-<h2 id="discussion">Discussion</h2>
+<h2 data-number="3" id="discussion"><span class="header-section-number">3</span> Discussion</h2>
 <p>So how much smaller is the information of a sequenced modeled <em>without
 replacement</em>:</p>
 <p><span class="math display">\[\log(N!) -\log(n_0!) - \log(n_1!) - \log(n_2!) -\ ...\]</span></p>
@@ -194,7 +208,7 @@ whether the <span class="math inline">\(N\)</span> values are distributed betwee
 (less change to the distribution per update, less difference between
 methods) or more uniformly between many values (more change to the
 distribution per update, more difference between methods).</p>
-<h3 id="combinatorial-view">Combinatorial View</h3>
+<h3 data-number="3.1" id="combinatorial-view"><span class="header-section-number">3.1</span> Combinatorial View</h3>
 <p>At this point, the combinatorial interpretation begs to be mentioned.</p>
 <p>Our formula for information content <em>without replacement</em> is simply
 equal to the <span class="math inline">\(\log\)</span> of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multinomial_theorem">multinomial
@@ -202,7 +216,7 @@ coefficient</a>:</p>
 <p><span class="math display">\[\begin{align} I(\mathrm{\bf x})
 &amp;= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
 &amp;= \log \left(\frac {N!}{n_0!\ n_1!\ n_2!\ \cdots}\right) \\[8pt]
-&amp;= \log {N \choose n_0,n_1,n_2,\ldots},\ 
+&amp;= \log {N \choose n_0,n_1,n_2,\ldots},\
 \end{align}\]</span></p>
 <p>which is the number of ways a sequence of <span class="math inline">\(N\)</span> objects with equivalence
 classes of sizes <span class="math inline">\(n_0, n_1, n_2, ...\)</span>, where <span class="math inline">\(N = \sum_i{n_i}\)</span>.</p>
@@ -212,7 +226,7 @@ same parameters.</p>
 <!-- Unfortunately, no such interpretation can be drawn from the formula of -->
 <!-- the case *with replacement* as it is not the $\log$ of an integer value -->
 <!-- in general. -->
-<h3 id="information-from-variety">Information From Variety</h3>
+<h3 data-number="3.2" id="information-from-variety"><span class="header-section-number">3.2</span> Information From Variety</h3>
 <p>This motivates a simpler description of information.</p>
 <p>If the probabilistic model is equivalent to one with <span class="math inline">\(N\)</span> equiprobable
 states, the denominator position of the size cancels out the negation of

@@ -54,7 +54,8 @@
     
   </section>
   <section>
-    <p><a href="arith.html">Arithmetic codes</a> are pretty useful for compression.</p>
+    
+<p><a href="arith.html">Arithmetic codes</a> are pretty useful for compression.</p>
 <p>Implementations usually operate with probability tables, equivalent to a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical
 distribution</a>. For
@@ -81,7 +82,32 @@ contained within the interval <span class="math inline">\(i \pm 0.5\)</span> on 
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Probability_density_function">probability density
 function</a>)
 of choice.</p>
-<h2 id="an-abstract-arithmetic-coding-interface">An Abstract Arithmetic Coding Interface</h2>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#an-abstract-arithmetic-coding-interface" id="toc-an-abstract-arithmetic-coding-interface"><span class="toc-section-number">1</span> An Abstract Arithmetic Coding Interface</a></li>
+<li><a href="#theoretical-viability" id="toc-theoretical-viability"><span class="toc-section-number">2</span> Theoretical Viability</a>
+<ul>
+<li><a href="#pdf-as-a-estimator-for-probability" id="toc-pdf-as-a-estimator-for-probability"><span class="toc-section-number">2.1</span> PDF as a Estimator for Probability</a></li>
+<li><a href="#re-parametrization-of-gaussian-mles" id="toc-re-parametrization-of-gaussian-mles"><span class="toc-section-number">2.2</span> Re-parametrization of Gaussian MLE’s</a></li>
+<li><a href="#information-of-data-sets" id="toc-information-of-data-sets"><span class="toc-section-number">2.3</span> Information of Data Sets</a></li>
+</ul></li>
+<li><a href="#implementation" id="toc-implementation"><span class="toc-section-number">3</span> Implementation</a>
+<ul>
+<li><a href="#gaussian-implementation" id="toc-gaussian-implementation"><span class="toc-section-number">3.1</span> Gaussian Implementation</a></li>
+<li><a href="#tackling-numerical-instability" id="toc-tackling-numerical-instability"><span class="toc-section-number">3.2</span> Tackling Numerical Instability</a></li>
+</ul></li>
+<li><a href="#verification" id="toc-verification"><span class="toc-section-number">4</span> Verification</a>
+<ul>
+<li><a href="#degenerate-case" id="toc-degenerate-case"><span class="toc-section-number">4.1</span> Degenerate Case</a></li>
+<li><a href="#small-sets" id="toc-small-sets"><span class="toc-section-number">4.2</span> Small Sets</a></li>
+<li><a href="#outlier-case-1" id="toc-outlier-case-1"><span class="toc-section-number">4.3</span> Outlier Case</a></li>
+<li><a href="#random-samples" id="toc-random-samples"><span class="toc-section-number">4.4</span> Random Samples</a></li>
+</ul></li>
+</ul>
+</div>
+<h2 data-number="1" id="an-abstract-arithmetic-coding-interface"><span class="header-section-number">1</span> An Abstract Arithmetic Coding Interface</h2>
 <p>To support this exploration, we implement a <em>generic</em> arithmetic codec
 (encoder/decoder) that interfaces with distributions over any indexed
 domain and provide both the categorical and Gaussian implementations.</p>
@@ -123,7 +149,7 @@ PDFs that justify the approach,</p></li>
 <li><p>comments on implementation details of the Gaussian backend, and</p></li>
 <li><p>examples proving the implementation works as designed.</p></li>
 </ol>
-<h2 id="theoretical-viability">Theoretical Viability</h2>
+<h2 data-number="2" id="theoretical-viability"><span class="header-section-number">2</span> Theoretical Viability</h2>
 <p>The code length achievable by an arithmetic encoder is within two bits
 of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
 content</a> of the
@@ -142,7 +168,7 @@ distribution <span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span> is e
 <p>which is expressed in terms of a non-elementary, sigmoid-shaped, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Error_function">error
 function</a> “erf” which
 doesn’t factor or reduce well enough to be useful for us going further.</p>
-<h3 id="pdf-as-a-estimator-for-probability">PDF as a Estimator for Probability</h3>
+<h3 data-number="2.1" id="pdf-as-a-estimator-for-probability"><span class="header-section-number">2.1</span> PDF as a Estimator for Probability</h3>
 <p>Conveniently, the PDF already approximates the <span class="math inline">\(CDF(x)|_{x-0.5}^{x+0.5}\)</span>
 based on the fact that:</p>
 <p><span class="math display">\[PDF(x) = \lim_{h\to 0} \frac{CDF(x)|_{x-h/2}^{x+h/2}}{h}\]</span></p>
@@ -175,7 +201,7 @@ data sets w.r.t. their MLE (<a target="_blank" rel="noopener" href="https://en.w
 estimator</a>),
 i.e. the Gaussian with mean and variance equal to the mean and variance
 of the data.</p>
-<h3 id="re-parametrization-of-gaussian-mles">Re-parametrization of Gaussian MLE’s</h3>
+<h3 data-number="2.2" id="re-parametrization-of-gaussian-mles"><span class="header-section-number">2.2</span> Re-parametrization of Gaussian MLE’s</h3>
 <p>The Gaussian MLE of a set of <span class="math inline">\(n\)</span> values <span class="math inline">\(\{x_0, x_1, ..., x_{n-1}\}\)</span> has
 parameters:</p>
 <p><span class="math display">\[\mu = \frac{\sum x}{n} ~~~~~~~~~~~~
@@ -188,7 +214,7 @@ stable) is:</p>
 \sigma^2 = \frac{s_2}{s_0} - \frac{s_1\!^2}{s_0\!^2}\]</span></p>
 <p>where:</p>
 <p><span class="math display">\[s_i = \sum{x^i} ~~~~~~~~~~~~ i \in \{0,1,2\}\]</span></p>
-<h3 id="information-of-data-sets">Information of Data Sets</h3>
+<h3 data-number="2.3" id="information-of-data-sets"><span class="header-section-number">2.3</span> Information of Data Sets</h3>
 <p>The only locations of low probability (long codes) on the Gaussian PDF
 are the tails and there are only a few ways to “distribute” data such
 that the extreme values fall at different point in the tails.</p>
@@ -206,7 +232,7 @@ Gaussian are:</p>
 </ol>
 <p>We model these by instantiating data sets without loss of generality and
 observe their effects on the resulting arithmetic codes.</p>
-<h4 id="multimodal">Multimodal</h4>
+<h4 data-number="2.3.1" id="multimodal"><span class="header-section-number">2.3.1</span> Multimodal</h4>
 <p>Moving forward from the case of the degenerate Gaussian of a
 distribution containing only one value, we model the parameters of
 Gaussian distributions equally distributed between two, three, four,
@@ -265,7 +291,7 @@ I(n)_{multimodal}
 <span class="math inline">\(O(\log n)\)</span> <em>per integer</em>, which is no more than the complexity of
 distinguishing one among a set of <span class="math inline">\(n\)</span>, which is—informationally
 speaking—needed as the Gaussian prior spreads to cover <span class="math inline">\(O(n)\)</span> values.</p>
-<h4 id="outlier-case">Outlier case</h4>
+<h4 data-number="2.3.2" id="outlier-case"><span class="header-section-number">2.3.2</span> Outlier case</h4>
 <p>For a more degenerate case, consider the probability density at an
 outlier by setting the majority on one value (e.g. 0) and a single
 outlier at another (e.g. 1).</p>
@@ -314,7 +340,7 @@ cases:</p>
 <p>with a slope of at little under <span class="math inline">\(2\)</span> bits per number once the line
 settles around <span class="math inline">\(n \sim 20\)</span>. This is subjectively good behavior under
 so-called “worst” conditions.</p>
-<h2 id="implementation">Implementation</h2>
+<h2 data-number="3" id="implementation"><span class="header-section-number">3</span> Implementation</h2>
 <p>The <a href="res/doc/src/cont_arith_code/lib.rs.html">implementation of the arithmetic codec
 algorithm</a> is relatively
 straightforward using the abstract interface we defined, making sure the
@@ -342,7 +368,7 @@ distribution is not yet resolved, <code>quantile(0.5)</code> returns an
 index-remainder pair that is different than either <code>quantile(0.0)</code> (the
 lower-bound) or <code>quantile(1.0)</code> (the upper-bound), or the program will
 loop forever. This property can be called <em>progress</em>.</p>
-<h3 id="gaussian-implementation">Gaussian Implementation</h3>
+<h3 data-number="3.1" id="gaussian-implementation"><span class="header-section-number">3.1</span> Gaussian Implementation</h3>
 <p>The quantile function for Gaussians is continuous, one-to-one, monotone
 and has finite value everywhere except at <span class="math inline">\(0 \mapsto -\infty\)</span> and <span class="math inline">\(1
 \mapsto \infty\)</span>.</p>
@@ -369,7 +395,7 @@ is by blowing up the PDF at different scales (here, successive factors
 of 10):</p>
 <p><img src="res/gauss/pdfscales.svg" /></p>
 <p>We are forced to find a more complete solution.</p>
-<h3 id="tackling-numerical-instability">Tackling Numerical Instability</h3>
+<h3 data-number="3.2" id="tackling-numerical-instability"><span class="header-section-number">3.2</span> Tackling Numerical Instability</h3>
 <p>Like is usually the case with precision issues in probability, the
 solution to numerical instability is found in the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Log_probability">log-domain</a>.</p>
@@ -388,13 +414,13 @@ and quantile-exp
 (<a target="_blank" rel="noopener" href="https://github.com/scipy/scipy/blob/ab84560b96cf5816be0015b0ee3a41cef708f675/scipy/special/_ndtri_exp.pxd#L163">source</a>). This
 affords us the precise interpolations on the probability mass of the
 Gaussian we require, at least for now.</p>
-<h2 id="verification">Verification</h2>
+<h2 data-number="4" id="verification"><span class="header-section-number">4</span> Verification</h2>
 <p>For the examples below, <em>information content</em> is calculated as the sum
 of the <span class="math inline">\(\log_2\)</span>-probabilities of each integer in the distribution. The
 <em>expected code length</em> is that value rounded up. <em>Code length</em> is the
 empirical result. All codes successfully decode back to the encoded
 values.</p>
-<h3 id="degenerate-case">Degenerate Case</h3>
+<h3 data-number="4.1" id="degenerate-case"><span class="header-section-number">4.1</span> Degenerate Case</h3>
 <p>Integer sets with a single value produce empty codes:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>]</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">0</span> } (<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -422,7 +448,7 @@ values.</p>
 <span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">0</span> bits</span>
 <span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
 <span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
-<h3 id="small-sets">Small Sets</h3>
+<h3 data-number="4.2" id="small-sets"><span class="header-section-number">4.2</span> Small Sets</h3>
 <p>Small symmetric sets produce consistently optimal codes:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>]</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="dv">0</span>, σ: <span class="dv">1</span> } (<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span>
@@ -453,7 +479,7 @@ values.</p>
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>Code length: <span class="dv">6</span> bits</span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>Analysis: <span class="op">+</span><span class="dv">0</span> bits (<span class="op">+</span><span class="fl">0.0</span><span class="op">%</span>) compared to expected</span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>Decoding successful</span></code></pre></div>
-<h3 id="outlier-case-1">Outlier Case</h3>
+<h3 data-number="4.3" id="outlier-case-1"><span class="header-section-number">4.3</span> Outlier Case</h3>
 <p>Outlier cases like this one (<span class="math inline">\(n = 10\)</span>):</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Set: [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>]</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Model: Gaussian { μ: <span class="fl">0.1</span>, σ: <span class="fl">0.3</span> } (<span class="dv">10</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
@@ -468,7 +494,7 @@ values.</p>
 an earlier section:</p>
 <p><img src="res/gauss/outlierresults.svg" /></p>
 <p>which is not optimal everywhere, but good enough.</p>
-<h3 id="random-samples">Random Samples</h3>
+<h3 data-number="4.4" id="random-samples"><span class="header-section-number">4.4</span> Random Samples</h3>
 <p>The error becomes less noticeable as we move to sets containing more
 information. Here we sample <span class="math inline">\(n\)</span> random elements from a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Continuous_uniform_distribution">uniform</a>

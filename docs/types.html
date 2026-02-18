@@ -54,7 +54,8 @@
     
   </section>
   <section>
-    <p>In a <a href="chunk.html">previous post</a>, we showed how greedily appending to a
+    
+<p>In a <a href="chunk.html">previous post</a>, we showed how greedily appending to a
 simple
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical</a>
 text model in the direction of maximal compression lead to meaningful
@@ -68,10 +69,32 @@ incorporating the dual of chunking:
 <p>While chunking was formalized as “joint” symbols—consecutive symbols
 concatenated together—categories are formalized as sets of possible
 symbols called “unions”.</p>
-<h2 id="union-semantics">Union Semantics</h2>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#union-semantics" id="toc-union-semantics"><span class="toc-section-number">1</span> Union Semantics</a>
+<ul>
+<li><a href="#information-of-joint-intro.-recap" id="toc-information-of-joint-intro.-recap"><span class="toc-section-number">1.1</span> Information of Joint Intro. (Recap)</a></li>
+<li><a href="#information-of-union-intro.-naive" id="toc-information-of-union-intro.-naive"><span class="toc-section-number">1.2</span> Information of Union Intro. (Naive)</a></li>
+<li><a href="#joints-of-unions" id="toc-joints-of-unions"><span class="toc-section-number">1.3</span> Joints of Unions</a></li>
+</ul></li>
+<li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">2</span> Format Description</a>
+<ul>
+<li><a href="#types" id="toc-types"><span class="toc-section-number">2.1</span> Types</a></li>
+<li><a href="#resolution" id="toc-resolution"><span class="toc-section-number">2.2</span> Resolution</a></li>
+</ul></li>
+<li><a href="#loss-function" id="toc-loss-function"><span class="toc-section-number">3</span> Loss Function</a></li>
+<li><a href="#strategy" id="toc-strategy"><span class="toc-section-number">4</span> Strategy</a>
+<ul>
+<li><a href="#random-initialization" id="toc-random-initialization"><span class="toc-section-number">4.1</span> Random Initialization</a></li>
+</ul></li>
+</ul>
+</div>
+<h2 data-number="1" id="union-semantics"><span class="header-section-number">1</span> Union Semantics</h2>
 <p>Unlike chunking, introducing classes of symbols under a categorical
 model doesn’t immediately produce savings in code length.</p>
-<h3 id="information-of-joint-intro.-recap">Information of Joint Intro. (Recap)</h3>
+<h3 data-number="1.1" id="information-of-joint-intro.-recap"><span class="header-section-number">1.1</span> Information of Joint Intro. (Recap)</h3>
 <p>Encoding a categorical model with counts <span class="math inline">\(n_0, n_1, ... n_{m-1}\)</span> and
 instantiating it into a string of symbols <a href="chunk.html#format-description">takes information
 approximately equal to</a>:</p>
@@ -106,7 +129,7 @@ the counts vector:</p>
 <p>which, together, is negative (i.e. reduces total information) only if
 the joint count <span class="math inline">\(n_{01}\)</span> is sufficently large compared to what would be
 expected by independence.</p>
-<h3 id="information-of-union-intro.-naive">Information of Union Intro. (Naive)</h3>
+<h3 data-number="1.2" id="information-of-union-intro.-naive"><span class="header-section-number">1.2</span> Information of Union Intro. (Naive)</h3>
 <p>Because of the way permutations (and their coefficients) compose,
 changing a categorical distribution by re-classifying symbols, then
 adding appropriate codes to disambiguate the produced union-symbols has
@@ -143,7 +166,7 @@ which of the <span class="math inline">\(m-\ell\)</span> symbols is a union.</p>
 <p>The bottom line is that the counting of permutations remains constant
 under hierarchical decompositions of the set of symbols, indicating that
 categories get their meaning from something beyond themselves.</p>
-<h3 id="joints-of-unions">Joints of Unions</h3>
+<h3 data-number="1.3" id="joints-of-unions"><span class="header-section-number">1.3</span> Joints of Unions</h3>
 <p>The way to make unions do work for us is to put them into joints.</p>
 <p>The naive (ineffective) approach being of looking for a cluser of
 symbols according to some arbitraty attribute:</p>
@@ -174,7 +197,7 @@ taditional limitations of the <a target="_blank" rel="noopener" href="https://en
 model</a>
 regarding exponentially large datasets required to support words of
 increasing size.</p>
-<h2 id="format-description">Format Description</h2>
+<h2 data-number="2" id="format-description"><span class="header-section-number">2</span> Format Description</h2>
 <p>Starting from the format used in the joints-only logic as a sum of code
 lengths</p>
 <p><span class="math display">\[\begin{align}
@@ -193,7 +216,7 @@ I^*(m,{\bf n})
 <p>the <span class="math inline">\(\mathrm{Rules}\)</span> term is replaced with one defining the joint
 <span class="math inline">\(\mathrm{Types}\)</span> and a new term that counts the information required to
 resolve each type back into joints.</p>
-<h3 id="types">Types</h3>
+<h3 data-number="2.1" id="types"><span class="header-section-number">2.1</span> Types</h3>
 <p>For introducing individual joints (one left symbol, one right symbol),
 two indexes with information <span class="math inline">\(\log(m)\)</span> were sufficient to specify a
 construction rule, where <span class="math inline">\(m\)</span> is the number of symbols before the
@@ -214,7 +237,7 @@ I_{\bf t}(m)
 &amp;= \underbrace{m^2 - m - 65280 \vphantom{\prod}}
 	_{\displaystyle\mathrm{Types} \vphantom{\prod}}
 \end{align}\]</span></p>
-<h3 id="resolution">Resolution</h3>
+<h3 data-number="2.2" id="resolution"><span class="header-section-number">2.2</span> Resolution</h3>
 <p>Given the final string of symbols, the definition of composite symbols
 is no longer sufficient to expand them back into a string of atoms.</p>
 <p>For each symbol <span class="math inline">\(t_i\)</span>, its
@@ -257,7 +280,7 @@ I(m,{\bf n},{\bf k},{\bf v})
 \end{align}\]</span></p>
 <p>which by reducing in value through strategic type introduction will
 result in compression.</p>
-<h2 id="loss-function">Loss Function</h2>
+<h2 data-number="3" id="loss-function"><span class="header-section-number">3</span> Loss Function</h2>
 <p>To guide search, we formulate the difference in information produced by
 a single joint type introduction.</p>
 <p>First, we ignore the length of the encodings of <span class="math inline">\(m\)</span> and the type
@@ -301,6 +324,7 @@ the addition of resolutions for <span class="math inline">\(t_m\)</span>:</p>
 \end{align}\]</span></p>
 <p>which, at the time of introduction, is the same as</p>
 <p><span class="math display">\[n_m \log v_m\]</span></p>
+<div id="loss-formula">
 <p>All together, we get:</p>
 <p><span class="math display">\[\begin{align}
 \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} &amp;=
@@ -310,25 +334,26 @@ the addition of resolutions for <span class="math inline">\(t_m\)</span>:</p>
 + \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
 + n_m \log v_m.
 \end{align}\]</span></p>
-<h2 id="strategy">Strategy</h2>
+</div>
+<h2 data-number="4" id="strategy"><span class="header-section-number">4</span> Strategy</h2>
 <p>Of course, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Power_set">enumerating all subsets of a
 set</a> of size, say, above 50, is
 computationally infeasible and in general exponential in the size of the
 set, which means we don’t have a way to find the type that will reduce
 our code length the most.</p>
-<p>We therefore opt for classical optimization methods like <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hill_climbing">hill
-climbing</a> and
+<p>We therefore rely on classical optimization methods like <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hill_climbing">hill
+climbing</a> or
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">EM</a>,
-with a set number of random initializations to navigate the space of
-types efficiently.</p>
+with a fixed number of random initializations to navigate the space of
+types more efficiently.</p>
 <p>To do so, we need to (1) generate random types and (2) mutate those
 types until local maxima are reached. We explore instantiations of these
 two operations and their effects on search.</p>
-<h3 id="random-initialization">Random Initialization</h3>
-<h4 id="the-problem">The Problem</h4>
+<h3 data-number="4.1" id="random-initialization"><span class="header-section-number">4.1</span> Random Initialization</h3>
+<h4 data-number="4.1.1" id="the-problem"><span class="header-section-number">4.1.1</span> The Problem</h4>
 <p>Although the concatenation of possible symbols for a right and left
-union form a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">simple
-0/1-basis</a> for the
+union form a simple
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">0/1-basis</a> for the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hamming_space">space</a> of possible types,
 e.g.</p>
 <pre><code> ---------- A ----------
@@ -339,18 +364,18 @@ e.g.</p>
                              ---------- B ----------</code></pre>
 <p>Randomly sampling this space and then counting covered joints by:</p>
 <p><span class="math display">\[\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}\]</span></p>
-<p>won’t produce types that are “tight” with respect to their joints,
+<p>won’t produce types that are “<strong>tight</strong>” with respect to their joints,
 meaning that some symbols included in either union types could have no
 joint with any of the symbols of the opposite union (unconnected vertex
 in the bipartite graph), meaning the introduction could immediately be
 improved by dropping this, and any such symbols, thereby reducing the
 length of the <a href="#resolution">resolution</a>.</p>
 <p>Normalizing the randomly generated type by dropping those symbols as an
-additional step in the generation or, equivalently, enforcing
-“tightness” by including random neighbors for every dangling vertex,
-will produce a biased generation either towards or away from including
-symbols with few associated joints.</p>
-<p>For a truly uniform sampling of the space, we could re-sample every time
+additional step in the generation or—similarly—enforcing “tightness”
+by including random neighbors for every dangling vertex, will produce a
+biased generation either towards or away from symbols with few
+associated joints.</p>
+<p>For a real uniform sampling of the space, we could re-sample every time
 “tightness” is violated, but this is not reliable. We <a target="_blank" rel="noopener" href="https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4">try this
 method</a>
 on our dataset of choice: <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">a 2006 snapshot of the English
@@ -379,7 +404,38 @@ noticeable on a large enough dataset:</p>
 <p>At some point, for a sufficiently diverse dataset, there are enough
 symbols which form isolated joints (two symbols that only appear in one
 joint together) that a random assignment either selects both or neither
-<em>in every case</em> approaches exponentially close to 0.</p>
+<em>in every case</em> is exponentially close to 0.</p>
+<h4 data-number="4.1.2" id="formalizing-tightness"><span class="header-section-number">4.1.2</span> Formalizing Tightness</h4>
+<p>We call a bipartite graph “tight” if it contains no isolated vertex,
+i.e. no vertex without an edge connecting it to an opposing vertex.</p>
+<p>Since the left and right unions of all joints in a string contain only
+symbols that have at least one joint with another symbol in the string,
+the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Any_type">top</a> joint type is “tight”.</p>
+<p>The number of subgraphs in a “tight” graph that are also “tight” is the
+number of ways, for each subset of one of the unions, to select at least
+one vertex neighboring each vertex in that subset. In other words, given
+a subset of either the left or right union, the number of possible
+accompanying subsets on the opposite side is the number of ways to
+select at least one vertex for each set of neighbors of vertices in the
+given subset.</p>
+<p>I.e. this is the problem of counting <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem#Hitting_set_formulation">hitting
+sets</a>,
+(which is equivalent to <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem">set
+cover</a>) for each subset
+of one of the unions, which is
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/%E2%99%AFP-complete">intractable</a> for
+large enough graphs. This means that sampling types by
+<a href="(https://en.wikipedia.org/wiki/Combinatorial_number_system)">unranking</a>
+uniformly sampled integers is equally intractable.</p>
+<p>The best option we have is to enforce the invariant progressively
+through a sufficeintly randomized selection that no bias becomes
+visible.</p>
+<p>By randomly selecting a side, a symbol in that side and a selection for
+that symbol (included/excluded), then propagating the choice by
+eliminating possible symbols that would be made dangling if later
+selected or introducing a random symbol among its neighbors if none are
+so far selected, we achieve 100% “tight” type generation with no
+immediately visible bias.</p>
   </section>
   <footer>
     <a href="./">Return</a>

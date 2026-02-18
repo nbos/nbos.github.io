@@ -324,6 +324,7 @@ which, at the time of introduction, is the same as
 
 $$n_m \log v_m$$
 
+<div id="loss-formula">
 All together, we get:
 
 $$\begin{align}
@@ -334,6 +335,7 @@ $$\begin{align}
 + \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
 + n_m \log v_m.
 \end{align}$$
+</div>
 
 ## Strategy
 
@@ -343,11 +345,11 @@ computationally infeasible and in general exponential in the size of the
 set, which means we don't have a way to find the type that will reduce
 our code length the most.
 
-We therefore opt for classical optimization methods like [hill
-climbing](https://en.wikipedia.org/wiki/Hill_climbing) and
+We therefore rely on classical optimization methods like [hill
+climbing](https://en.wikipedia.org/wiki/Hill_climbing) or
 [EM](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm),
-with a set number of random initializations to navigate the space of
-types efficiently.
+with a fixed number of random initializations to navigate the space of
+types more efficiently.
 
 To do so, we need to (1) generate random types and (2) mutate those
 types until local maxima are reached. We explore instantiations of these
@@ -358,8 +360,8 @@ two operations and their effects on search.
 #### The Problem
 
 Although the concatenation of possible symbols for a right and left
-union form a [simple
-0/1-basis](https://en.wikipedia.org/wiki/Indicator_function) for the
+union form a simple
+[0/1-basis](https://en.wikipedia.org/wiki/Indicator_function) for the
 [space](https://en.wikipedia.org/wiki/Hamming_space) of possible types,
 e.g.
 
@@ -376,7 +378,7 @@ Randomly sampling this space and then counting covered joints by:
 
 $$\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}$$
 
-won't produce types that are "tight" with respect to their joints,
+won't produce types that are "**tight**" with respect to their joints,
 meaning that some symbols included in either union types could have no
 joint with any of the symbols of the opposite union (unconnected vertex
 in the bipartite graph), meaning the introduction could immediately be
@@ -384,12 +386,12 @@ improved by dropping this, and any such symbols, thereby reducing the
 length of the [resolution](#resolution).
 
 Normalizing the randomly generated type by dropping those symbols as an
-additional step in the generation or, equivalently, enforcing
-"tightness" by including random neighbors for every dangling vertex,
-will produce a biased generation either towards or away from including
-symbols with few associated joints.
+additional step in the generation or---similarly---enforcing "tightness"
+by including random neighbors for every dangling vertex, will produce a
+biased generation either towards or away from symbols with few
+associated joints.
 
-For a truly uniform sampling of the space, we could re-sample every time
+For a real uniform sampling of the space, we could re-sample every time
 "tightness" is violated, but this is not reliable. We [try this
 method](https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4)
 on our dataset of choice: [a 2006 snapshot of the English
@@ -427,4 +429,42 @@ noticeable on a large enough dataset:
 At some point, for a sufficiently diverse dataset, there are enough
 symbols which form isolated joints (two symbols that only appear in one
 joint together) that a random assignment either selects both or neither
-*in every case* approaches exponentially close to 0.
+*in every case* is exponentially close to 0.
+
+#### Formalizing Tightness
+
+We call a bipartite graph "tight" if it contains no isolated vertex,
+i.e. no vertex without an edge connecting it to an opposing vertex.
+
+Since the left and right unions of all joints in a string contain only
+symbols that have at least one joint with another symbol in the string,
+the [top](https://en.wikipedia.org/wiki/Any_type) joint type is "tight".
+
+The number of subgraphs in a "tight" graph that are also "tight" is the
+number of ways, for each subset of one of the unions, to select at least
+one vertex neighboring each vertex in that subset. In other words, given
+a subset of either the left or right union, the number of possible
+accompanying subsets on the opposite side is the number of ways to
+select at least one vertex for each set of neighbors of vertices in the
+given subset.
+
+I.e. this is the problem of counting [hitting
+sets](https://en.wikipedia.org/wiki/Set_cover_problem#Hitting_set_formulation),
+(which is equivalent to [set
+cover](https://en.wikipedia.org/wiki/Set_cover_problem)) for each subset
+of one of the unions, which is
+[intractable](https://en.wikipedia.org/wiki/%E2%99%AFP-complete) for
+large enough graphs. This means that sampling types by
+[unranking]((https://en.wikipedia.org/wiki/Combinatorial_number_system))
+uniformly sampled integers is equally intractable.
+
+The best option we have is to enforce the invariant progressively
+through a sufficeintly randomized selection that no bias becomes
+visible. 
+
+By randomly selecting a side, a symbol in that side and a selection for
+that symbol (included/excluded), then propagating the choice by
+eliminating possible symbols that would be made dangling if later
+selected or introducing a random symbol among its neighbors if none are
+so far selected, we achieve 100% "tight" type generation with no
+immediately visible bias.
