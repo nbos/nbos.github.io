@@ -15,7 +15,7 @@ import Text.Pandoc.Options
     ( ReaderOptions(readerExtensions),
       WriterOptions(writerHTMLMathMethod, writerHighlightMethod,
                     writerNumberSections, writerTableOfContents,
-                    writerTemplate),
+                    writerTOCDepth,       writerTemplate),
       HighlightMethod(Skylighting),
       Extension(Ext_latex_macros, Ext_tex_math_single_backslash,
                 Ext_tex_math_double_backslash, Ext_tex_math_dollars),
@@ -125,6 +125,7 @@ myPandocCompiler =
       , writerHTMLMathMethod  = MathJax ""
       , writerNumberSections  = True
       , writerTableOfContents = True
+      , writerTOCDepth        = 4
       , writerTemplate        = Just tocTmpl
       }
 

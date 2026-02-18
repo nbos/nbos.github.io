@@ -12,7 +12,8 @@ text model in the direction of maximal compression lead to meaningful
 data.
 
 To bring the model closer to one capable of learning a
-[grammar](https://en.wikipedia.org/wiki/Formal_grammar), we [complete
+[grammar](https://en.wikipedia.org/wiki/Formal_grammar) by itself [like
+we do](https://en.wikipedia.org/wiki/Language_acquisition), we [complete
 the logic](https://en.wikipedia.org/wiki/Algebraic_data_type) by
 incorporating the dual of chunking:
 [categorization](https://en.wikipedia.org/wiki/Cognitive_categorization).
@@ -26,11 +27,14 @@ symbols called "unions".
 Unlike chunking, introducing classes of symbols under a categorical
 model doesn't immediately produce savings in code length.
 
-### Information of Joint Intro. (Recap)
+### Information of a Joint Introduction
+
+*(this is a recap. of the math supporting [the previous
+post](chunk.html#format-description))*
 
 Encoding a categorical model with counts $n_0, n_1, ... n_{m-1}$ and
-instantiating it into a string of symbols [takes information
-approximately equal to](chunk.html#format-description):
+instantiating it into a string of symbols takes information
+approximately equal to:
 
 $$\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
@@ -69,7 +73,7 @@ which, together, is negative (i.e. reduces total information) only if
 the joint count $n_{01}$ is sufficently large compared to what would be
 expected by independence.
 
-### Information of Union Intro. (Naive)
+### Information of a Union Introduction
 
 Because of the way permutations (and their coefficients) compose,
 changing a categorical distribution by re-classifying symbols, then
@@ -450,12 +454,12 @@ given subset.
 
 I.e. this is the problem of counting [hitting
 sets](https://en.wikipedia.org/wiki/Set_cover_problem#Hitting_set_formulation),
-(which is equivalent to [set
-cover](https://en.wikipedia.org/wiki/Set_cover_problem)) for each subset
-of one of the unions, which is
-[intractable](https://en.wikipedia.org/wiki/%E2%99%AFP-complete) for
-large enough graphs. This means that sampling types by
-[unranking]((https://en.wikipedia.org/wiki/Combinatorial_number_system))
+(which is equivalent to counting [set
+covers](https://en.wikipedia.org/wiki/Set_cover_problem)) for each
+subset of one of the unions, which is
+[intractable](https://en.wikipedia.org/wiki/%E2%99%AFP-complete) in
+general. This means that sampling types by
+[unranking](https://en.wikipedia.org/wiki/Combinatorial_number_system)
 uniformly sampled integers is equally intractable.
 
 The best option we have is to enforce the invariant progressively
@@ -468,3 +472,27 @@ eliminating possible symbols that would be made dangling if later
 selected or introducing a random symbol among its neighbors if none are
 so far selected, we achieve 100% "tight" type generation with no
 immediately visible bias.
+
+### Type Mutations
+
+For a given type, we enumerate the ways to mutate it into a valid
+neighboring type and evaluate the difference in code length incurred by
+each mutation.
+
+For this, we compute the difference in the information delta (difference
+of difference) using the [loss function from above](#loss-formula):
+
+$$\begin{align}
+\Delta\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} 
+&= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}' 
+	- \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}\\[10pt]
+&= \log \left(\frac{(N + m - n_m')!}{n_m'!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i''!}\right)
++ n_m' \log v_m' \\
+&~~~~~ - \log \left(\frac{(N + m - n_m)!}{n_m!} \right)
+- \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
+- n_m \log v_m\\[10pt]
+&= \log \left(\frac{(N + m - n_m')!\,n_m!}{(N + m - n_m)!\,n_m'!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)
++ n_m' \log v_m' - n_m \log v_m
+\end{align}$$

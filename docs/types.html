@@ -62,7 +62,8 @@ text model in the direction of maximal compression lead to meaningful
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chunking_(psychology)">chunking</a> of the
 data.</p>
 <p>To bring the model closer to one capable of learning a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Formal_grammar">grammar</a>, we <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Algebraic_data_type">complete
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Formal_grammar">grammar</a> by itself <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Language_acquisition">like
+we do</a>, we <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Algebraic_data_type">complete
 the logic</a> by
 incorporating the dual of chunking:
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cognitive_categorization">categorization</a>.</p>
@@ -75,8 +76,8 @@ symbols called “unions”.</p>
 <ul>
 <li><a href="#union-semantics" id="toc-union-semantics"><span class="toc-section-number">1</span> Union Semantics</a>
 <ul>
-<li><a href="#information-of-joint-intro.-recap" id="toc-information-of-joint-intro.-recap"><span class="toc-section-number">1.1</span> Information of Joint Intro. (Recap)</a></li>
-<li><a href="#information-of-union-intro.-naive" id="toc-information-of-union-intro.-naive"><span class="toc-section-number">1.2</span> Information of Union Intro. (Naive)</a></li>
+<li><a href="#information-of-a-joint-introduction" id="toc-information-of-a-joint-introduction"><span class="toc-section-number">1.1</span> Information of a Joint Introduction</a></li>
+<li><a href="#information-of-a-union-introduction" id="toc-information-of-a-union-introduction"><span class="toc-section-number">1.2</span> Information of a Union Introduction</a></li>
 <li><a href="#joints-of-unions" id="toc-joints-of-unions"><span class="toc-section-number">1.3</span> Joints of Unions</a></li>
 </ul></li>
 <li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">2</span> Format Description</a>
@@ -87,17 +88,24 @@ symbols called “unions”.</p>
 <li><a href="#loss-function" id="toc-loss-function"><span class="toc-section-number">3</span> Loss Function</a></li>
 <li><a href="#strategy" id="toc-strategy"><span class="toc-section-number">4</span> Strategy</a>
 <ul>
-<li><a href="#random-initialization" id="toc-random-initialization"><span class="toc-section-number">4.1</span> Random Initialization</a></li>
+<li><a href="#random-initialization" id="toc-random-initialization"><span class="toc-section-number">4.1</span> Random Initialization</a>
+<ul>
+<li><a href="#the-problem" id="toc-the-problem"><span class="toc-section-number">4.1.1</span> The Problem</a></li>
+<li><a href="#formalizing-tightness" id="toc-formalizing-tightness"><span class="toc-section-number">4.1.2</span> Formalizing Tightness</a></li>
+</ul></li>
+<li><a href="#type-mutations" id="toc-type-mutations"><span class="toc-section-number">4.2</span> Type Mutations</a></li>
 </ul></li>
 </ul>
 </div>
 <h2 data-number="1" id="union-semantics"><span class="header-section-number">1</span> Union Semantics</h2>
 <p>Unlike chunking, introducing classes of symbols under a categorical
 model doesn’t immediately produce savings in code length.</p>
-<h3 data-number="1.1" id="information-of-joint-intro.-recap"><span class="header-section-number">1.1</span> Information of Joint Intro. (Recap)</h3>
+<h3 data-number="1.1" id="information-of-a-joint-introduction"><span class="header-section-number">1.1</span> Information of a Joint Introduction</h3>
+<p><em>(this is a recap. of the math supporting <a href="chunk.html#format-description">the previous
+post</a>)</em></p>
 <p>Encoding a categorical model with counts <span class="math inline">\(n_0, n_1, ... n_{m-1}\)</span> and
-instantiating it into a string of symbols <a href="chunk.html#format-description">takes information
-approximately equal to</a>:</p>
+instantiating it into a string of symbols takes information
+approximately equal to:</p>
 <p><span class="math display">\[\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
@@ -129,7 +137,7 @@ the counts vector:</p>
 <p>which, together, is negative (i.e. reduces total information) only if
 the joint count <span class="math inline">\(n_{01}\)</span> is sufficently large compared to what would be
 expected by independence.</p>
-<h3 data-number="1.2" id="information-of-union-intro.-naive"><span class="header-section-number">1.2</span> Information of Union Intro. (Naive)</h3>
+<h3 data-number="1.2" id="information-of-a-union-introduction"><span class="header-section-number">1.2</span> Information of a Union Introduction</h3>
 <p>Because of the way permutations (and their coefficients) compose,
 changing a categorical distribution by re-classifying symbols, then
 adding appropriate codes to disambiguate the produced union-symbols has
@@ -420,12 +428,12 @@ select at least one vertex for each set of neighbors of vertices in the
 given subset.</p>
 <p>I.e. this is the problem of counting <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem#Hitting_set_formulation">hitting
 sets</a>,
-(which is equivalent to <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem">set
-cover</a>) for each subset
-of one of the unions, which is
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/%E2%99%AFP-complete">intractable</a> for
-large enough graphs. This means that sampling types by
-<a href="(https://en.wikipedia.org/wiki/Combinatorial_number_system)">unranking</a>
+(which is equivalent to counting <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem">set
+covers</a>) for each
+subset of one of the unions, which is
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/%E2%99%AFP-complete">intractable</a> in
+general. This means that sampling types by
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">unranking</a>
 uniformly sampled integers is equally intractable.</p>
 <p>The best option we have is to enforce the invariant progressively
 through a sufficeintly randomized selection that no bias becomes
@@ -436,6 +444,26 @@ eliminating possible symbols that would be made dangling if later
 selected or introducing a random symbol among its neighbors if none are
 so far selected, we achieve 100% “tight” type generation with no
 immediately visible bias.</p>
+<h3 data-number="4.2" id="type-mutations"><span class="header-section-number">4.2</span> Type Mutations</h3>
+<p>For a given type, we enumerate the ways to mutate it into a valid
+neighboring type and evaluate the difference in code length incurred by
+each mutation.</p>
+<p>For this, we compute the difference in the information delta (difference
+of difference) using the <a href="#loss-formula">loss function from above</a>:</p>
+<p><span class="math display">\[\begin{align}
+\Delta\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}
+&amp;= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}'
+	- \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}\\[10pt]
+&amp;= \log \left(\frac{(N + m - n_m')!}{n_m'!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i''!}\right)
++ n_m' \log v_m' \\
+&amp;~~~~~ - \log \left(\frac{(N + m - n_m)!}{n_m!} \right)
+- \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
+- n_m \log v_m\\[10pt]
+&amp;= \log \left(\frac{(N + m - n_m')!\,n_m!}{(N + m - n_m)!\,n_m'!} \right)
++ \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)
++ n_m' \log v_m' - n_m \log v_m
+\end{align}\]</span></p>
   </section>
   <footer>
     <a href="./">Return</a>
