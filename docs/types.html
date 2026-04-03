@@ -76,8 +76,8 @@ symbols called “unions”.</p>
 <ul>
 <li><a href="#union-semantics" id="toc-union-semantics"><span class="toc-section-number">1</span> Union Semantics</a>
 <ul>
-<li><a href="#information-of-a-joint-introduction" id="toc-information-of-a-joint-introduction"><span class="toc-section-number">1.1</span> Information of a Joint Introduction</a></li>
-<li><a href="#information-of-a-union-introduction" id="toc-information-of-a-union-introduction"><span class="toc-section-number">1.2</span> Information of a Union Introduction</a></li>
+<li><a href="#information-of-joint-introduction" id="toc-information-of-joint-introduction"><span class="toc-section-number">1.1</span> Information of Joint Introduction</a></li>
+<li><a href="#information-of-union-introduction" id="toc-information-of-union-introduction"><span class="toc-section-number">1.2</span> Information of Union Introduction</a></li>
 <li><a href="#joints-of-unions" id="toc-joints-of-unions"><span class="toc-section-number">1.3</span> Joints of Unions</a></li>
 </ul></li>
 <li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">2</span> Format Description</a>
@@ -91,7 +91,7 @@ symbols called “unions”.</p>
 <li><a href="#random-initialization" id="toc-random-initialization"><span class="toc-section-number">4.1</span> Random Initialization</a>
 <ul>
 <li><a href="#the-problem" id="toc-the-problem"><span class="toc-section-number">4.1.1</span> The Problem</a></li>
-<li><a href="#formalizing-tightness" id="toc-formalizing-tightness"><span class="toc-section-number">4.1.2</span> Formalizing Tightness</a></li>
+<li><a href="#tightness-in-a-graph" id="toc-tightness-in-a-graph"><span class="toc-section-number">4.1.2</span> Tightness in a Graph</a></li>
 </ul></li>
 <li><a href="#type-mutations" id="toc-type-mutations"><span class="toc-section-number">4.2</span> Type Mutations</a></li>
 </ul></li>
@@ -100,8 +100,8 @@ symbols called “unions”.</p>
 <h2 data-number="1" id="union-semantics"><span class="header-section-number">1</span> Union Semantics</h2>
 <p>Unlike chunking, introducing classes of symbols under a categorical
 model doesn’t immediately produce savings in code length.</p>
-<h3 data-number="1.1" id="information-of-a-joint-introduction"><span class="header-section-number">1.1</span> Information of a Joint Introduction</h3>
-<p><em>(this is a recap. of the math supporting <a href="chunk.html#format-description">the previous
+<h3 data-number="1.1" id="information-of-joint-introduction"><span class="header-section-number">1.1</span> Information of Joint Introduction</h3>
+<p><em>(this is a recap of the math supporting <a href="chunk.html#format-description">the previous
 post</a>)</em></p>
 <p>Encoding a categorical model with counts <span class="math inline">\(n_0, n_1, ... n_{m-1}\)</span> and
 instantiating it into a string of symbols takes information
@@ -137,7 +137,7 @@ the counts vector:</p>
 <p>which, together, is negative (i.e. reduces total information) only if
 the joint count <span class="math inline">\(n_{01}\)</span> is sufficently large compared to what would be
 expected by independence.</p>
-<h3 data-number="1.2" id="information-of-a-union-introduction"><span class="header-section-number">1.2</span> Information of a Union Introduction</h3>
+<h3 data-number="1.2" id="information-of-union-introduction"><span class="header-section-number">1.2</span> Information of Union Introduction</h3>
 <p>Because of the way permutations (and their coefficients) compose,
 changing a categorical distribution by re-classifying symbols, then
 adding appropriate codes to disambiguate the produced union-symbols has
@@ -169,13 +169,14 @@ I^*_{\mathrm{\bf s}}
 identity</a></p>
 <p><span class="math display">\[{m+n \choose r}=\sum _{k=0}^{r}{m \choose k}{n \choose r-k},\]</span></p>
 <p>are approximately equal to the initial code length, modulo an additional
-<span class="math inline">\(O(\log m)\)</span> term which matches the length a code would take to specify
-which of the <span class="math inline">\(m-\ell\)</span> symbols is a union.</p>
+<span class="math inline">\(O(\log m)\)</span> term which happens to match the length a code would take to
+specify which of the <span class="math inline">\(m-\ell\)</span> symbols is a union.</p>
 <p>The bottom line is that the counting of permutations remains constant
 under hierarchical decompositions of the set of symbols, indicating that
 categories get their meaning from something beyond themselves.</p>
 <h3 data-number="1.3" id="joints-of-unions"><span class="header-section-number">1.3</span> Joints of Unions</h3>
-<p>The way to make unions do work for us is to put them into joints.</p>
+<p>The way to make unions do work for us is to put them into joints.
+<!-- Categorization is only useful in the context of chunking. --></p>
 <p>The naive (ineffective) approach being of looking for a cluser of
 symbols according to some arbitraty attribute:</p>
 <p><img src="res/types/figs/subset.svg" /></p>
@@ -230,12 +231,15 @@ two indexes with information <span class="math inline">\(\log(m)\)</span> were s
 construction rule, where <span class="math inline">\(m\)</span> is the number of symbols before the
 introduction.</p>
 <p>Cummulatively for a dictionary of <span class="math inline">\(m\)</span> symbols, that came out to</p>
-<p><span class="math display">\[I^*_{\bf r}(m) = 2\log\left(\frac{(m-1)!}{255!}\right)\]</span></p>
-<p>assuming we start with 256 atomic symbols (stream of bytes).</p>
+<p><span class="math display">\[\begin{align} I^*_{\bf r}(m)
+&amp;= \log\left(\prod_{i=256}^{m-1} i^2\right)\\
+&amp;= 2\log\left(\frac{(m-1)!}{255!}\right)
+\end{align}\]</span></p>
+<p>assuming we start with 256 atomic symbols (a stream of bytes).</p>
 <p>To encode a joint type inductively, each symbol defined so far needs to
 be potentially included or excluded, twice (once for each side), pushing
-the information per introduction from <span class="math inline">\(2\log(m)\)</span> to <span class="math inline">\(2m\)</span>. Still assuming
-256 atomic symbols, we get a total</p>
+the information per introduction from <span class="math inline">\(2\log(m)\)</span> to <span class="math inline">\(2m\)</span>.</p>
+<p>Still assuming 256 atomic symbols, we get a total</p>
 <p><span class="math display">\[\begin{align}
 I_{\bf t}(m)
 &amp;= 2 \cdot 256 + 2 \cdot 257 + \ldots + 2 \cdot (m - 1) \\[5pt]
@@ -359,11 +363,11 @@ types until local maxima are reached. We explore instantiations of these
 two operations and their effects on search.</p>
 <h3 data-number="4.1" id="random-initialization"><span class="header-section-number">4.1</span> Random Initialization</h3>
 <h4 data-number="4.1.1" id="the-problem"><span class="header-section-number">4.1.1</span> The Problem</h4>
-<p>Although the concatenation of possible symbols for a right and left
-union form a simple
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">0/1-basis</a> for the
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hamming_space">space</a> of possible types,
-e.g.</p>
+<p>Although the concatenation of the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">inclusion/exclusion</a>
+of possible symbols for a right and left union form a simple
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hamming_space">Hamming</a> basis for the
+space of possible types, e.g.</p>
 <pre><code> ---------- A ----------
 |                       |
 {s0, s1, s2, s3, s4, ...} × {s0, s1, s2, s3, s4, ...}
@@ -372,12 +376,12 @@ e.g.</p>
                              ---------- B ----------</code></pre>
 <p>Randomly sampling this space and then counting covered joints by:</p>
 <p><span class="math display">\[\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}\]</span></p>
-<p>won’t produce types that are “<strong>tight</strong>” with respect to their joints,
-meaning that some symbols included in either union types could have no
-joint with any of the symbols of the opposite union (unconnected vertex
-in the bipartite graph), meaning the introduction could immediately be
-improved by dropping this, and any such symbols, thereby reducing the
-length of the <a href="#resolution">resolution</a>.</p>
+<p>won’t necessarily produce types that are “<strong>tight</strong>” with respect to
+their joints, meaning that some symbols included in either union types
+could have no joint with any of the symbols of the opposite union
+(unconnected vertex in the bipartite graph), meaning the introduction
+could immediately be improved by dropping this, and any such symbols,
+thereby reducing the length of the <a href="#resolution">resolution</a>.</p>
 <p>Normalizing the randomly generated type by dropping those symbols as an
 additional step in the generation or—similarly—enforcing “tightness”
 by including random neighbors for every dangling vertex, will produce a
@@ -409,12 +413,13 @@ noticeable on a large enough dataset:</p>
   enwik3     0.06044 %
   enwik4     0.54991 %
   enwik5     0.00000 %</code></pre>
-<p>At some point, for a sufficiently diverse dataset, there are enough
-symbols which form isolated joints (two symbols that only appear in one
-joint together) that a random assignment either selects both or neither
-<em>in every case</em> is exponentially close to 0.</p>
-<h4 data-number="4.1.2" id="formalizing-tightness"><span class="header-section-number">4.1.2</span> Formalizing Tightness</h4>
-<p>We call a bipartite graph “tight” if it contains no isolated vertex,
+<p>Intuitively, at some point, for a sufficiently diverse dataset, there
+are enough symbols which form isolated joints (two symbols that only
+appear in one joint together) that a random assignment either selects
+both or neither (the only arrangements don’t break tightness) <em>in every
+case</em> becomes exponentially close to 0.</p>
+<h4 data-number="4.1.2" id="tightness-in-a-graph"><span class="header-section-number">4.1.2</span> Tightness in a Graph</h4>
+<p>We can call a bipartite graph “tight” if it contains no isolated vertex,
 i.e. no vertex without an edge connecting it to an opposing vertex.</p>
 <p>Since the left and right unions of all joints in a string contain only
 symbols that have at least one joint with another symbol in the string,
@@ -447,9 +452,10 @@ immediately visible bias.</p>
 <h3 data-number="4.2" id="type-mutations"><span class="header-section-number">4.2</span> Type Mutations</h3>
 <p>For a given type, we enumerate the ways to mutate it into a valid
 neighboring type and evaluate the difference in code length incurred by
-each mutation.</p>
-<p>For this, we compute the difference in the information delta (difference
-of difference) using the <a href="#loss-formula">loss function from above</a>:</p>
+each mutation individually.</p>
+<p>For this, we compute the difference in the information delta (a
+difference of difference) using the <a href="#loss-formula">loss function from
+above</a>:</p>
 <p><span class="math display">\[\begin{align}
 \Delta\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}
 &amp;= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}'
@@ -464,6 +470,20 @@ of difference) using the <a href="#loss-formula">loss function from above</a>:</
 + \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)
 + n_m' \log v_m' - n_m \log v_m
 \end{align}\]</span></p>
+<p>where <span class="math inline">\(n_i'\)</span> and <span class="math inline">\(n_i''\)</span> are the updated symbol counts of a symbol <span class="math inline">\(s_i\)</span>
+by the introduction before and after the mutation,
+respectively. Original counts <span class="math inline">\(n_i\)</span> (prior to the type introduction) of
+affected symbols cancel out and so do every count for symbols that don’t
+have their counts affected (<span class="math inline">\(\log\!\frac{n!}{n!} = 0\)</span>).</p>
+<p>With this compact formula, mutations can be incrementally added in a
+greedy fashion until a minimum/maximum is reached (i.e. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hill_climbing">hill
+climbing</a>) or, to
+accelerate the process, all mutations with a negative loss can be added
+at once (if we make sure to enumerate a set of entirely independent
+mutations) and advance the state of the type to be introduced in
+alternating phases of evaluation and selection
+(i.e. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">expectation-maximization</a>)
+until the minimum is reached.</p>
   </section>
   <footer>
     <a href="./">Return</a>

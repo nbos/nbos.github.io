@@ -27,9 +27,9 @@ symbols called "unions".
 Unlike chunking, introducing classes of symbols under a categorical
 model doesn't immediately produce savings in code length.
 
-### Information of a Joint Introduction
+### Information of Joint Introduction
 
-*(this is a recap. of the math supporting [the previous
+*(this is a recap of the math supporting [the previous
 post](chunk.html#format-description))*
 
 Encoding a categorical model with counts $n_0, n_1, ... n_{m-1}$ and
@@ -73,7 +73,7 @@ which, together, is negative (i.e. reduces total information) only if
 the joint count $n_{01}$ is sufficently large compared to what would be
 expected by independence.
 
-### Information of a Union Introduction
+### Information of Union Introduction
 
 Because of the way permutations (and their coefficients) compose,
 changing a categorical distribution by re-classifying symbols, then
@@ -115,8 +115,8 @@ identity](https://en.wikipedia.org/wiki/Vandermonde%27s_identity)
 $${m+n \choose r}=\sum _{k=0}^{r}{m \choose k}{n \choose r-k},$$
 
 are approximately equal to the initial code length, modulo an additional
-$O(\log m)$ term which matches the length a code would take to specify
-which of the $m-\ell$ symbols is a union.
+$O(\log m)$ term which happens to match the length a code would take to
+specify which of the $m-\ell$ symbols is a union.
 
 The bottom line is that the counting of permutations remains constant
 under hierarchical decompositions of the set of symbols, indicating that
@@ -125,6 +125,7 @@ categories get their meaning from something beyond themselves.
 ### Joints of Unions
 
 The way to make unions do work for us is to put them into joints.
+<!-- Categorization is only useful in the context of chunking. -->
 
 The naive (ineffective) approach being of looking for a cluser of
 symbols according to some arbitraty attribute:
@@ -196,14 +197,18 @@ introduction.
 
 Cummulatively for a dictionary of $m$ symbols, that came out to
 
-$$I^*_{\bf r}(m) = 2\log\left(\frac{(m-1)!}{255!}\right)$$
+$$\begin{align} I^*_{\bf r}(m)
+&= \log\left(\prod_{i=256}^{m-1} i^2\right)\\
+&= 2\log\left(\frac{(m-1)!}{255!}\right)
+\end{align}$$
 
-assuming we start with 256 atomic symbols (stream of bytes).
+assuming we start with 256 atomic symbols (a stream of bytes).
 
 To encode a joint type inductively, each symbol defined so far needs to
 be potentially included or excluded, twice (once for each side), pushing
-the information per introduction from $2\log(m)$ to $2m$. Still assuming
-256 atomic symbols, we get a total
+the information per introduction from $2\log(m)$ to $2m$. 
+
+Still assuming 256 atomic symbols, we get a total
 
 $$\begin{align}
 I_{\bf t}(m)
@@ -363,11 +368,11 @@ two operations and their effects on search.
 
 #### The Problem
 
-Although the concatenation of possible symbols for a right and left
-union form a simple
-[0/1-basis](https://en.wikipedia.org/wiki/Indicator_function) for the
-[space](https://en.wikipedia.org/wiki/Hamming_space) of possible types,
-e.g.
+Although the concatenation of the
+[inclusion/exclusion](https://en.wikipedia.org/wiki/Indicator_function)
+of possible symbols for a right and left union form a simple
+[Hamming](https://en.wikipedia.org/wiki/Hamming_space) basis for the
+space of possible types, e.g.
 
 ```
  ---------- A ----------
@@ -382,12 +387,12 @@ Randomly sampling this space and then counting covered joints by:
 
 $$\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}$$
 
-won't produce types that are "**tight**" with respect to their joints,
-meaning that some symbols included in either union types could have no
-joint with any of the symbols of the opposite union (unconnected vertex
-in the bipartite graph), meaning the introduction could immediately be
-improved by dropping this, and any such symbols, thereby reducing the
-length of the [resolution](#resolution).
+won't necessarily produce types that are "**tight**" with respect to
+their joints, meaning that some symbols included in either union types
+could have no joint with any of the symbols of the opposite union
+(unconnected vertex in the bipartite graph), meaning the introduction
+could immediately be improved by dropping this, and any such symbols,
+thereby reducing the length of the [resolution](#resolution).
 
 Normalizing the randomly generated type by dropping those symbols as an
 additional step in the generation or---similarly---enforcing "tightness"
@@ -430,14 +435,15 @@ noticeable on a large enough dataset:
   enwik5     0.00000 %
 ```
 
-At some point, for a sufficiently diverse dataset, there are enough
-symbols which form isolated joints (two symbols that only appear in one
-joint together) that a random assignment either selects both or neither
-*in every case* is exponentially close to 0.
+Intuitively, at some point, for a sufficiently diverse dataset, there
+are enough symbols which form isolated joints (two symbols that only
+appear in one joint together) that a random assignment either selects
+both or neither (the only arrangements don't break tightness) *in every
+case* becomes exponentially close to 0.
 
-#### Formalizing Tightness
+#### Tightness in a Graph
 
-We call a bipartite graph "tight" if it contains no isolated vertex,
+We can call a bipartite graph "tight" if it contains no isolated vertex,
 i.e. no vertex without an edge connecting it to an opposing vertex.
 
 Since the left and right unions of all joints in a string contain only
@@ -477,10 +483,11 @@ immediately visible bias.
 
 For a given type, we enumerate the ways to mutate it into a valid
 neighboring type and evaluate the difference in code length incurred by
-each mutation.
+each mutation individually.
 
-For this, we compute the difference in the information delta (difference
-of difference) using the [loss function from above](#loss-formula):
+For this, we compute the difference in the information delta (a
+difference of difference) using the [loss function from
+above](#loss-formula):
 
 $$\begin{align}
 \Delta\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} 
@@ -496,3 +503,19 @@ $$\begin{align}
 + \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)
 + n_m' \log v_m' - n_m \log v_m
 \end{align}$$
+
+where $n_i'$ and $n_i''$ are the updated symbol counts of a symbol $s_i$
+by the introduction before and after the mutation,
+respectively. Original counts $n_i$ (prior to the type introduction) of
+affected symbols cancel out and so do every count for symbols that don't
+have their counts affected ($\log\!\frac{n!}{n!} = 0$).
+
+With this compact formula, mutations can be incrementally added in a
+greedy fashion until a minimum/maximum is reached (i.e. [hill
+climbing](https://en.wikipedia.org/wiki/Hill_climbing)) or, to
+accelerate the process, all mutations with a negative loss can be added
+at once (if we make sure to enumerate a set of entirely independent
+mutations) and advance the state of the type to be introduced in
+alternating phases of evaluation and selection
+(i.e. [expectation-maximization](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm))
+until the minimum is reached.
