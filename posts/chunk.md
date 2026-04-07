@@ -68,7 +68,7 @@ complexity) that doesn't decrease the *total* information.
 <!-- In the spirit of this principle we define a model for text data
 that -->
 
-## Serializing Combinatorial Objects
+## Serializing as Combinatorial Objects
 
 As shown [previously](count.html#combinatorial-view),
 [counting](https://en.wikipedia.org/wiki/Combinatorics) the
@@ -211,8 +211,14 @@ previously defined symbols that concatenate to form a new *joint*
 symbol.
 
 By incrementally growing the dictionary and substituting instances where
-the parts appear together in the string with joint symbols, the
-exploration into the space of
+the parts appear together in the string with joint symbols,
+
+![](res/chunk/figs/joints.svg)
+
+the length of the string $N$ will shrink, and so will the code required
+to describe its permutations.
+
+This exploration into the space of
 [$n$-grams](https://en.wikipedia.org/wiki/Word_n-gram_language_model)
 will remain *sparse*, avoiding the [combinatorial
 explosion](https://en.wikipedia.org/wiki/Curse_of_dimensionality)

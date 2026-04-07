@@ -73,7 +73,7 @@ compression.</p>
 <div class="toc-title">Contents</div>
 <ul>
 <li><a href="#note-on-overfitting" id="toc-note-on-overfitting"><span class="toc-section-number">1</span> Note on Overfitting</a></li>
-<li><a href="#serializing-combinatorial-objects" id="toc-serializing-combinatorial-objects"><span class="toc-section-number">2</span> Serializing Combinatorial Objects</a></li>
+<li><a href="#serializing-as-combinatorial-objects" id="toc-serializing-as-combinatorial-objects"><span class="toc-section-number">2</span> Serializing as Combinatorial Objects</a></li>
 <li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">3</span> Format Description</a>
 <ul>
 <li><a href="#inductive-constructions" id="toc-inductive-constructions"><span class="toc-section-number">3.1</span> Inductive Constructions</a></li>
@@ -133,7 +133,7 @@ model) to the model and avoid an increase in parameters (model
 complexity) that doesn’t decrease the <em>total</em> information.</p>
 <!-- In the spirit of this principle we define a model for text data
 that -->
-<h2 data-number="2" id="serializing-combinatorial-objects"><span class="header-section-number">2</span> Serializing Combinatorial Objects</h2>
+<h2 data-number="2" id="serializing-as-combinatorial-objects"><span class="header-section-number">2</span> Serializing as Combinatorial Objects</h2>
 <p>As shown <a href="count.html#combinatorial-view">previously</a>,
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> of
@@ -242,8 +242,11 @@ a dictionary defined inductively with <em>rules</em> consisting of two
 previously defined symbols that concatenate to form a new <em>joint</em>
 symbol.</p>
 <p>By incrementally growing the dictionary and substituting instances where
-the parts appear together in the string with joint symbols, the
-exploration into the space of
+the parts appear together in the string with joint symbols,</p>
+<p><img src="res/chunk/figs/joints.svg" /></p>
+<p>the length of the string <span class="math inline">\(N\)</span> will shrink, and so will the code required
+to describe its permutations.</p>
+<p>This exploration into the space of
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Word_n-gram_language_model"><span class="math inline">\(n\)</span>-grams</a>
 will remain <em>sparse</em>, avoiding the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Curse_of_dimensionality">combinatorial
 explosion</a>
