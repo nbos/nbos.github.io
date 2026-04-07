@@ -146,7 +146,7 @@ alphabet of size <span class="math inline">\(m\)</span> with known counts
 updating
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Categorical_distribution">categorical</a>
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">MLE</a>) is
-simply the <span class="math inline">\(\log\)</span> of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Binomial_coefficient#Generalization_to_multinomials">multinomial
+the <span class="math inline">\(\log\)</span> of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Binomial_coefficient#Generalization_to_multinomials">multinomial
 coefficient</a>
 with those parameters:</p>
 <p><span class="math display">\[\log {N \choose n_0,n_1,\ldots,n_{m-1}},\]</span></p>
@@ -161,9 +161,33 @@ permutations</a>),
 one can derive so-called <a href="(https://en.wikipedia.org/wiki/Combinatorial_number_system)">“ranking” and
 “unranking”</a>
 algorithms to map to and from natural numbers.</p>
-<p>Interpreting these numbers in binary produces a serialization that is
+<p>For example, given the string</p>
+<p><img src="res/chunk/figs/string-fig.svg" /></p>
+<p>assuming we already know the counts (i.e. we have the categorical model
+fit):</p>
+<p><img src="res/chunk/figs/counts-fig.svg" /></p>
+<p>then there are</p>
+<p><span class="math display">\[{7 \choose 1,2,3,1} = {7 \choose 2,3} = \frac{7!}{2!\,3!} = 420\]</span></p>
+<p>possible multiset permutations with those counts. Assuming lexicographic
+ordering, the 196th permutation corresponds to our string:</p>
+<p><img src="res/chunk/figs/permutation.svg" /></p>
+<p>a code for which can be produced from the binary representation of 195:</p>
+<p><span class="math display">\[\begin{align}
+abbbccd:&amp;&amp; 0_{10} &amp;= 000000000_2\\
+abbbcdc:&amp;&amp; 1_{10} &amp;= 000000001_2\\
+abbbdcc:&amp;&amp; 2_{10} &amp;= 000000010_2\\
+\vdots~~~~~~~~&amp;&amp;&amp;~~\vdots\\
+\boxed{bccdabb}:&amp;&amp; 195_{10} &amp;= \boxed{011000011_2}\\
+\vdots~~~~~~~~&amp;&amp;&amp;~~\vdots\\
+dccbbba:&amp;&amp; 419_{10} &amp;= 110100011_2\\
+&amp;&amp;&amp;~~\vdots\\
+&amp;&amp; 511_{10} &amp;= 111111111_2.
+\end{align}\]</span></p>
+<p>This binary representation of a ranked permutation is a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Serialization">serialization</a> that is
 equivalent in compression efficiency to entropy coding the sequence
-symbol-by-symbol using derived probabilities.</p>
+symbol-by-symbol using probabilities derived from the counts of the
+multiset used for the permutation.</p>
 <p>We now define a serialization format for text data and its model using
 such combinatorial codes.</p>
 <h2 data-number="3" id="format-description"><span class="header-section-number">3</span> Format Description</h2>

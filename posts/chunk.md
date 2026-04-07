@@ -83,7 +83,7 @@ $n_0, n_1, ... n_{m-1}$ using an optimal probabilistic model (i.e. an
 updating
 [categorical](https://en.wikipedia.org/wiki/Categorical_distribution)
 [MLE](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation)) is
-simply the $\log$ of the [multinomial
+the $\log$ of the [multinomial
 coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient#Generalization_to_multinomials)
 with those parameters:
 
@@ -102,9 +102,43 @@ one can derive so-called ["ranking" and
 "unranking"]((https://en.wikipedia.org/wiki/Combinatorial_number_system))
 algorithms to map to and from natural numbers.
 
-Interpreting these numbers in binary produces a serialization that is
+For example, given the string
+
+![](res/chunk/figs/string-fig.svg)
+
+assuming we already know the counts (i.e. we have the categorical model
+fit):
+
+![](res/chunk/figs/counts-fig.svg)
+
+then there are
+
+$${7 \choose 1,2,3,1} = {7 \choose 2,3} = \frac{7!}{2!\,3!} = 420$$
+
+possible multiset permutations with those counts. Assuming lexicographic
+ordering, the 196th permutation corresponds to our string:
+
+![](res/chunk/figs/permutation.svg)
+
+a code for which can be produced from the binary representation of 195:
+
+$$\begin{align}
+abbbccd:&& 0_{10} &= 000000000_2\\
+abbbcdc:&& 1_{10} &= 000000001_2\\
+abbbdcc:&& 2_{10} &= 000000010_2\\
+\vdots~~~~~~~~&&&~~\vdots\\
+\boxed{bccdabb}:&& 195_{10} &= \boxed{011000011_2}\\
+\vdots~~~~~~~~&&&~~\vdots\\
+dccbbba:&& 419_{10} &= 110100011_2\\
+&&&~~\vdots\\
+&& 511_{10} &= 111111111_2.
+\end{align}$$
+
+This binary representation of a ranked permutation is a
+[serialization](https://en.wikipedia.org/wiki/Serialization) that is
 equivalent in compression efficiency to entropy coding the sequence
-symbol-by-symbol using derived probabilities.
+symbol-by-symbol using probabilities derived from the counts of the
+multiset used for the permutation.
 
 We now define a serialization format for text data and its model using
 such combinatorial codes.
