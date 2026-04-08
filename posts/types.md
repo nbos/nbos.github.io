@@ -79,7 +79,7 @@ $$\begin{align}
 \end{align}$$
 
 which, together, are negative (i.e. reduce total information) only if
-the joint count $n_{01}$ is sufficently larger than what could be
+the joint count $n_{01}$ is sufficiently larger than what could be
 expected by independence.
 
 ### Information of Union Introduction
@@ -91,7 +91,7 @@ then adding the appropriate codes to resolve the ambiguity inside those
 unions always has an *insignificant* effect on the total code length.
 
 Say, for whichever reason, we place $\ell$ symbols under a union
-$S_{0\ell} = \{s_0,s_1,...,s_{\ell-1}\}$ with a cummulative count
+$S_{0\ell} = \{s_0,s_1,...,s_{\ell-1}\}$ with a cumulative count
 $n_{0\ell}$ where
 
 $$n_{0\ell} = \sum_{i=0}^{\ell-1}n_i~~,$$
@@ -159,7 +159,7 @@ The way to make unions do work for us is to put them into joints.
 <!-- Categorization is only useful in the context of chunking. -->
 
 Where the previously described structure of categorization produces
-clusers of symbols in the alphabet:
+clusters of symbols in the alphabet:
 
 ![](res/types/figs/subset.svg)
 
@@ -169,7 +169,7 @@ they have a relatively high number of joints between them.
 ![](res/types/figs/bipartite.svg)
 
 As a [graph](https://en.wikipedia.org/wiki/Graph_theory), the set of
-joint occurences of symbols in a string form edges in a [bipartite
+joint occurrences of symbols in a string form edges in a [bipartite
 graph](https://en.wikipedia.org/wiki/Bipartite_graph) connecting left
 and right symbols. Then, we are looking for a subgraph with high
 connectivity.
@@ -192,7 +192,7 @@ covers.
 
 <!-- This is another way (together with [the sparsity of a -->
 <!-- dictionary](chunk.html#inductive-constructions)) that we overcome the -->
-<!-- taditional limitations of the [$n$-gram -->
+<!-- traditional limitations of the [$n$-gram -->
 <!-- model](https://en.wikipedia.org/wiki/Word_n-gram_language_model) -->
 <!-- regarding exponentially large datasets required to support words of -->
 <!-- increasing size. -->
@@ -255,7 +255,7 @@ enforcing "tightness" by including random neighbors for every dangling
 vertex, will be biased in the opposite direction.
 
 For a truly uniform sampling of the space, we could re-sample every time
-"tightness" is violated, but eperiments will show this is not
+"tightness" is violated, but experiments will show this is not
 reliable. We [try this
 method](https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4)
 on our dataset of choice: [a 2006 snapshot of the English
@@ -273,7 +273,7 @@ truncated at different magnitudes from the start:
    ...        ...          ...
 ```
 
-For a given string, we collect all joint occurences of pairs of symbols,
+For a given string, we collect all joint occurrences of pairs of symbols,
 form [top](https://en.wikipedia.org/wiki/Any_type) left and right
 unions, randomly select symbols with a `0.5` probability in each union
 and check whether the "tightness" property holds.
@@ -327,7 +327,7 @@ general. This means that sampling types by
 uniformly sampled integers is equally intractable.
 
 The best option we have at this point is to enforce the tightness
-invariant progressively through a sufficeintly randomized selection,
+invariant progressively through a sufficiently randomized selection,
 hoping that no bias arises.
 
 By randomly selecting a side, a symbol in that side and a selection for
@@ -337,7 +337,7 @@ selected or introducing a random symbol among its neighbors if none are
 so far selected, we achieve a uniform-looking, 100% "tight" random type
 generation.
 
-## Code Length Formula
+## Code Length Formulation
 
 To score different mutations of a randomly sampled joint type to
 greedily select the best, we express the length of the whole encoding
@@ -372,7 +372,7 @@ symbol, one right symbol), two indexes with information $\log(m)$ were
 sufficient to specify a construction rule, where $m$ is the number of
 symbols before the introduction.
 
-Cummulatively for a dictionary of $m$ total symbols, that came out to
+Cumulatively for a dictionary of $m$ total symbols, that came out to
 
 $$\begin{align} I^*_{\bf r}(m)
 &= \log\left(\prod_{i=256}^{m-1} i^2\right)\\
@@ -383,7 +383,7 @@ assuming we start with 256 atomic symbols (a stream of bytes).
 
 To encode a joint type inductively, each symbol defined so far needs to
 be potentially included or excluded, twice (once for each side), pushing
-the information per introduction from $2\log(m)$ to $2m$. 
+the information per introduction from $2\log(m)$ to $2m$.
 
 Still assuming 256 atomic symbols, we get a total
 
@@ -457,19 +457,21 @@ result in compression.
 
 ### Difference Across Introductions
 
-To score different joint type introductions against each other, we
-formulate the difference in information produced by a single
-introduction.
+To score different type introductions against each other, we formulate
+the difference in information produced by a single introduction.
 
 First, we ignore the length of the encodings of hyperparameter $m$ and
 $\mathrm{Types}$ definitions which are constant regardless of which new
-joint type is introduced. Changes in the length of $N$ are minimal and
-occur at intervals of powers of two regardless of the chosen type
-structure so we also ignore it for the scoring of types.
+joint type is introduced. Similarly, changes in the length of $N$ are
+minimal and occur at intervals of powers of two regardless of the chosen
+type structure so we also ignore it for the scoring of types.
 
 We are left with generalizing the difference in length of $\bf n$ and
-$\bf s$ from the introduction of a joint $$(t_0,t_1) \mapsto t_m$$
-[from](chunk.html#loss-function):
+$\bf s$ from the introduction of a joint
+
+$$(t_0,t_1) \mapsto t_m$$
+
+from [loss](chunk.html#loss-function):
 
 $$\begin{align}
 \Delta I^*_{(\mathrm{\bf n},\mathrm{\bf s})}
@@ -485,11 +487,11 @@ $$\begin{align}
 \end{cases}
 \end{align}$$
 
-to the introduction
+to the introduction of a joint type
 
 $$\forall (a,b)\!:\! A\!\times\! B. (a,b) \mapsto t_m$$
 
-of a joint type $t_m$:
+with loss:
 
 $$\Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} =
 \log \left(\frac
@@ -529,17 +531,20 @@ $$\begin{align}
 
 ### Difference Across Mutations
 
-For a given type, we enumerate the ways to mutate it into a valid
-neighboring type and evaluate the difference in code length incurred by
-each mutation individually.
+As stated before, instead of evaluating the loss on all possible types,
+we apply mutations to a randomly sampled type, again in a greedy
+manner. For each type, there is a $O(m)$ sized set of valid mutations:
+either adding or removing each symbol in the alphabet to each side's
+union, unless they would produce isolated vertices, in which case pairs
+are added or removed together.
 
-For this, we compute the difference in the information delta (a
-difference of difference) using the [loss function from
-above](#loss-formula):
+We evaluate the difference in code length incurred by each mutation
+individually, computing the difference in the difference in code length
+on the whole serialization.
 
 $$\begin{align}
-\Delta\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} 
-&= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}' 
+\Delta\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}
+&= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}'
 	- \Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}\\[10pt]
 &= \log \left(\frac{(N + m - n_m')!}{n_m'!} \right)
 + \sum_i^{m-1} \log\left(\frac{n_i!}{n_i''!}\right)
@@ -567,3 +572,89 @@ mutations) and advance the state of the type to be introduced in
 alternating phases of evaluation and selection
 (i.e. [expectation-maximization](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm))
 until the minimum is reached.
+
+### Complexity Issues
+
+Given the [heavy bookkeeping required to make the previous algorithm
+usable](chunk.html#optimizations), we approach the implementation with
+the intention of eliminating all operations equal or greater than $O(N)$
+in complexity, if not for each introduction, then at least for each
+mutation, and certainly when evaluating each mutation candidate.
+
+Unfortunately, it looks like the expressiveness of joint types
+introduces too many contextual dependencies to make this possible.
+
+#### Counting Joints in a String
+
+For a pair of symbols
+
+$$(s_0,s_1)$$
+
+and a string of length $N$, the loss associated with its introduction
+according the the previous logic is a function of three values:
+individual symbol counts $n_0$ and $n_1$, and the joint count
+$n_{01}$. All of those parameters can be gathered in one $O(N)$ pass
+over the string and only require $O(n_{01})$ updates per introduction.
+
+When $s_0 \neq s_1$, all encountered joints count towards the joint
+count:
+
+![](res/types/figs/joints-neq.svg)
+
+but when $s_0 = s_1$, there is the subtlety that consecutive occurrences
+of the joint overlap:
+
+![](res/types/figs/joints-eq.svg)
+
+and every other pair must be skipped and not contribute towards the
+joint count $n_{01}$. This is easily managed by keeping track of parity
+when encountering spans of identical symbols while scanning the string
+and discarding joints that are not "constructible".
+
+#### Counting Joints of a Type in a String
+
+For a joint type
+
+$$A \times B$$
+
+and a string of length $N$, the loss associated with its introduction is
+a function of the total joint count $n_m$ and as many individual symbols
+counts as there are symbols in both unions:
+
+$$\Delta{\bf n} = \{~n_i ~|~ s_i \in A \cup B~\}.$$
+
+Since every new type will produce distinct overlap events along the
+string, a single pass over the string is no longer sufficient to gather
+a record of those values.
+
+Still, assuming we do a $O(N)$ pass over the string for each newly
+sampled type, we must find a way to efficiently compute or bookkeep the
+differences in $\Delta{\bf n}$ produced by each candidate mutation after
+each mutation application.
+
+This becomes problematic when chains or arbitrary length of overlapping
+joints
+
+![](res/types/figs/joints-eq.svg)
+
+can have their parity flipped by the introduction of a new symbol in the
+left union
+
+![](res/types/figs/joints-mut.svg)
+
+which either increments or decrements the individual count of the last
+symbol in the chain. This, by itself is still manageable if we keep
+track of all joint sites, constructive or not, for all joints in binary
+trees that merge and resolve collisions in less than $O(N)$, keeping
+pointers between head and tail of each such segment, etc. But deletions
+of joints in the middle of a segment now requires each joint to also
+point to either the head or the tail, which would require on the order
+of $O(n_m)$ updates at each mutation application, etc.
+
+The simple fact that our permutation format has to deal with the
+introduction of non-overlapping chunks, while candidates for chunking
+*are* overlapping, creates a tension that keeps this simple extension
+from progressing further.
+
+We therefore swap the underlying combinatorial model for something more
+appropriate.
