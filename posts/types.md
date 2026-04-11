@@ -658,3 +658,185 @@ from progressing further.
 
 We therefore swap the underlying combinatorial model for something more
 appropriate.
+
+## Reformulation
+
+While a multiset permutation model can be simplified by reducing the
+size of the string through the introduction of ever larger
+(non-overlapping) chunks:
+
+![](res/types/figs/joints-neq.svg)
+
+we now aim for a structure of known variety that can be restricted by
+accumulating links between states, or conditional transitions:
+
+![](res/types/figs/joints-eq.svg)
+
+From a vector of counts:
+
+![](res/chunk/figs/counts-fig.svg)
+
+that we resolve into a string though the encoding of a permutation:
+
+![](res/chunk/figs/permutation.svg)
+
+we instead start from a directed multigraph:
+
+![](res/types/figs/graph-cat.svg)
+
+where paths from and to $\varepsilon$
+([epsilon](https://en.wikipedia.org/wiki/Empty_string)) represent
+unchunked or unconditional symbols. We can resolve the graph into a
+string though the ranking/unranking of a [Eulerian
+path](https://en.wikipedia.org/wiki/Eulerian_path):
+
+![](res/types/figs/graph-path.svg)
+
+![](res/chunk/figs/string-fig.svg)
+
+It so happens that counting Eulerian paths in a directed graph is only
+as complex as computing a
+[determinant](https://en.wikipedia.org/wiki/Determinant) on its
+[Laplacian matrix](https://en.wikipedia.org/wiki/Laplacian_matrix)
+(specifically, a
+[cofactor](https://en.wikipedia.org/wiki/Minor_(linear_algebra))) which
+has complexity $O(n^3)$ for a graph of $n$ vertices or, for our case,
+$O(m^3)$ for an alphabet of $m$ symbols.
+
+The Laplacian matrix records the number of connections between vertices
+in a graph (in negative) with the degree of vertices on the diagonal.
+
+In our example, we would have:
+
+<!-- $$L = \begin{pmatrix} -->
+<!--  7 & -1 & -3 & -2 & -1 \\ -->
+<!-- -1 &  1 &  0 &  0 &  0 \\ -->
+<!-- -3 &  0 &  3 &  0 &  0 \\ -->
+<!-- -2 &  0 &  0 &  2 &  0 \\ -->
+<!-- -1 &  0 &  0 &  0 &  1 -->
+<!-- \end{pmatrix}$$ -->
+
+<!-- $$\begin{array}{cccccc} -->
+<!--       & \varepsilon & a  & b  & c  & d  \\ -->
+<!-- \varepsilon &  7 & -1 & -3 & -2 & -1 \\ -->
+<!-- a     & -1 &  1 &  0 &  0 &  0 \\ -->
+<!-- b     & -3 &  0 &  3 &  0 &  0 \\ -->
+<!-- c     & -2 &  0 &  0 &  2 &  0 \\ -->
+<!-- d     & -1 &  0 &  0 &  0 &  1 -->
+<!-- \end{array}$$ -->
+
+$$
+\begin{array}{c@{\hspace{4pt}}c}
+ & \begin{array}{ccccc}
+	\,~\varepsilon\,~ & \,~a\,~ & \,~b\,~ & \,~c\,~ & \,~d\,~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&
+\left(\begin{array}{rrrrr}
+ 7 & -1 & -3 & -2 & -1 \\
+-1 &  1 &  0 &  0 &  0 \\
+-3 &  0 &  3 &  0 &  0 \\
+-2 &  0 &  0 &  2 &  0 \\
+-1 &  0 &  0 &  0 &  1
+\end{array}\right)
+\end{array}
+$$
+
+or for any such graph of a multiset:
+
+$$L_{\bf n} ~=~~~
+\begin{array}{c@{\hspace{4pt}}c}
+ & \begin{array}{ccccc}
+	~~\varepsilon~~~~~ & ~~s_0~~ & ~~s_1~~ & \cdots & ~~s_{m-1}
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
+\end{array}
+&
+\left(\begin{array}{ccccc}
+ N & -n_0 & -n_1 & \cdots & -n_{m-1} \\
+-n_0 &  n_0 &  0 & \cdots &  0 \\
+-n_1 &  0 &  n_1 & \cdots &  0 \\
+\vdots & \vdots & \vdots & \ddots &  0 \\
+-n_{m-1} &  0 &  0 &  0 &  n_{m-1}
+\end{array}\right)
+\end{array}
+$$
+
+where
+
+$$N = \sum_{i=0}^{m-1} n_i.$$
+
+The number of
+[arborescences](https://en.wikipedia.org/wiki/Arborescence_(graph_theory)),
+a.k.a. directed rooted trees on a graph is equal to the determinant of
+*any* cofactor of the Laplacian, which is equal to the determinant of
+any submatrix resulting from the deletion any one row and any one
+column. Arbitrarily, we delete the firsts:
+
+$$t_{\bf n} = \mathrm{det}\begin{pmatrix}
+n_0 &  0 & \cdots &  0 \\
+0 &  n_1 & \cdots &  0 \\
+\vdots & \vdots & \ddots &  0 \\
+0 &  0 &  0 &  n_{m-1}
+\end{pmatrix} = \prod_{i=0}^{m-1} n_i.
+$$
+
+Then, the number of (unrooted) Eulerian circuits (a.k.a. cycle, tour,
+etc.) is given by the [BEST
+theorem](https://en.wikipedia.org/wiki/BEST_theorem) as the product of
+the number of arborescences and the factorial of each vertex's degree
+minus one:
+
+$$ec = t \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!$$
+
+For the graph of a multiset we get
+
+$$\begin{align}ec_{\bf n}
+&= t_{\bf n} \cdot \prod_{i=0}^m\left(L_{ii}-1\right)!\\
+&= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
+&= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
+\end{align}$$
+
+which does not correspond to the number of strings we can produce from
+the vector of counts of a multiset, which is given by the multinomial
+coefficient:
+
+$${N \choose n_0,n_1,\ldots,n_{m-1}}
+~=~ \frac{N!}{\prod_{i=0}^{m-1}n_i!}
+~\neq~ (N-1)! \cdot \prod_{i=0}^{m-1}n_i!.$$
+
+Inpecting the structure of a Eulerian circuit:
+
+![](res/types/figs/graph-path.svg)
+
+it is defined as a circular sequence of edges, while a string is defined
+as a sequence of characters, which here correspond to vertices. For each
+pair of vertices $u$ and $v$ all edges $u \to v$ and all edges $v \to u$
+form equivalence classes that are overcounted in the computation of the
+BEST theorem. Because there are $n_i$ incoming and outgoing edges for
+each symbol, we get
+
+$$\begin{align}\frac{N!}{\prod_{i=0}^{m-1}n_i!}
+&\neq \frac{(N-1)! \cdot \prod_{i=0}^{m-1}n_i!}{\prod_{i=0}^{m-1}(n_i!)^2}\\[10pt]
+&\neq \frac{(N-1)!}{\prod_{i=0}^{m-1}n_i!}.
+\end{align}$$
+
+Finally, the BEST theorem counts *unrooted* circuits, while our string
+has a definite begining and end. This means it undercounts the number of
+strings by a factor of $N$, or the number of places a circuit can be
+"cut" into a string.
+
+$$\begin{align}\frac{N!}{\prod_{i=0}^{m-1}n_i!}
+&= \frac{(N-1)!}{\prod_{i=0}^{m-1}n_i!} \cdot N \\[5pt]
+&= \frac{N!}{\prod_{i=0}^{m-1}n_i!}.
+\end{align}$$
+
+With this, we can produce a formula for the number of distinct strings
+produceable from such Eulerian graphs.
+
+In general, the Laplacian sub-matrix is not diagonal
+
+<!-- ![](res/types/figs/graph-joints.svg) -->

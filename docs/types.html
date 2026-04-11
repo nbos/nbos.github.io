@@ -102,6 +102,7 @@ symbols</a> we refer to as
 <li><a href="#counting-joints-of-a-type-in-a-string" id="toc-counting-joints-of-a-type-in-a-string"><span class="toc-section-number">3.5.2</span> Counting Joints of a Type in a String</a></li>
 </ul></li>
 </ul></li>
+<li><a href="#reformulation" id="toc-reformulation"><span class="toc-section-number">4</span> Reformulation</a></li>
 </ul>
 </div>
 <h2 data-number="1" id="union-semantics"><span class="header-section-number">1</span> Union Semantics</h2>
@@ -588,6 +589,147 @@ introduction of non-overlapping chunks, while candidates for chunking
 from progressing further.</p>
 <p>We therefore swap the underlying combinatorial model for something more
 appropriate.</p>
+<h2 data-number="4" id="reformulation"><span class="header-section-number">4</span> Reformulation</h2>
+<p>While a multiset permutation model can be simplified by reducing the
+size of the string through the introduction of ever larger
+(non-overlapping) chunks:</p>
+<p><img src="res/types/figs/joints-neq.svg" /></p>
+<p>we now aim for a structure of known variety that can be restricted by
+accumulating links between states, or conditional transitions:</p>
+<p><img src="res/types/figs/joints-eq.svg" /></p>
+<p>From a vector of counts:</p>
+<p><img src="res/chunk/figs/counts-fig.svg" /></p>
+<p>that we resolve into a string though the encoding of a permutation:</p>
+<p><img src="res/chunk/figs/permutation.svg" /></p>
+<p>we instead start from a directed multigraph:</p>
+<p><img src="res/types/figs/graph-cat.svg" /></p>
+<p>where paths from and to <span class="math inline">\(\varepsilon\)</span>
+(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Empty_string">epsilon</a>) represent
+unchunked or unconditional symbols. We can resolve the graph into a
+string though the ranking/unranking of a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian
+path</a>:</p>
+<p><img src="res/types/figs/graph-path.svg" /></p>
+<p><img src="res/chunk/figs/string-fig.svg" /></p>
+<p>It so happens that counting Eulerian paths in a directed graph is only
+as complex as computing a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Determinant">determinant</a> on its
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Laplacian_matrix">Laplacian matrix</a>
+(specifically, a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">cofactor</a>) which
+has complexity <span class="math inline">\(O(n^3)\)</span> for a graph of <span class="math inline">\(n\)</span> vertices or, for our case,
+<span class="math inline">\(O(m^3)\)</span> for an alphabet of <span class="math inline">\(m\)</span> symbols.</p>
+<p>The Laplacian matrix records the number of connections between vertices
+in a graph (in negative) with the degree of vertices on the diagonal.</p>
+<p>In our example, we would have:</p>
+<!-- $$L = \begin{pmatrix} -->
+<!--  7 & -1 & -3 & -2 & -1 \\ -->
+<!-- -1 &  1 &  0 &  0 &  0 \\ -->
+<!-- -3 &  0 &  3 &  0 &  0 \\ -->
+<!-- -2 &  0 &  0 &  2 &  0 \\ -->
+<!-- -1 &  0 &  0 &  0 &  1 -->
+<!-- \end{pmatrix}$$ -->
+<!-- $$\begin{array}{cccccc} -->
+<!--       & \varepsilon & a  & b  & c  & d  \\ -->
+<!-- \varepsilon &  7 & -1 & -3 & -2 & -1 \\ -->
+<!-- a     & -1 &  1 &  0 &  0 &  0 \\ -->
+<!-- b     & -3 &  0 &  3 &  0 &  0 \\ -->
+<!-- c     & -2 &  0 &  0 &  2 &  0 \\ -->
+<!-- d     & -1 &  0 &  0 &  0 &  1 -->
+<!-- \end{array}$$ -->
+<p><span class="math display">\[
+\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccc}
+	\,~\varepsilon\,~ &amp; \,~a\,~ &amp; \,~b\,~ &amp; \,~c\,~ &amp; \,~d\,~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\left(\begin{array}{rrrrr}
+7 &amp; -1 &amp; -3 &amp; -2 &amp; -1 \\
+-1 &amp;  1 &amp;  0 &amp;  0 &amp;  0 \\
+-3 &amp;  0 &amp;  3 &amp;  0 &amp;  0 \\
+-2 &amp;  0 &amp;  0 &amp;  2 &amp;  0 \\
+-1 &amp;  0 &amp;  0 &amp;  0 &amp;  1
+\end{array}\right)
+\end{array}
+\]</span></p>
+<p>or for any such graph of a multiset:</p>
+<p><span class="math display">\[L_{\bf n} ~=~~~
+\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccc}
+	~~\varepsilon~~~~~ &amp; ~~s_0~~ &amp; ~~s_1~~ &amp; \cdots &amp; ~~s_{m-1}
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
+\end{array}
+&amp;
+\left(\begin{array}{ccccc}
+N &amp; -n_0 &amp; -n_1 &amp; \cdots &amp; -n_{m-1} \\
+-n_0 &amp;  n_0 &amp;  0 &amp; \cdots &amp;  0 \\
+-n_1 &amp;  0 &amp;  n_1 &amp; \cdots &amp;  0 \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp;  0 \\
+-n_{m-1} &amp;  0 &amp;  0 &amp;  0 &amp;  n_{m-1}
+\end{array}\right)
+\end{array}
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[N = \sum_{i=0}^{m-1} n_i.\]</span></p>
+<p>The number of
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arborescence_(graph_theory)">arborescences</a>,
+a.k.a. directed rooted trees on a graph is equal to the determinant of
+<em>any</em> cofactor of the Laplacian, which is equal to the determinant of
+any submatrix resulting from the deletion any one row and any one
+column. Arbitrarily, we delete the firsts:</p>
+<p><span class="math display">\[t_{\bf n} = \mathrm{det}\begin{pmatrix}
+n_0 &amp;  0 &amp; \cdots &amp;  0 \\
+0 &amp;  n_1 &amp; \cdots &amp;  0 \\
+\vdots &amp; \vdots &amp; \ddots &amp;  0 \\
+0 &amp;  0 &amp;  0 &amp;  n_{m-1}
+\end{pmatrix} = \prod_{i=0}^{m-1} n_i.
+\]</span></p>
+<p>Then, the number of (unrooted) Eulerian circuits (a.k.a. cycle, tour,
+etc.) is given by the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/BEST_theorem">BEST
+theorem</a> as the product of
+the number of arborescences and the factorial of each vertex’s degree
+minus one:</p>
+<p><span class="math display">\[ec = t \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\]</span></p>
+<p>For the graph of a multiset we get</p>
+<p><span class="math display">\[\begin{align}ec_{\bf n}
+&amp;= t_{\bf n} \cdot \prod_{i=0}^m\left(L_{ii}-1\right)!\\
+&amp;= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
+&amp;= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
+\end{align}\]</span></p>
+<p>which does not correspond to the number of strings we can produce from
+the vector of counts of a multiset, which is given by the multinomial
+coefficient:</p>
+<p><span class="math display">\[{N \choose n_0,n_1,\ldots,n_{m-1}}
+~=~ \frac{N!}{\prod_{i=0}^{m-1}n_i!}
+~\neq~ (N-1)! \cdot \prod_{i=0}^{m-1}n_i!.\]</span></p>
+<p>Inpecting the structure of a Eulerian circuit:</p>
+<p><img src="res/types/figs/graph-path.svg" /></p>
+<p>it is defined as a circular sequence of edges, while a string is defined
+as a sequence of characters, which here correspond to vertices. For each
+pair of vertices <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> all edges <span class="math inline">\(u \to v\)</span> and all edges <span class="math inline">\(v \to u\)</span>
+form equivalence classes that are overcounted in the computation of the
+BEST theorem. Because there are <span class="math inline">\(n_i\)</span> incoming and outgoing edges for
+each symbol, we get</p>
+<p><span class="math display">\[\begin{align}\frac{N!}{\prod_{i=0}^{m-1}n_i!}
+&amp;\neq \frac{(N-1)! \cdot \prod_{i=0}^{m-1}n_i!}{\prod_{i=0}^{m-1}(n_i!)^2}\\[10pt]
+&amp;\neq \frac{(N-1)!}{\prod_{i=0}^{m-1}n_i!}.
+\end{align}\]</span></p>
+<p>Finally, the BEST theorem counts <em>unrooted</em> circuits, while our string
+has a definite begining and end. This means it undercounts the number of
+strings by a factor of <span class="math inline">\(N\)</span>, or the number of places a circuit can be
+“cut” into a string.</p>
+<p><span class="math display">\[\begin{align}\frac{N!}{\prod_{i=0}^{m-1}n_i!}
+&amp;= \frac{(N-1)!}{\prod_{i=0}^{m-1}n_i!} \cdot N \\[5pt]
+&amp;= \frac{N!}{\prod_{i=0}^{m-1}n_i!}.
+\end{align}\]</span></p>
+<p>With this, we can produce a formula for the number of distinct strings
+produceable from such Eulerian graphs.</p>
+<p>In general, the Laplacian sub-matrix is not diagonal</p>
+<!-- ![](res/types/figs/graph-joints.svg) -->
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
