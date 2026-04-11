@@ -247,6 +247,17 @@ for i in range(1, len(path_vertices) - 1):
         capstyle="round", zorder=5,
     ))
 
+# ── 5d-cycle. Close the cycle: connect last arriving edge back to first ──
+v_cycle    = path_vertices[0]          # == path_vertices[-1] == "e"
+ei_in_cyc  = path_edges[-1]           # last edge  (arriving)
+ei_out_cyc = path_edges[0]            # first edge (departing)
+ax.add_patch(mpatches.PathPatch(
+    inward_bezier_path(v_cycle, ei_in_cyc, ei_out_cyc),
+    facecolor="none", edgecolor=PATH_COLOR,
+    linewidth=PATH_LW, linestyle=PATH_DOTS,
+    capstyle="round", zorder=5,
+))
+
 # ── 5e. Labels  (zorder 6) ───────────────────────────────────────
 for name, p in vertex_pos.items():
     ax.text(*p, vertex_labels.get(name, name),
