@@ -28,7 +28,23 @@
     <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
     <link rel="stylesheet" href="/css/default.css">
     <link rel="stylesheet" href="/css/syntax.css">
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+      window.MathJax = {
+	  startup: {
+	      ready() {
+		  MathJax.startup.defaultReady();
+		  MathJax.startup.promise.then(() => {
+		      const y = window.scrollY;
+		      window.scrollTo(0, y);
+		  });
+	      }
+	  }
+      };
+    </script>
+    <script id="MathJax-script" async
+	    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
   </head>
 
   <body>
