@@ -63,7 +63,7 @@
       <h1>Chunking with Types</h1>
       <article>
   <section class="header">
-    Posted on February 17, 2026
+    Posted on April 12, 2026
     
     by Nathaniel Bos
     
@@ -612,46 +612,47 @@ size of the string through the introduction of ever larger
 <p>we now aim for a structure of known variety that can be restricted by
 accumulating links between states, or conditional transitions:</p>
 <p><img src="res/types/figs/joints-eq.svg" /></p>
-<p>From a vector of counts:</p>
+<p>Instead of going from a vector of counts:</p>
 <p><img src="res/chunk/figs/counts-fig.svg" /></p>
-<p>that we resolve into a string though the encoding of a permutation:</p>
+<p>that we resolve into a string through the encoding of a permutation:</p>
 <p><img src="res/chunk/figs/permutation.svg" /></p>
-<p>we instead start from a directed multigraph:</p>
+<p>we start from a directed
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multigraph">multigraph</a>:</p>
 <p><img src="res/types/figs/graph-cat.svg" /></p>
-<p>where paths from and to <span class="math inline">\(\varepsilon\)</span>
-(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Empty_string">epsilon</a>) represent
-unchunked or unconditional symbols. We can resolve the graph into a
-string though the ranking/unranking of a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian
-path</a>:</p>
+<p>that we resolve into a string through the encoding of a path:</p>
 <p><img src="res/types/figs/graph-path.svg" /></p>
 <p><img src="res/chunk/figs/string-fig.svg" /></p>
+<p>More precisely, a vertex is introduced for each symbol in the alphabet
+as well as an extra <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Empty_string">empty
+string</a> vertex labeled
+<span class="math inline">\(\varepsilon\)</span> (epsilon). For as many occurences of each symbol there is
+in the string, we have pairs of edges going back and forth to the
+<span class="math inline">\(\varepsilon\)</span> vertex. Then, any path walking every edge in the graph—a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian path</a>—
+corresponds to a string with corresponding symbol counts.</p>
 <p>It so happens that counting Eulerian paths in a directed graph is only
-as complex as computing a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Determinant">determinant</a> on its
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Laplacian_matrix">Laplacian matrix</a>
-(specifically, a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">cofactor</a>) which
-has complexity <span class="math inline">\(O(n^3)\)</span> for a graph of <span class="math inline">\(n\)</span> vertices or, for our case,
-<span class="math inline">\(O(m^3)\)</span> for an alphabet of <span class="math inline">\(m\)</span> symbols.</p>
-<p>The Laplacian matrix records the number of connections between vertices
-in a graph (in negative) with the degree of vertices on the diagonal.</p>
-<p>In our example, we would have:</p>
-<!-- $$L = \begin{pmatrix} -->
-<!--  7 & -1 & -3 & -2 & -1 \\ -->
-<!-- -1 &  1 &  0 &  0 &  0 \\ -->
-<!-- -3 &  0 &  3 &  0 &  0 \\ -->
-<!-- -2 &  0 &  0 &  2 &  0 \\ -->
-<!-- -1 &  0 &  0 &  0 &  1 -->
-<!-- \end{pmatrix}$$ -->
-<!-- $$\begin{array}{cccccc} -->
-<!--       & \varepsilon & a  & b  & c  & d  \\ -->
-<!-- \varepsilon &  7 & -1 & -3 & -2 & -1 \\ -->
-<!-- a     & -1 &  1 &  0 &  0 &  0 \\ -->
-<!-- b     & -3 &  0 &  3 &  0 &  0 \\ -->
-<!-- c     & -2 &  0 &  0 &  2 &  0 \\ -->
-<!-- d     & -1 &  0 &  0 &  0 &  1 -->
-<!-- \end{array}$$ -->
-<p><span class="math display">\[
+as complex as computing a certain
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Determinant">determinant</a> on a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Laplacian_matrix">Laplacian
+matrix</a> which has
+complexity <span class="math inline">\(O(n^3)\)</span> for a graph of <span class="math inline">\(n\)</span> vertices, or <span class="math inline">\(O(m^3)\)</span> for an
+alphabet of <span class="math inline">\(m\)</span> symbols.</p>
+<p>The exact number of Eulerian circuits in a directed multigraph is given
+by the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/BEST_theorem">BEST theorem</a> as the
+product of the number of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Spanning_tree">spanning
+trees</a> and the factorial of
+each vertex’s degree minus one.</p>
+<p><span class="math display">\[ec(G) = t(G) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\]</span></p>
+<p>The number of spanning trees <span class="math inline">\(t(G)\)</span> is computed through <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem">Kirchhoff’s
+theorem</a> as a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">cofactor</a> of the
+Laplacian (all cofactors of a Laplacian are equal), which is the
+determinant of the submatrix where one row and one column are removed.</p>
+<p>The Laplacian of a graph records the degree of vertices on the diagonal
+(both in- and outdegree are equal to symbol count according to our
+construction) and the number of edges between vertices times <span class="math inline">\(-1\)</span> in the
+off-diagonal entries.</p>
+<p>Using the example above, we would have the Laplacian:</p>
+<p><span class="math display">\[L_{abcd} ~=~~
 \begin{array}{c@{\hspace{4pt}}c}
 &amp; \begin{array}{ccccc}
 	\,~\varepsilon\,~ &amp; \,~a\,~ &amp; \,~b\,~ &amp; \,~c\,~ &amp; \,~d\,~
@@ -669,8 +670,8 @@ in a graph (in negative) with the degree of vertices on the diagonal.</p>
 \end{array}\right)
 \end{array}
 \]</span></p>
-<p>or for any such graph of a multiset:</p>
-<p><span class="math display">\[L_{\bf n} ~=~~~
+<p>or for any such graph constructed from a multiset:</p>
+<p><span class="math display">\[L_{\bf n} ~=~~
 \begin{array}{c@{\hspace{4pt}}c}
 &amp; \begin{array}{ccccc}
 	~~\varepsilon~~~~~ &amp; ~~s_0~~ &amp; ~~s_1~~ &amp; \cdots &amp; ~~s_{m-1}
@@ -688,63 +689,68 @@ N &amp; -n_0 &amp; -n_1 &amp; \cdots &amp; -n_{m-1} \\
 \end{array}\right)
 \end{array}
 \]</span></p>
-<p>where</p>
-<p><span class="math display">\[N = \sum_{i=0}^{m-1} n_i.\]</span></p>
-<p>The number of
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arborescence_(graph_theory)">arborescences</a>,
-a.k.a. directed rooted trees on a graph is equal to the determinant of
-<em>any</em> cofactor of the Laplacian, which is equal to the determinant of
-any submatrix resulting from the deletion any one row and any one
-column. Arbitrarily, we delete the firsts:</p>
-<p><span class="math display">\[t_{\bf n} = \mathrm{det}\begin{pmatrix}
+<p>where <span class="math inline">\(N = \sum_i n_i\)</span>.</p>
+<p>By Kirchhoff’s theorem, the number of spanning trees is the determinant
+of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">minor</a>
+produced by the deletion any one row and any one column in the
+Laplacian. Arbitrarily, we delete the firsts:</p>
+<p><span class="math display">\[t(L_{\bf n}) = \mathrm{det}\begin{pmatrix}
 n_0 &amp;  0 &amp; \cdots &amp;  0 \\
 0 &amp;  n_1 &amp; \cdots &amp;  0 \\
 \vdots &amp; \vdots &amp; \ddots &amp;  0 \\
 0 &amp;  0 &amp;  0 &amp;  n_{m-1}
 \end{pmatrix} = \prod_{i=0}^{m-1} n_i.
 \]</span></p>
-<p>Then, the number of (unrooted) Eulerian circuits (a.k.a. cycle, tour,
-etc.) is given by the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/BEST_theorem">BEST
-theorem</a> as the product of
-the number of arborescences and the factorial of each vertex’s degree
-minus one:</p>
-<p><span class="math display">\[ec = t \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\]</span></p>
-<p>For the graph of a multiset we get</p>
-<p><span class="math display">\[\begin{align}ec_{\bf n}
-&amp;= t_{\bf n} \cdot \prod_{i=0}^m\left(L_{ii}-1\right)!\\
+<p>Then, the number of Eulerian circuits is</p>
+<p><span class="math display">\[\begin{align}ec(L_{\bf n})
+&amp;= t(L_{\bf n}) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\\
 &amp;= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
 &amp;= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
 \end{align}\]</span></p>
-<p>which does not correspond to the number of strings we can produce from
-the vector of counts of a multiset, which is given by the multinomial
+<p>which <em>does not</em> correspond to the number of strings (permutations)
+given a multiset, which is typically computed from the multinomial
 coefficient:</p>
 <p><span class="math display">\[{N \choose n_0,n_1,\ldots,n_{m-1}}
-~=~ \frac{N!}{\prod_{i=0}^{m-1}n_i!}
-~\neq~ (N-1)! \cdot \prod_{i=0}^{m-1}n_i!.\]</span></p>
-<p>Inpecting the structure of a Eulerian circuit:</p>
+~=~ \frac{N!}{\prod_i n_i!}.\]</span></p>
+<p>Inpecting the structure of a Eulerian circuit,</p>
 <p><img src="res/types/figs/graph-path.svg" /></p>
 <p>it is defined as a circular sequence of edges, while a string is defined
 as a sequence of characters, which here correspond to vertices. For each
-pair of vertices <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> all edges <span class="math inline">\(u \to v\)</span> and all edges <span class="math inline">\(v \to u\)</span>
-form equivalence classes that are overcounted in the computation of the
-BEST theorem. Because there are <span class="math inline">\(n_i\)</span> incoming and outgoing edges for
-each symbol, we get</p>
-<p><span class="math display">\[\begin{align}\frac{N!}{\prod_{i=0}^{m-1}n_i!}
-&amp;\neq \frac{(N-1)! \cdot \prod_{i=0}^{m-1}n_i!}{\prod_{i=0}^{m-1}(n_i!)^2}\\[10pt]
-&amp;\neq \frac{(N-1)!}{\prod_{i=0}^{m-1}n_i!}.
+pair of vertices <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span>, all edges <span class="math inline">\(u \to v\)</span> and all edges <span class="math inline">\(v \to
+u\)</span> form equivalence classes that are <strong>overcounted</strong> from our
+perspective in the number of Eulerian circuits.</p>
+<p>Because there are <span class="math inline">\(n_i\)</span> incoming and outgoing edges for each symbol
+vertex, we get</p>
+<p><span class="math display">\[\begin{align}\frac{ec(G)}{\prod_i (n_i!)^2}
+&amp;= \frac{(N-1)! \cdot \prod_i n_i!}{\prod_i (n_i!)^2}\\[10pt]
+&amp;= \frac{(N-1)!}{\prod_i n_i!}.
 \end{align}\]</span></p>
-<p>Finally, the BEST theorem counts <em>unrooted</em> circuits, while our string
-has a definite begining and end. This means it undercounts the number of
-strings by a factor of <span class="math inline">\(N\)</span>, or the number of places a circuit can be
+<p>Finally, the BEST theorem counts <em>unrooted</em> circuits, meaning paths
+without start nor end. On the other hand, a string has a definite
+begining and end. This means the formula <strong>undercounts</strong> the number of
+strings by a factor of <span class="math inline">\(N\)</span>—or the number of places a circuit can be
 “cut” into a string.</p>
-<p><span class="math display">\[\begin{align}\frac{N!}{\prod_{i=0}^{m-1}n_i!}
-&amp;= \frac{(N-1)!}{\prod_{i=0}^{m-1}n_i!} \cdot N \\[5pt]
-&amp;= \frac{N!}{\prod_{i=0}^{m-1}n_i!}.
+<p><span class="math display">\[\begin{align}\frac{ec(G) \cdot N}{\prod_i (n_i!)^2}
+&amp;= \frac{(N-1)!}{\prod_i n_i!} \cdot N \\[5pt]
+&amp;= \frac{N!}{\prod_i n_i!}\\[5pt]
+&amp;= {N \choose n_0,n_1,\ldots,n_{m-1}}
 \end{align}\]</span></p>
-<p>With this, we can produce a formula for the number of distinct strings
-produceable from such Eulerian graphs.</p>
-<p>In general, the Laplacian sub-matrix is not diagonal</p>
-<!-- ![](res/types/figs/graph-joints.svg) -->
+<p>With these corrections to the the BEST theorem, we can produce a formula
+for the number of strings given symbol and joint counts.</p>
+<p>Starting from the BEST theorem,</p>
+<p><span class="math display">\[ec(L) = t(L) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\]</span></p>
+<p>we divide by the factorial of the size of each set of equivalent
+edges—which are located everywhere but on the diagonal of the
+Laplacian:</p>
+<p><span class="math display">\[\begin{align}\frac{ec(L)}{\prod_{i\neq j}|L_{ij}|!}
+&amp;= \frac{t(L) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!}{\prod_{i\neq j}|L_{ij}|!}
+\end{align}\]</span></p>
+<p>and multiply by the number of ways to cut open the circuit at the
+starting vertex <span class="math inline">\(\varepsilon\)</span>:</p>
+<p><span class="math display">\[\begin{align}\frac{ec(L) \cdot L_{00}}{\prod_{i\neq j}|L_{ij}|!}
+&amp;= \frac{t(L) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)! \cdot L_{00}}
+	{\prod_{i\neq j}|L_{ij}|!}\\
+\end{align}\]</span></p>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
