@@ -337,7 +337,7 @@ selected or introducing a random symbol among its neighbors if none are
 so far selected, we achieve a uniform-looking, 100% "tight" random type
 generation.
 
-## Code Length Formulation
+## Extending the Categorial Model
 
 To score different mutations of a randomly sampled joint type to
 greedily select the best, we express the length of the whole encoding
@@ -659,7 +659,7 @@ from progressing further.
 We therefore swap the underlying combinatorial model for something more
 appropriate.
 
-## Reformulation
+## A Conditional Model
 
 While a multiset permutation model can be simplified by reducing the
 size of the string through the introduction of ever larger
@@ -672,7 +672,7 @@ accumulating links between states, or conditional transitions:
 
 ![](res/types/figs/joints-eq.svg)
 
-Instead of going from a vector of counts:
+Instead of using a vector of counts:
 
 ![](res/chunk/figs/counts-fig.svg)
 
@@ -680,7 +680,7 @@ that we resolve into a string through the encoding of a permutation:
 
 ![](res/chunk/figs/permutation.svg)
 
-we start from a directed
+we use a directed
 [multigraph](https://en.wikipedia.org/wiki/Multigraph):
 
 ![](res/types/figs/graph-cat.svg)
@@ -702,34 +702,67 @@ corresponds to a string with corresponding symbol counts.
 
 It so happens that counting Eulerian paths in a directed graph is only
 as complex as computing a certain
-[determinant](https://en.wikipedia.org/wiki/Determinant) on a [Laplacian
-matrix](https://en.wikipedia.org/wiki/Laplacian_matrix) which has
-complexity $O(n^3)$ for a graph of $n$ vertices, or $O(m^3)$ for an
+[determinant](https://en.wikipedia.org/wiki/Determinant) on the
+[Laplacian matrix](https://en.wikipedia.org/wiki/Laplacian_matrix) which
+has complexity $O(n^3)$ for a graph of $n$ vertices, or $O(m^3)$ for an
 alphabet of $m$ symbols.
+
+### Counting Strings on a Graph
 
 The exact number of Eulerian circuits in a directed multigraph is given
 by the [BEST theorem](https://en.wikipedia.org/wiki/BEST_theorem) as the
 product of the number of [spanning
 trees](https://en.wikipedia.org/wiki/Spanning_tree) and the factorial of
-each vertex's degree minus one.
+each vertex's
+[degree](https://en.wikipedia.org/wiki/Degree_(graph_theory)) minus one.
 
 $$ec(G) = t(G) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!$$
 
 The number of spanning trees $t(G)$ is computed through [Kirchhoff's
+matrix tree
 theorem](https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem) as a
 [cofactor](https://en.wikipedia.org/wiki/Minor_(linear_algebra)) of the
-Laplacian (all cofactors of a Laplacian are equal), which is the
-determinant of the submatrix where one row and one column are removed.
+Laplacian (all cofactors of a Laplacian are equal), which is equal to
+the determinant of the submatrix where one row and one column are
+removed.
 
-The Laplacian of a graph records the degree of vertices on the diagonal
-(both in- and outdegree are equal to symbol count according to our
-construction) and the number of edges between vertices times $-1$ in the
-off-diagonal entries.
+The Laplacian matrix of a directed multigraph is the difference between
+matrices $D$ and $A$:
+
+$$L = D - A$$
+
+where $D$ is a diagonal matrix holding the outdegree of each vertex and
+$A$ is the adjacency matrix where elements $a_{ij}$ is the number of
+edges going from vertex $i$ to vertex $j$.
 
 Using the example above, we would have the Laplacian:
 
-$$L_{abcd} ~=~~
-\begin{array}{c@{\hspace{4pt}}c}
+$$\begin{align}L_{abcd} ~
+&=~~\begin{array}{c@{\hspace{4pt}}c}
+ & \begin{array}{ccccccccccc}
+	\varepsilon & a & b & c & d & ~~~~~~~ & \varepsilon & a & b & c & d
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&
+\begin{bmatrix}
+ ~~7 &  0 &  0 &  0 &  0~~ \\
+ ~~0 &  1 &  0 &  0 &  0~~ \\
+ ~~0 &  0 &  3 &  0 &  0~~ \\
+ ~~0 &  0 &  0 &  2 &  0~~ \\
+ ~~0 &  0 &  0 &  0 &  1~~
+\end{bmatrix}
+-
+\begin{bmatrix}
+ ~~0 &  1 &  3 &  2 &  1~~ \\
+ ~~1 &  0 &  0 &  0 &  0~~ \\
+ ~~3 &  0 &  0 &  0 &  0~~ \\
+ ~~2 &  0 &  0 &  0 &  0~~ \\
+ ~~1 &  0 &  0 &  0 &  0~~
+\end{bmatrix}
+\end{array}\\[10pt]
+&=~~\begin{array}{c@{\hspace{4pt}}c}
  & \begin{array}{ccccc}
 	\,~\varepsilon\,~ & \,~a\,~ & \,~b\,~ & \,~c\,~ & \,~d\,~
 \end{array} \\[2pt]
@@ -737,20 +770,45 @@ $$L_{abcd} ~=~~
 	\varepsilon \\ a \\ b \\ c \\ d
 \end{array}
 &
-\left(\begin{array}{rrrrr}
- 7 & -1 & -3 & -2 & -1 \\
--1 &  1 &  0 &  0 &  0 \\
--3 &  0 &  3 &  0 &  0 \\
--2 &  0 &  0 &  2 &  0 \\
--1 &  0 &  0 &  0 &  1
-\end{array}\right)
+\begin{bmatrix}
+~{ 7} & -1 & -3 & -2 & -1~~ \\
+~{-1} &  1 &  0 &  0 &  0~~ \\
+~{-3} &  0 &  3 &  0 &  0~~ \\
+~{-2} &  0 &  0 &  2 &  0~~ \\
+~{-1} &  0 &  0 &  0 &  1~~
+\end{bmatrix}
 \end{array}
-$$
+\end{align}$$
 
 or for any such graph constructed from a multiset:
 
-$$L_{\bf n} ~=~~
-\begin{array}{c@{\hspace{4pt}}c}
+$$\begin{align}L_{\bf n} ~
+&=~~ D_{\bf n} - A_{\bf n}\\[10pt]
+&=~~\begin{array}{c@{\hspace{4pt}}c}
+ & \begin{array}{ccccccccccc}
+	~~~\varepsilon ~&~ s_0 ~& s_1 & \cdots &~ s_{m-1} ~& ~~~ &~ \varepsilon ~&~ s_0 ~&~ s_1 ~& \cdots &~ s_{m-1}~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
+\end{array}
+&
+\begin{bmatrix}
+ ~~N &  0 &  0 & \cdots &  0 \\
+ ~~0 &  n_0 &  0 & \cdots &  0 \\
+ ~~0 &  0 &  n_1 & \cdots &  0 \\
+ ~~\vdots & \vdots & \vdots & \ddots &  0 \\
+ ~~0 &  0 &  0 &  0 &  n_{m-1}
+\end{bmatrix}
+-
+\begin{bmatrix}
+ 0 & n_0 & n_1 & \cdots & n_{m-1} \\
+ n_0 & 0 &  0 & \cdots &  0 \\
+ n_1 & 0 &  0 & \cdots &  0 \\
+\vdots & \vdots & \vdots & \ddots &  0 \\
+ n_{m-1} &  0 &  0 &  0 &  0
+\end{bmatrix}
+\end{array}\\[10pt]
+&=~~\begin{array}{c@{\hspace{4pt}}c}
  & \begin{array}{ccccc}
 	~~\varepsilon~~~~~ & ~~s_0~~ & ~~s_1~~ & \cdots & ~~s_{m-1}
 \end{array} \\[2pt]
@@ -758,35 +816,36 @@ $$L_{\bf n} ~=~~
 	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
 \end{array}
 &
-\left(\begin{array}{ccccc}
+\begin{bmatrix}
  N & -n_0 & -n_1 & \cdots & -n_{m-1} \\
 -n_0 &  n_0 &  0 & \cdots &  0 \\
 -n_1 &  0 &  n_1 & \cdots &  0 \\
 \vdots & \vdots & \vdots & \ddots &  0 \\
 -n_{m-1} &  0 &  0 &  0 &  n_{m-1}
-\end{array}\right)
+\end{bmatrix}
 \end{array}
-$$
+\end{align}$$
 
 where $N = \sum_i n_i$.
 
 By Kirchhoff's theorem, the number of spanning trees is the determinant
 of the [minor](https://en.wikipedia.org/wiki/Minor_(linear_algebra))
-produced by the deletion any one row and any one column in the
+resulting from the deletion any one row and any one column in the
 Laplacian. Arbitrarily, we delete the firsts:
 
-$$t(L_{\bf n}) = \mathrm{det}\begin{pmatrix}
-n_0 &  0 & \cdots &  0 \\
-0 &  n_1 & \cdots &  0 \\
-\vdots & \vdots & \ddots &  0 \\
-0 &  0 &  0 &  n_{m-1}
-\end{pmatrix} = \prod_{i=0}^{m-1} n_i.
-$$
+$$t(L_{\bf n}) = \mathrm{det}
+\begin{bmatrix}
+~n_0 &  0 & \cdots &  0~ \\
+~0 &  n_1 & \cdots &  0~ \\
+~\vdots & \vdots & \ddots &  0~ \\
+~0 &  0 &  0 &  n_{m-1}~
+\end{bmatrix}
+= \prod_{i=0}^{m-1} n_i.$$
 
 Then, the number of Eulerian circuits is
 
-$$\begin{align}ec(L_{\bf n})
-&= t(L_{\bf n}) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\\
+$$\begin{align}ec({\bf n})
+&= t(L_{\bf n}) \cdot \prod_{i=0}^{m}\left(D_{{\bf n}~ii}-1\right)!\\
 &= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
 &= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
 \end{align}$$
@@ -798,6 +857,8 @@ coefficient:
 $${N \choose n_0,n_1,\ldots,n_{m-1}}
 ~=~ \frac{N!}{\prod_i n_i!}.$$
 
+#### Corrections on the Multiset Case
+
 Inpecting the structure of a Eulerian circuit,
 
 ![](res/types/figs/graph-path.svg)
@@ -805,48 +866,51 @@ Inpecting the structure of a Eulerian circuit,
 it is defined as a circular sequence of edges, while a string is defined
 as a sequence of characters, which here correspond to vertices. For each
 pair of vertices $u$ and $v$, all edges $u \to v$ and all edges $v \to
-u$ form equivalence classes that are **overcounted** from our
-perspective in the number of Eulerian circuits.
+u$ form equivalence classes that are **overcounted** in the number of
+Eulerian circuits from the perspective of strings.
 
-Because there are $n_i$ incoming and outgoing edges for each symbol
-vertex, we get
+Because in this case there are $n_i$ incoming and outgoing edges for
+each symbol vertex, we get
 
-$$\begin{align}\frac{ec(G)}{\prod_i (n_i!)^2}
+$$\begin{align}\frac{ec({\bf n})}{\prod_i (n_i!)^2}
 &= \frac{(N-1)! \cdot \prod_i n_i!}{\prod_i (n_i!)^2}\\[10pt]
 &= \frac{(N-1)!}{\prod_i n_i!}.
 \end{align}$$
 
-Finally, the BEST theorem counts *unrooted* circuits, meaning paths
-without start nor end. On the other hand, a string has a definite
-begining and end. This means the formula **undercounts** the number of
-strings by a factor of $N$---or the number of places a circuit can be
-"cut" into a string.
+Finally, the BEST theorem counts *unrooted* circuits, meaning paths with
+their ends connected, a.k.a. cycles. On the other hand, a string has a
+definite begining and end. This means the formula **undercounts** the
+number of strings by a factor of $N$---or the number of places a circuit
+can be "cut" into a string.
 
-$$\begin{align}\frac{ec(G) \cdot N}{\prod_i (n_i!)^2}
+$$\begin{align}\frac{ec({\bf n}) \cdot N}{\prod_i (n_i!)^2}
 &= \frac{(N-1)!}{\prod_i n_i!} \cdot N \\[5pt]
 &= \frac{N!}{\prod_i n_i!}\\[5pt]
 &= {N \choose n_0,n_1,\ldots,n_{m-1}}
 \end{align}$$
 
 With these corrections to the the BEST theorem, we can produce a formula
-for the number of strings given symbol and joint counts.
+for the number of strings given the adjacency and degree matrices.
+
+#### General Formulation
 
 Starting from the BEST theorem,
 
-$$ec(L) = t(L) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!$$
+$$ec(D,A) = t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)!$$
 
 we divide by the factorial of the size of each set of equivalent
-edges---which are located everywhere but on the diagonal of the
-Laplacian:
+edges---which are all the entries of the adjacency matrix:
 
-$$\begin{align}\frac{ec(L)}{\prod_{i\neq j}|L_{ij}|!}
-&= \frac{t(L) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!}{\prod_{i\neq j}|L_{ij}|!}
+$$\begin{align}\frac{ec(D,A)}{\prod_{i,j}A_{ij}!}
+&= \frac{t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)!}{\prod_{i,j}A_{ij}!}
 \end{align}$$
 
-and multiply by the number of ways to cut open the circuit at the
-starting vertex $\varepsilon$:
+and multiply by the number of ways to cut open a circuit at the starting
+vertex $\varepsilon$:
 
-$$\begin{align}\frac{ec(L) \cdot L_{00}}{\prod_{i\neq j}|L_{ij}|!}
-&= \frac{t(L) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)! \cdot L_{00}}
-	{\prod_{i\neq j}|L_{ij}|!}\\
+$$\begin{align}\frac{ec(D,A) \cdot D_{00}}{\prod_{i,j}A_{ij}!}
+&= \frac{t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)! \cdot D_{00}}
+	{\prod_{i,j}A_{ij}!}\\[10pt]
+&= \frac{t(L) \cdot D_{00}! \cdot \prod_{i=1}^m\left(D_{ii}-1\right)!}
+	{\prod_{i,j}A_{ij}!}.
 \end{align}$$
