@@ -75,6 +75,7 @@ def draw_joints(
     groupings,
     output_path,
     *,
+    labels=None,
     box_w=0.5,
     box_h=0.5,
     gap_v=0.18,
@@ -90,17 +91,26 @@ def draw_joints(
 
     Parameters
     ----------
-    n_boxes      : int            – total number of boxes
-    groupings    : list[frozenset]– each frozenset is a group of box indices
-    output_path  : str            – destination file path (format inferred from extension)
-    box_w/box_h  : float          – width / height of each box
-    gap_v        : float          – vertical spacing between ring levels
-    gap_h        : float          – horizontal spacing between vertical boundary lines
-    lw           : float          – line width
-    cr           : float          – corner radius
-    margin_x/y   : float          – figure margins
-    scale        : float          – inches-per-data-unit scaling factor
+    n_boxes      : int             – total number of boxes
+    groupings    : list[frozenset] – each frozenset is a group of box indices
+    output_path  : str             – destination file path (format inferred from extension)
+    labels       : list[str] | None – one single-character label per box (len == n_boxes);
+                                      if None, no labels are drawn
+    box_w/box_h  : float           – width / height of each box
+    gap_v        : float           – vertical spacing between ring levels
+    gap_h        : float           – horizontal spacing between vertical boundary lines
+    lw           : float           – line width
+    cr           : float           – corner radius
+    margin_x/y   : float           – figure margins
+    scale        : float           – inches-per-data-unit scaling factor
     """
+
+    # ── Validate labels ──────────────────────────────────────────────
+    if labels is not None:
+        if len(labels) != n_boxes:
+            raise ValueError(
+                f"labels has {len(labels)} entries but n_boxes={n_boxes}"
+            )
 
     # ── 1. Level assignment ──────────────────────────────────────────
     levels    = _assign_levels(groupings)
@@ -170,7 +180,7 @@ def draw_joints(
     ax.axis("off")
     fig.patch.set_facecolor("white")
 
-    # ── 6. Draw groups then boxes ────────────────────────────────────
+    # ── 6. Draw groups then boxes (and optional labels) ──────────────
     for g, lv in sorted(levels.items(), key=lambda kv: -kv[1]):
         gid = id(g)
         r   = _ring_r(lv, gap_v)
@@ -185,11 +195,27 @@ def draw_joints(
             cr=cr,
         )
 
-    for xp in box_x:
+    # Compute font size to match the reference figure's proportions.
+    # The reference uses fontsize=20 with box_w=1.0; scale linearly with
+    # box_w so the label always fits comfortably inside the box.
+    label_fontsize = 40 * box_w
+
+    for idx, xp in enumerate(box_x):
         ax.add_patch(patches.Rectangle(
             (xp, bot_y), box_w, box_h,
             linewidth=lw, edgecolor="black", facecolor="white", zorder=8,
         ))
+        if labels is not None:
+            ax.text(
+                xp + box_w / 2,
+                bot_y + box_h / 2,
+                labels[idx],
+                ha="center", va="center",
+                fontsize=label_fontsize,
+                fontfamily="serif",
+                fontstyle="italic",
+                zorder=9,
+            )
 
     # ── 7. Save ──────────────────────────────────────────────────────
     fmt = output_path.rsplit(".", 1)[-1].lower() if "." in output_path else "svg"

@@ -63,7 +63,7 @@
       <h1>Chunking with Types</h1>
       <article>
   <section class="header">
-    Posted on April 12, 2026
+    Posted on April 14, 2026
     
     by Nathaniel Bos
     
@@ -105,7 +105,7 @@ symbols</a> we refer to as
 <li><a href="#tightness-in-a-graph" id="toc-tightness-in-a-graph"><span class="toc-section-number">2.1.2</span> Tightness in a Graph</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#extending-the-categorial-model" id="toc-extending-the-categorial-model"><span class="toc-section-number">3</span> Extending the Categorial Model</a>
+<li><a href="#extending-the-categorical-model" id="toc-extending-the-categorical-model"><span class="toc-section-number">3</span> Extending the Categorical Model</a>
 <ul>
 <li><a href="#types" id="toc-types"><span class="toc-section-number">3.1</span> Types</a></li>
 <li><a href="#resolution" id="toc-resolution"><span class="toc-section-number">3.2</span> Resolution</a></li>
@@ -124,6 +124,7 @@ symbols</a> we refer to as
 <li><a href="#corrections-on-the-multiset-case" id="toc-corrections-on-the-multiset-case"><span class="toc-section-number">4.1.1</span> Corrections on the Multiset Case</a></li>
 <li><a href="#general-formulation" id="toc-general-formulation"><span class="toc-section-number">4.1.2</span> General Formulation</a></li>
 </ul></li>
+<li><a href="#example" id="toc-example"><span class="toc-section-number">4.2</span> Example</a></li>
 </ul></li>
 </ul>
 </div>
@@ -364,7 +365,7 @@ eliminating possible symbols that would be made dangling if later
 selected or introducing a random symbol among its neighbors if none are
 so far selected, we achieve a uniform-looking, 100% “tight” random type
 generation.</p>
-<h2 data-number="3" id="extending-the-categorial-model"><span class="header-section-number">3</span> Extending the Categorial Model</h2>
+<h2 data-number="3" id="extending-the-categorical-model"><span class="header-section-number">3</span> Extending the Categorical Model</h2>
 <p>To score different mutations of a randomly sampled joint type to
 greedily select the best, we express the length of the whole encoding
 before and after the introduction of a joint type and prior and after
@@ -597,18 +598,20 @@ joints</p>
 <p>can have their parity flipped by the introduction of a new symbol in the
 left union</p>
 <p><img src="res/types/figs/joints-mut.svg" /></p>
-<p>which either increments or decrements the individual count of the last
-symbol in the chain. This, by itself is still manageable if we keep
-track of all joint sites, constructive or not, for all joints in binary
-trees that merge and resolve collisions in less than <span class="math inline">\(O(N)\)</span>, keeping
-pointers between head and tail of each such segment, etc. But deletions
-of joints in the middle of a segment now requires each joint to also
-point to either the head or the tail, which would require on the order
-of <span class="math inline">\(O(n_m)\)</span> updates at each mutation application, etc.</p>
+<p>producing a cascading effect in the structure of construction,
+ultimately only incrementing or decrementing the individual count of the
+last symbol in the chain.</p>
+<p>By itself, this is still manageable if we keep track of all joint sites,
+constructive or not, for all joints in binary trees that merge and
+resolve collisions in less than <span class="math inline">\(O(N)\)</span>, keeping pointers between head
+and tail of each such segment, etc. But deletions of joints at random
+positions in a segment now requires each joint to also point to either
+the head or the tail, which would require on the order of <span class="math inline">\(O(n_m)\)</span>
+updates at each mutation application, etc.</p>
 <p>The simple fact that our permutation format has to deal with the
 introduction of non-overlapping chunks, while candidates for chunking
-<em>are</em> overlapping, creates a tension that keeps this simple extension
-from progressing further.</p>
+<em>are</em> overlapping, creates a tension that keeps a seemingly
+straightforward extension from progressing further.</p>
 <p>We therefore swap the underlying combinatorial model for something more
 appropriate.</p>
 <h2 data-number="4" id="a-conditional-model"><span class="header-section-number">4</span> A Conditional Model</h2>
@@ -616,27 +619,33 @@ appropriate.</p>
 size of the string through the introduction of ever larger
 (non-overlapping) chunks:</p>
 <p><img src="res/types/figs/joints-neq.svg" /></p>
-<p>we now aim for a structure of known variety that can be restricted by
-accumulating links between states, or conditional transitions:</p>
+<p>we would be saved from micromanaging ever expanding sequences of chunks
+on the working string if we could freely introduce joints that overlap,
+evoking transitions between states more so than individually separable
+chunks:</p>
 <p><img src="res/types/figs/joints-eq.svg" /></p>
-<p>Instead of using a vector of counts:</p>
+<p>Therefore, instead of using a vector of counts:</p>
 <p><img src="res/chunk/figs/counts-fig.svg" /></p>
-<p>that we resolve into a string through the encoding of a permutation:</p>
+<p>that is resolved into a string through the encoding of a permutation:</p>
 <p><img src="res/chunk/figs/permutation.svg" /></p>
-<p>we use a directed
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multigraph">multigraph</a>:</p>
+<p>we transition to using a directed
+<strong><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multigraph">multigraph</a></strong>:</p>
 <p><img src="res/types/figs/graph-cat.svg" /></p>
-<p>that we resolve into a string through the encoding of a path:</p>
+<p>that is resolved into a string through the encoding of a <strong>path</strong>:</p>
 <p><img src="res/types/figs/graph-path.svg" /></p>
 <p><img src="res/chunk/figs/string-fig.svg" /></p>
+<p>In this case, the path</p>
+<p><span class="math display">\[\begin{align}
+\varepsilon &amp;\to \boxed{b} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{d} \to \\
+\varepsilon &amp;\to \boxed{a} \to \varepsilon \to \boxed{b} \to \varepsilon \to \boxed{b} \to \varepsilon.\end{align}\]</span></p>
 <p>More precisely, a vertex is introduced for each symbol in the alphabet
-as well as an extra <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Empty_string">empty
+as well as an auxiliary <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Empty_string">empty
 string</a> vertex labeled
-<span class="math inline">\(\varepsilon\)</span> (epsilon). For as many occurences of each symbol there is
+<span class="math inline">\(\varepsilon\)</span> (epsilon). For as many occurrences of each symbol there is
 in the string, we have pairs of edges going back and forth to the
 <span class="math inline">\(\varepsilon\)</span> vertex. Then, any path walking every edge in the graph—a
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian path</a>—
-corresponds to a string with corresponding symbol counts.</p>
+corresponds to a string with appropriate symbol counts.</p>
 <p>It so happens that counting Eulerian paths in a directed graph is only
 as complex as computing a certain
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Determinant">determinant</a> on the
@@ -651,13 +660,10 @@ trees</a> and the factorial of
 each vertex’s
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Degree_(graph_theory)">degree</a> minus one.</p>
 <p><span class="math display">\[ec(G) = t(G) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\]</span></p>
-<p>The number of spanning trees <span class="math inline">\(t(G)\)</span> is computed through <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem">Kirchhoff’s
-matrix tree
-theorem</a> as a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">cofactor</a> of the
-Laplacian (all cofactors of a Laplacian are equal), which is equal to
-the determinant of the submatrix where one row and one column are
-removed.</p>
+<p>The number of spanning trees <span class="math inline">\(t(G)\)</span> is equal by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem">Kirchhoff’s matrix tree
+theorem</a> to the
+determinant of the submatrix of the Laplacian where one row and one
+column are removed.</p>
 <p>The Laplacian matrix of a directed multigraph is the difference between
 matrices <span class="math inline">\(D\)</span> and <span class="math inline">\(A\)</span>:</p>
 <p><span class="math display">\[L = D - A\]</span></p>
@@ -766,7 +772,7 @@ Laplacian. Arbitrarily, we delete the firsts:</p>
 = \prod_{i=0}^{m-1} n_i.\]</span></p>
 <p>Then, the number of Eulerian circuits is</p>
 <p><span class="math display">\[\begin{align}ec({\bf n})
-&amp;= t(L_{\bf n}) \cdot \prod_{i=0}^{m}\left(D_{{\bf n}~ii}-1\right)!\\
+&amp;= t(L_{\bf n}) \cdot \prod_{i=0}^{m}\left([D_{\bf n}]_{ii}-1\right)!\\
 &amp;= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
 &amp;= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
 \end{align}\]</span></p>
@@ -776,7 +782,7 @@ coefficient:</p>
 <p><span class="math display">\[{N \choose n_0,n_1,\ldots,n_{m-1}}
 ~=~ \frac{N!}{\prod_i n_i!}.\]</span></p>
 <h4 data-number="4.1.1" id="corrections-on-the-multiset-case"><span class="header-section-number">4.1.1</span> Corrections on the Multiset Case</h4>
-<p>Inpecting the structure of a Eulerian circuit,</p>
+<p>Inspecting the structure of a Eulerian circuit,</p>
 <p><img src="res/types/figs/graph-path.svg" /></p>
 <p>it is defined as a circular sequence of edges, while a string is defined
 as a sequence of characters, which here correspond to vertices. For each
@@ -791,7 +797,7 @@ each symbol vertex, we get</p>
 \end{align}\]</span></p>
 <p>Finally, the BEST theorem counts <em>unrooted</em> circuits, meaning paths with
 their ends connected, a.k.a. cycles. On the other hand, a string has a
-definite begining and end. This means the formula <strong>undercounts</strong> the
+definite beginning and end. This means the formula <strong>undercounts</strong> the
 number of strings by a factor of <span class="math inline">\(N\)</span>—or the number of places a circuit
 can be “cut” into a string.</p>
 <p><span class="math display">\[\begin{align}\frac{ec({\bf n}) \cdot N}{\prod_i (n_i!)^2}
@@ -817,6 +823,97 @@ vertex <span class="math inline">\(\varepsilon\)</span>:</p>
 &amp;= \frac{t(L) \cdot D_{00}! \cdot \prod_{i=1}^m\left(D_{ii}-1\right)!}
 	{\prod_{i,j}A_{ij}!}.
 \end{align}\]</span></p>
+<h3 data-number="4.2" id="example"><span class="header-section-number">4.2</span> Example</h3>
+<p>Using a graph instead of a multiset as a parametric model allows us to
+use counts of intersecting joints in the string. Consider the following
+chunking of the example string and corresponding graph.</p>
+<p><img src="res/types/figs/graph-joints.svg" />
+<img src="res/types/figs/string-fig-chunked.svg" /></p>
+<p>The path to be encoded becomes</p>
+<p><span class="math display">\[\varepsilon \to \boxed{b} \to \boxed{c} \to \boxed{c} \to \varepsilon \to \boxed{d} \to \varepsilon \to \boxed{a} \to \boxed{b} \to \boxed{b} \to \varepsilon.\]</span></p>
+<p>The degree, adjacency and Laplacian matrices are:</p>
+<p><span class="math display">\[\begin{align}L_{abcd}' ~
+&amp;= D_{abcd}' - A_{abcd}'\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccccccccc}
+	\varepsilon &amp; a &amp; b &amp; c &amp; d &amp; ~~~~~~~ &amp; \varepsilon &amp; a &amp; b &amp; c &amp; d
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\begin{bmatrix}
+~~3 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  1 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  3 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  0 &amp;  2 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  0 &amp;  0 &amp;  1~~
+\end{bmatrix}
+-
+\begin{bmatrix}
+~~0 &amp;  1 &amp;  1 &amp;  0 &amp;  1~~ \\
+~~0 &amp;  0 &amp;  1 &amp;  0 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  1 &amp;  1 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  0 &amp;  1 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~
+\end{bmatrix}
+\end{array}\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccc}
+	\,~\varepsilon\,~ &amp; \,~a\,~ &amp; \,~b\,~ &amp; \,~c\,~ &amp; \,~d\,~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\begin{bmatrix}
+~{ 3} &amp; -1 &amp; -1 &amp;  0 &amp; -1~~ \\
+~{ 0} &amp;  1 &amp; -1 &amp;  0 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  2 &amp; -1 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  0 &amp;  1 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  0 &amp;  0 &amp;  1~~
+\end{bmatrix}
+\end{array}.
+\end{align}\]</span></p>
+<p>The cofactor of the Laplacian and number of spanning trees is</p>
+<p><span class="math display">\[t(L_{abcd}') = \mathrm{det}
+\begin{bmatrix}
+~1 &amp; -1 &amp;  0 &amp; 0~ \\
+~0 &amp;  2 &amp; -1 &amp; 0~ \\
+~0 &amp;  0 &amp;  1 &amp; 0~ \\
+~0 &amp;  0 &amp;  0 &amp; 1~
+\end{bmatrix}
+= 2\]</span></p>
+<p>making the number of Eulerian circuits</p>
+<p><span class="math display">\[\begin{align}ec_{abcd}
+&amp;= t(L_{abcd}') \cdot \prod_{i=0}^{m}\left([D_{abcd}']_{ii}-1\right)!\\
+&amp;= 2 \cdot 2! \cdot 0! \cdot 1! \cdot 0! \cdot 0!\\
+&amp;= 4
+\end{align}\]</span></p>
+<p>and the number of strings</p>
+<p><span class="math display">\[\frac{ec_{abcd} \cdot [D_{abcd}']_{00}}{\prod_{i,j}[D_{abcd}']_{ij}!}
+	= \frac{4 \cdot 3}{1} = 12\]</span></p>
+<p>which—since there are two ways to arrange the joints into three
+contiguous chains of joints—are as follows (our string in parens):</p>
+<pre><code> abb bcc d	 ab bbbc d
+ abb d bcc	 ab d bbbc
+ bcc abb d	 bbbc ab d
+(bcc d abb)	 bbbc d ab
+ d abb bcc	 d ab bbbc
+ d bcc abb	 d bbbc ab.</code></pre>
+<p>One can observe in the above enumeration that some strings of chunks
+will become equivalent after concatenation since there are two ways to
+walk across the graph to produce the substring <code>a-b-b-b-c-c</code>, namely</p>
+<pre><code>abb [ε] bcc</code></pre>
+<p>and</p>
+<pre><code>ab [ε] bbcc</code></pre>
+<p>which results in two pairs of equivalent strings in our enumeration,
+bringing the actual number of string to 10.</p>
+<p>While only the first subpath is canonical for this substring assuming
+eager construction, I’m unsure of a the exact way to count and subtract
+those from the computation efficiently.</p>
+<p>Ultimately, it is also possible that this increase in number of strings
+is not of sufficient significance to warrant consideration.</p>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
