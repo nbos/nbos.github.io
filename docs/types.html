@@ -290,11 +290,11 @@ space of possible types, e.g.</p>
 <p>won’t always produce types that are optimal w.r.t. the joints they
 cover—in the sense that some symbols included in one side’s union type
 could have no joint with any of the symbols of the opposite union.</p>
-<p>On the bipartite graph, this would correspond to unconnected vertices
-inside the subgraph of the joint type (but connected outside of
-it). Informationally, the introduction could immediately be improved by
+<p>Informationally, the introduction could immediately be improved by
 dropping them from the type, thereby reducing the length of the code
 required to resolve the unions back into concrete symbols.</p>
+<p>On the bipartite graph, this would correspond to unconnected vertices
+inside the subgraph of the joint type (but connected outside of it).</p>
 <p>Fixing the randomly generated types by dropping unconnected symbols as a
 normalization step will produce a biased generation pointing away from
 the inclusion of any symbol with few associated joints. Similarly,
@@ -758,9 +758,9 @@ N &amp; -n_0 &amp; -n_1 &amp; \cdots &amp; -n_{m-1} \\
 \end{array}
 \end{align}\]</span></p>
 <p>where <span class="math inline">\(N = \sum_i n_i\)</span>.</p>
-<p>By Kirchhoff’s theorem, the number of spanning trees is the determinant
-of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">minor</a>
-resulting from the deletion any one row and any one column in the
+<p>By Kirchhoff’s theorem, the number of spanning trees is the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">minor</a> resulting
+from the deletion any one row and any one column in the
 Laplacian. Arbitrarily, we delete the firsts:</p>
 <p><span class="math display">\[t(L_{\bf n}) = \mathrm{det}
 \begin{bmatrix}
@@ -913,7 +913,10 @@ bringing the actual number of string to 10.</p>
 eager construction, I’m unsure of a the exact way to count and subtract
 those from the computation efficiently.</p>
 <p>Ultimately, it is also possible that this increase in number of strings
-is not of sufficient significance to warrant consideration.</p>
+is not large enough to warrant consideration. Since code length is the
+log of the variety, as long as there are less non-canonical than
+canonical strings in our count, as is the case here, the difference in
+code length will be less than 1 bit.</p>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>

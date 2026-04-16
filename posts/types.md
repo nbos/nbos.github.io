@@ -242,11 +242,12 @@ won't always produce types that are optimal w.r.t. the joints they
 cover---in the sense that some symbols included in one side's union type
 could have no joint with any of the symbols of the opposite union.
 
-On the bipartite graph, this would correspond to unconnected vertices
-inside the subgraph of the joint type (but connected outside of
-it). Informationally, the introduction could immediately be improved by
+Informationally, the introduction could immediately be improved by
 dropping them from the type, thereby reducing the length of the code
 required to resolve the unions back into concrete symbols.
+
+On the bipartite graph, this would correspond to unconnected vertices
+inside the subgraph of the joint type (but connected outside of it).
 
 Fixing the randomly generated types by dropping unconnected symbols as a
 normalization step will produce a biased generation pointing away from
@@ -836,9 +837,9 @@ $$\begin{align}L_{\bf n} ~
 
 where $N = \sum_i n_i$.
 
-By Kirchhoff's theorem, the number of spanning trees is the determinant
-of the [minor](https://en.wikipedia.org/wiki/Minor_(linear_algebra))
-resulting from the deletion any one row and any one column in the
+By Kirchhoff's theorem, the number of spanning trees is the
+[minor](https://en.wikipedia.org/wiki/Minor_(linear_algebra)) resulting
+from the deletion any one row and any one column in the
 Laplacian. Arbitrarily, we delete the firsts:
 
 $$t(L_{\bf n}) = \mathrm{det}
@@ -1040,4 +1041,7 @@ eager construction, I'm unsure of a the exact way to count and subtract
 those from the computation efficiently.
 
 Ultimately, it is also possible that this increase in number of strings
-is not of sufficient significance to warrant consideration.
+is not large enough to warrant consideration. Since code length is the
+log of the variety, as long as there are less non-canonical than
+canonical strings in our count, as is the case here, the difference in
+code length will be less than 1 bit.
