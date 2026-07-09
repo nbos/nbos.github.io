@@ -624,6 +624,8 @@ out as introductions produce fewer modifications to the string. We also
 confirm that greater inputs allow for larger dictionaries and greater
 compressibility.
 
+### Compressability
+
 We can compare the compressibility, or "information density" between
 scales by computing a compression *factor* at each point in the model's
 evolution:
@@ -655,9 +657,12 @@ Full outputs: [`enwik4`](res/chunk/out/enwik4.csv),
 
 Exponentially increasing input sizes translate to roughly exponentially
 increasing dictionary sizes (and running time), and *linearly*
-increasing compression factors. Extrapolating this trend to the larger
-datasets `enwik8` and `enwik9` indicates a possible maximal compression
-ratio of `3.71` and `4.07` respectively,
+increasing compression factors, meaning the gains are diminishing,
+following a logarithmic trend.
+
+Extrapolating this trend to the larger datasets `enwik8` and `enwik9`
+indicates a possible final compression ratio of `3.71` and `4.07`
+respectively,
 
 ![](res/chunk/plots/extrapolated.svg)
 
@@ -665,6 +670,31 @@ which fall way short of the factors [currently
 achieved](https://mattmahoney.net/dc/text.html) by the state of the art
 in large text compression for those exact datasets `enwik8` (around
 `6-7`) and `enwik9` (around `9-10`).
+
+They are more in the range of compression ratios achieved by classic
+compression algorithms:
+[DEFLATE](https://en.wikipedia.org/wiki/Deflate),
+[BZip2](https://en.wikipedia.org/wiki/Bzip2), or
+[LZMA2](https://en.wikipedia.org/wiki/LZMA)---although these operate at
+much faster scales.
+
+![](res/chunk/plots/benchmark_results.svg)
+
+Of note is that our estimation of our performance on `enwik9` from the
+extrapolation of the log-trend is most likely too conservative
+because---as seen with the bump in performance of the other
+algorithms---that dataset specifically contains a substantive section of
+low-entropy "articles" which are essentially only page redirects and
+easily caught by back-referencing algorithms with a large engouh context
+window.
+
+This feature of `enwik9` is better described and visualized:
+
+[![](res/chunk/figs/e9.png)](https://mattmahoney.net/dc/textdata.html)
+
+by Matt Mahoney on [an
+article](https://mattmahoney.net/dc/textdata.html) hosted on his
+website.
 
 ### Subjective Assessment
 
@@ -825,11 +855,7 @@ are shorter and marginally less meaningful, at least at the start:
 
 Full output: [`enwik7-naive-loss`](res/chunk/out/enwik7-naive-loss.csv).
 
-Naive chunks visibly have a bias towards combining symbols with high
-occurrences even if the combination doesn't hold much more meaning than
-the sum of its parts.
-
-For example compared to the more meaningful
+For example compared to the more meaningful chunks
 
 ```
 "and", ">\n", "</", "ing", "&quot;",
@@ -842,7 +868,11 @@ selected earlier by the naive policy:
 "e ", "s ", "d ", "t ", "ti", "ar", "al".
 ```
 
-In terms of probability:
+Naive chunks visibly have a bias towards combining symbols with high
+occurrences even if the combination doesn't hold much more meaning than
+the sum of its parts.
+
+In terms of probability, we have the correlation:
 
 $$p(s_0,s_1) \sim p(s_0)p(s_1)$$
 
@@ -865,9 +895,9 @@ $$\begin{align} \mathrm{pmi}(s_0;s_1)
 &= \log\left(\frac{n_{01} \, N}{n_0 \, n_1}\right) \\
 \end{align}$$
 
-Using this to score joint candidates, produces the somewhat degenerate
-dictionary containing rare byte pairs that occur almost exclusively
-together:
+Using this to score joint candidates, produces a somewhat degenerate
+dictionary containing extremely rare byte pairs that occur almost
+exclusively together:
 
 ```
 256: "�"   +  "�"  ==>  "ی"
@@ -933,12 +963,11 @@ nearly identical to ours:
 
 ![](res/chunk/plots/factors-functions.svg)
 
-As relative to ours:
+In relative terms:
 ![](res/chunk/plots/factors-functions-relative.svg)
 
 which does show the SPMI metric momentarily outperforming the code
-length formula itself, as part of the noise in the performance of early
-introductions.
+length formula itself as part of the noise of early introductions.
 
 Measuring the average word lengths across the evolution of the
 dictionary produces a similar pattern:

@@ -106,12 +106,13 @@ compression.</p>
 </ul></li>
 <li><a href="#results" id="toc-results"><span class="toc-section-number">6</span> Results</a>
 <ul>
-<li><a href="#subjective-assessment" id="toc-subjective-assessment"><span class="toc-section-number">6.1</span> Subjective Assessment</a>
+<li><a href="#compressability" id="toc-compressability"><span class="toc-section-number">6.1</span> Compressability</a></li>
+<li><a href="#subjective-assessment" id="toc-subjective-assessment"><span class="toc-section-number">6.2</span> Subjective Assessment</a>
 <ul>
-<li><a href="#comparison-to-bpe" id="toc-comparison-to-bpe"><span class="toc-section-number">6.1.1</span> Comparison to BPE</a></li>
-<li><a href="#comparison-to-pmi" id="toc-comparison-to-pmi"><span class="toc-section-number">6.1.2</span> Comparison to PMI</a></li>
+<li><a href="#comparison-to-bpe" id="toc-comparison-to-bpe"><span class="toc-section-number">6.2.1</span> Comparison to BPE</a></li>
+<li><a href="#comparison-to-pmi" id="toc-comparison-to-pmi"><span class="toc-section-number">6.2.2</span> Comparison to PMI</a></li>
 </ul></li>
-<li><a href="#performance-of-alternate-policies" id="toc-performance-of-alternate-policies"><span class="toc-section-number">6.2</span> Performance of Alternate Policies</a></li>
+<li><a href="#performance-of-alternate-policies" id="toc-performance-of-alternate-policies"><span class="toc-section-number">6.3</span> Performance of Alternate Policies</a></li>
 </ul></li>
 <li><a href="#progressive-sampling" id="toc-progressive-sampling"><span class="toc-section-number">7</span> Progressive Sampling</a></li>
 </ul>
@@ -597,6 +598,7 @@ compressibility occurs with the first few introduced symbols and tapers
 out as introductions produce fewer modifications to the string. We also
 confirm that greater inputs allow for larger dictionaries and greater
 compressibility.</p>
+<h3 data-number="6.1" id="compressability"><span class="header-section-number">6.1</span> Compressability</h3>
 <p>We can compare the compressibility, or “information density” between
 scales by computing a compression <em>factor</em> at each point in the model’s
 evolution:</p>
@@ -622,15 +624,36 @@ s}\)</span>, triggering termination.</p>
 <a href="res/chunk/out/enwik7.csv"><code>enwik7.csv</code></a> (8.04 MiB).</p>
 <p>Exponentially increasing input sizes translate to roughly exponentially
 increasing dictionary sizes (and running time), and <em>linearly</em>
-increasing compression factors. Extrapolating this trend to the larger
-datasets <code>enwik8</code> and <code>enwik9</code> indicates a possible maximal compression
-ratio of <code>3.71</code> and <code>4.07</code> respectively,</p>
+increasing compression factors, meaning the gains are diminishing,
+following a logarithmic trend.</p>
+<p>Extrapolating this trend to the larger datasets <code>enwik8</code> and <code>enwik9</code>
+indicates a possible final compression ratio of <code>3.71</code> and <code>4.07</code>
+respectively,</p>
 <p><img src="res/chunk/plots/extrapolated.svg" /></p>
 <p>which fall way short of the factors <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/text.html">currently
 achieved</a> by the state of the art
 in large text compression for those exact datasets <code>enwik8</code> (around
 <code>6-7</code>) and <code>enwik9</code> (around <code>9-10</code>).</p>
-<h3 data-number="6.1" id="subjective-assessment"><span class="header-section-number">6.1</span> Subjective Assessment</h3>
+<p>They are more in the range of compression ratios achieved by classic
+compression algorithms:
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Deflate">DEFLATE</a>,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bzip2">BZip2</a>, or
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/LZMA">LZMA2</a>—although these operate at
+much faster scales.</p>
+<p><img src="res/chunk/plots/benchmark_results.svg" /></p>
+<p>Of note is that our estimation of our performance on <code>enwik9</code> from the
+extrapolation of the log-trend is most likely too conservative
+because—as seen with the bump in performance of the other
+algorithms—that dataset specifically contains a substantive section of
+low-entropy “articles” which are essentially only page redirects and
+easily caught by back-referencing algorithms with a large engouh context
+window.</p>
+<p>This feature of <code>enwik9</code> is better described and visualized:</p>
+<p><a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html"><img src="res/chunk/figs/e9.png" /></a></p>
+<p>by Matt Mahoney on <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">an
+article</a> hosted on his
+website.</p>
+<h3 data-number="6.2" id="subjective-assessment"><span class="header-section-number">6.2</span> Subjective Assessment</h3>
 <p>Chunks produced for <code>enwik</code>-type datasets make a mix of English
 morphemes, words and phrases as well as markup strings from Wikipedia’s
 XML schema:</p>
@@ -697,7 +720,7 @@ XML schema:</p>
 <!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
 <!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
 <p>Full output: <a href="res/chunk/out/enwik7.csv"><code>enwik7.csv</code></a> (8.04 MiB).</p>
-<h4 data-number="6.1.1" id="comparison-to-bpe"><span class="header-section-number">6.1.1</span> Comparison to BPE</h4>
+<h4 data-number="6.2.1" id="comparison-to-bpe"><span class="header-section-number">6.2.1</span> Comparison to BPE</h4>
 <p>Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is repeatedly formed into a new
 symbol, as in <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Byte-pair_encoding">byte-pair
@@ -777,18 +800,18 @@ are shorter and marginally less meaningful, at least at the start:</p>
 <!-- 70023: "persec"       +  "ution of "  ==>  "persecution of " -->
 <!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
 <p>Full output: <a href="res/chunk/out/enwik7-naive-loss.csv"><code>enwik7-naive-loss.csv</code></a> (7.61 MiB).</p>
-<p>Naive chunks visibly have a bias towards combining symbols with high
-occurrences even if the combination doesn’t hold much more meaning than
-the sum of its parts.</p>
-<p>For example compared to the more meaningful</p>
+<p>For example compared to the more meaningful chunks</p>
 <pre><code>&quot;and&quot;, &quot;&gt;\n&quot;, &quot;&lt;/&quot;, &quot;ing&quot;, &quot;&amp;quot;&quot;,</code></pre>
 <p>the following chunks have more absolute occurrences and are therefore
 selected earlier by the naive policy:</p>
 <pre><code>&quot;e &quot;, &quot;s &quot;, &quot;d &quot;, &quot;t &quot;, &quot;ti&quot;, &quot;ar&quot;, &quot;al&quot;.</code></pre>
-<p>In terms of probability:</p>
+<p>Naive chunks visibly have a bias towards combining symbols with high
+occurrences even if the combination doesn’t hold much more meaning than
+the sum of its parts.</p>
+<p>In terms of probability, we have the correlation:</p>
 <p><span class="math display">\[p(s_0,s_1) \sim p(s_0)p(s_1)\]</span></p>
 <p>even if two symbols are independent in their use.</p>
-<h4 data-number="6.1.2" id="comparison-to-pmi"><span class="header-section-number">6.1.2</span> Comparison to PMI</h4>
+<h4 data-number="6.2.2" id="comparison-to-pmi"><span class="header-section-number">6.2.2</span> Comparison to PMI</h4>
 <p>Instead, if we are interested in how much a joint occurs <em>relative</em> to a
 null hypothesis of independence, we get a ratio:</p>
 <p><span class="math display">\[\frac{p(s_0,s_1)}{p(s_0)p(s_1)}\]</span></p>
@@ -800,9 +823,9 @@ information
 &amp;= \log\left(\frac{n_{01} \cdot N \cdot N}{N \cdot n_0 \cdot n_1}\right) \\[5pt]
 &amp;= \log\left(\frac{n_{01} \, N}{n_0 \, n_1}\right) \\
 \end{align}\]</span></p>
-<p>Using this to score joint candidates, produces the somewhat degenerate
-dictionary containing rare byte pairs that occur almost exclusively
-together:</p>
+<p>Using this to score joint candidates, produces a somewhat degenerate
+dictionary containing extremely rare byte pairs that occur almost
+exclusively together:</p>
 <pre><code>256: &quot;�&quot;   +  &quot;�&quot;  ==&gt;  &quot;ی&quot;
 257: &quot;�&quot;   +  &quot;�&quot;  ==&gt;  &quot;Ә&quot;
 258: &quot;�&quot;   +  &quot;�&quot;  ==&gt;  &quot;ے&quot;
@@ -850,16 +873,15 @@ representative of <em>total</em> change in information:</p>
 <p>which is much more similar to the dictionary obtained from our
 informational loss function. Full output:
 <a href="res/chunk/out/enwik7-spmi-loss.csv"><code>enwik7-spmi-loss.csv</code></a> (8.01 MiB).</p>
-<h3 data-number="6.2" id="performance-of-alternate-policies"><span class="header-section-number">6.2</span> Performance of Alternate Policies</h3>
+<h3 data-number="6.3" id="performance-of-alternate-policies"><span class="header-section-number">6.3</span> Performance of Alternate Policies</h3>
 <p>Perhaps surprisingly, the naive dictionary achieves levels of
 compression comparable to ours, and the SPMI dictionary’s performance is
 nearly identical to ours:</p>
 <p><img src="res/chunk/plots/factors-functions.svg" /></p>
-<p>As relative to ours:
+<p>In relative terms:
 <img src="res/chunk/plots/factors-functions-relative.svg" /></p>
 <p>which does show the SPMI metric momentarily outperforming the code
-length formula itself, as part of the noise in the performance of early
-introductions.</p>
+length formula itself as part of the noise of early introductions.</p>
 <p>Measuring the average word lengths across the evolution of the
 dictionary produces a similar pattern:</p>
 <p><img src="res/chunk/plots/wl-functions.svg" /></p>
