@@ -29,15 +29,15 @@ def decimal_notation_formatter(x, pos):
         return f"{x:.4g}"
 
 def main():
-    csv_files = ["out/enwik7.csv", "out/enwik7-naive-loss.csv", "out/enwik7-spmi-loss.csv"]
-    labels = ["Code length", "Joint count (naive)", "SPMI"]
+    csv_files = ["../out/enwik7.csv", "../out/enwik7-spmi-loss.csv", "../out/enwik7-naive-loss.csv"]
+    labels = ["Code length", "SPMI (mutual information)", "BPE (naive)"]
     
     plt.figure(figsize=(6, 5))
 
     line_styles = [
         ('k', '-'),
-        ('k', '--'),
         ('k', ':'),
+        ('k', '--'),
     ]
 
     all_x, all_y = [], []

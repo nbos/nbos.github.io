@@ -769,7 +769,7 @@ XML schema:
 
 Full output: [`enwik7`](res/chunk/out/enwik7.csv).
 
-#### Comparison to BPE
+#### BPE
 
 Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is repeatedly formed into a new
@@ -878,7 +878,7 @@ $$p(s_0,s_1) \sim p(s_0)p(s_1)$$
 
 even if two symbols are independent in their use.
 
-#### Comparison to PMI
+#### PMI
 
 Instead, if we are interested in how much a joint occurs *relative* to a
 null hypothesis of independence, we get a ratio:
@@ -957,6 +957,7 @@ informational loss function. Full output:
 [`enwik7-spmi-loss`](res/chunk/out/enwik7-spmi-loss.csv).
 
 ### Performance of Alternate Policies
+
 Perhaps surprisingly, the naive dictionary achieves levels of
 compression comparable to ours, and the SPMI dictionary's performance is
 nearly identical to ours:

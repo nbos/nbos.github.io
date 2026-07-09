@@ -109,8 +109,8 @@ compression.</p>
 <li><a href="#compressability" id="toc-compressability"><span class="toc-section-number">6.1</span> Compressability</a></li>
 <li><a href="#subjective-assessment" id="toc-subjective-assessment"><span class="toc-section-number">6.2</span> Subjective Assessment</a>
 <ul>
-<li><a href="#comparison-to-bpe" id="toc-comparison-to-bpe"><span class="toc-section-number">6.2.1</span> Comparison to BPE</a></li>
-<li><a href="#comparison-to-pmi" id="toc-comparison-to-pmi"><span class="toc-section-number">6.2.2</span> Comparison to PMI</a></li>
+<li><a href="#bpe" id="toc-bpe"><span class="toc-section-number">6.2.1</span> BPE</a></li>
+<li><a href="#pmi" id="toc-pmi"><span class="toc-section-number">6.2.2</span> PMI</a></li>
 </ul></li>
 <li><a href="#performance-of-alternate-policies" id="toc-performance-of-alternate-policies"><span class="toc-section-number">6.3</span> Performance of Alternate Policies</a></li>
 </ul></li>
@@ -720,7 +720,7 @@ XML schema:</p>
 <!-- 70013: "economy "    +  "is "          ==>  "economy is " -->
 <!-- 70014: "Arthrit"     +  "is "          ==>  "Arthritis " -->
 <p>Full output: <a href="res/chunk/out/enwik7.csv"><code>enwik7.csv</code></a> (8.04 MiB).</p>
-<h4 data-number="6.2.1" id="comparison-to-bpe"><span class="header-section-number">6.2.1</span> Comparison to BPE</h4>
+<h4 data-number="6.2.1" id="bpe"><span class="header-section-number">6.2.1</span> BPE</h4>
 <p>Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is repeatedly formed into a new
 symbol, as in <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Byte-pair_encoding">byte-pair
@@ -811,7 +811,7 @@ the sum of its parts.</p>
 <p>In terms of probability, we have the correlation:</p>
 <p><span class="math display">\[p(s_0,s_1) \sim p(s_0)p(s_1)\]</span></p>
 <p>even if two symbols are independent in their use.</p>
-<h4 data-number="6.2.2" id="comparison-to-pmi"><span class="header-section-number">6.2.2</span> Comparison to PMI</h4>
+<h4 data-number="6.2.2" id="pmi"><span class="header-section-number">6.2.2</span> PMI</h4>
 <p>Instead, if we are interested in how much a joint occurs <em>relative</em> to a
 null hypothesis of independence, we get a ratio:</p>
 <p><span class="math display">\[\frac{p(s_0,s_1)}{p(s_0)p(s_1)}\]</span></p>

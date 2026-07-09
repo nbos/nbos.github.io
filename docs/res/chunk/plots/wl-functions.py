@@ -36,10 +36,10 @@ def decimal_notation_formatter(x, pos):
         return f"{x:.4g}"
 
 def main():
-    txt_files = ["enwik7-wl.txt",
-                 "enwik7-naive-loss-wl.txt",
-                 "enwik7-spmi-loss-wl.txt"]
-    labels = ["Code length", "Joint count (naive)", "SPMI"]
+    txt_files = ["wl/enwik7-wl.txt",
+                 "wl/enwik7-spmi-loss-wl.txt",
+                 "wl/enwik7-naive-loss-wl.txt"]
+    labels = ["Code length", "SPMI (mutual information)", "BPE (naive)"]
     
     plt.figure(figsize=(6, 5))
 

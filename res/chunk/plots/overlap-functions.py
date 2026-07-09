@@ -29,10 +29,10 @@ def decimal_notation_formatter(x, pos):
         return f"{x:.4g}"
 
 def main():
-    csv_files = ["overlap-functions/length-naive.csv",
+    csv_files = ["overlap-functions/spmi-length.csv",
                  "overlap-functions/naive-spmi.csv",
-                 "overlap-functions/spmi-length.csv"]
-    labels = ["Code length - Joint count", "Joint count - SPMI", "SPMI - Code length"]
+                 "overlap-functions/length-naive.csv"]
+    labels = ["Code length - SPMI", "SPMI - BPE", "Code length - BPE"]
     
     plt.figure(figsize=(6, 4))
 

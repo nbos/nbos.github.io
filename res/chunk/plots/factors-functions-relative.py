@@ -30,7 +30,7 @@ def decimal_notation_formatter(x, pos):
 
 def main():
     csv_files = ["../out/enwik7.csv", "../out/enwik7-spmi-loss.csv", "../out/enwik7-naive-loss.csv"]
-    labels = ["Code length (1.0)", "SPMI", "Joint count (naive)"]
+    labels = ["Code length (1.0)", "SPMI (mutual information)", "BPE (naive)"]
 
     plt.figure(figsize=(6, 5))
 
