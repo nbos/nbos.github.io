@@ -183,7 +183,8 @@ replacement</em>:</p>
 <p><span class="math display">\[N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...\\[10pt]\]</span></p>
 <p>Obviously, we have that, for <span class="math inline">\(n &gt; 0\)</span>:</p>
 <p><span class="math display">\[\log(n!) &lt; n\log n,\]</span></p>
-<p>because <span class="math inline">\(n\log n = \log(n^n)\)</span> and <span class="math inline">\(n! &lt; n^n\)</span>. Asymptotically, however:</p>
+<p>because <span class="math inline">\(n\log n = \log(n^n)\)</span> and <span class="math inline">\(n! &lt; n^n\)</span>.</p>
+<p>Asymptotically, however:</p>
 <p><span class="math display">\[O(\log(n!)) = O(n\log n)\]</span></p>
 <p>as demonstrated by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling’s
 approximation</a>
@@ -204,7 +205,7 @@ between the two functions:</p>
 <p><img src="res/count/difference.svg" /></p>
 <p>How this difference affects different parametrizations of a categorical
 is less obvious.</p>
-<p>Experiments on a small sample of random strings of different lengths
+<p>Experimenting on a small sample of random strings of different lengths
 (<span class="math inline">\(N\)</span>) and number of symbols (<span class="math inline">\(m\)</span>) reveals that <em>with replacement</em>
 contains anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)

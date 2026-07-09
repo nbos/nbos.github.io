@@ -139,7 +139,9 @@ Obviously, we have that, for $n > 0$:
 
 $$\log(n!) < n\log n,$$
 
-because $n\log n = \log(n^n)$ and $n! < n^n$. Asymptotically, however:
+because $n\log n = \log(n^n)$ and $n! < n^n$.
+
+Asymptotically, however:
 
 $$O(\log(n!)) = O(n\log n)$$
 
@@ -171,7 +173,7 @@ between the two functions:
 How this difference affects different parametrizations of a categorical
 is less obvious.
 
-Experiments on a small sample of random strings of different lengths
+Experimenting on a small sample of random strings of different lengths
 ($N$) and number of symbols ($m$) reveals that *with replacement*
 contains anywhere from 0.2% (on the longest strings with the smallest
 alphabets) to 40% (on the smallest strings of mostly distinct symbols)
@@ -206,7 +208,7 @@ coefficient](https://en.wikipedia.org/wiki/Multinomial_theorem):
 $$\begin{align} I(\mathrm{\bf x})
 &= \log(N!) - \log(n_0!) - \log(n_1!) - \log(n_2!) -\ \ldots \\[8pt]
 &= \log \left(\frac {N!}{n_0!\ n_1!\ n_2!\ \cdots}\right) \\[8pt]
-&= \log {N \choose n_0,n_1,n_2,\ldots},\ 
+&= \log {N \choose n_0,n_1,n_2,\ldots},\
 \end{align}$$
 
 which is the number of ways a sequence of $N$ objects with equivalence

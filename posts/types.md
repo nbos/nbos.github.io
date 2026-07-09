@@ -667,14 +667,14 @@ appropriate.
 
 While a multiset permutation model can be simplified by reducing the
 size of the string through the introduction of ever larger
-(non-overlapping) chunks:
+(non-overlapping) chunks,
 
 ![](res/types/figs/joints-neq.svg)
 
 we would be saved from micromanaging ever expanding sequences of chunks
 on the working string if we could freely introduce joints that overlap,
-evoking transitions between states more so than individually separable
-chunks:
+turning individually separable chunks into something more like
+transitions between states.
 
 ![](res/types/figs/joints-eq.svg)
 
@@ -697,27 +697,30 @@ that is resolved into a string through the encoding of a **path**:
 
 ![](res/chunk/figs/string-fig.svg)
 
-In this case, the path
+For isntance, in this case, the path
 
 $$\begin{align}
 \varepsilon &\to \boxed{b} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{d} \to \\
 \varepsilon &\to \boxed{a} \to \varepsilon \to \boxed{b} \to \varepsilon \to \boxed{b} \to \varepsilon.\end{align}$$
 
-More precisely, a vertex is introduced for each symbol in the alphabet
-as well as an auxiliary [empty
-string](https://en.wikipedia.org/wiki/Empty_string) vertex labeled
-$\varepsilon$ (epsilon). For as many occurrences of each symbol there is
-in the string, we have pairs of edges going back and forth to the
+The translation between the first model to the second goes like this: a
+vertex is introduced for each symbol in the alphabet as well as an
+auxiliary [empty string](https://en.wikipedia.org/wiki/Empty_string)
+vertex labeled $\varepsilon$ (epsilon). For as many occurrences of each
+symbol there is in the string, pairs of edges go back and forth to the
 $\varepsilon$ vertex. Then, any path walking every edge in the graph---a
 [Eulerian path](https://en.wikipedia.org/wiki/Eulerian_path)---
-corresponds to a string with appropriate symbol counts.
+corresponds to a single string with appropriate symbol counts.
 
 It so happens that counting Eulerian paths in a directed graph is only
 as complex as computing a certain
 [determinant](https://en.wikipedia.org/wiki/Determinant) on the
 [Laplacian matrix](https://en.wikipedia.org/wiki/Laplacian_matrix) which
 has complexity $O(n^3)$ for a graph of $n$ vertices, or $O(m^3)$ for an
-alphabet of $m$ symbols.
+alphabet of $m$ symbols. And since a counting procedure can be converted
+into an encoding procedure through
+[ranking/unranking](https://en.wikipedia.org/wiki/Combinatorial_number_system),
+we get both a serialization algorithm and a code length formula.
 
 ### Counting Strings on a Graph
 
@@ -730,9 +733,9 @@ each vertex's
 
 $$ec(G) = t(G) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!$$
 
-The number of spanning trees $t(G)$ is equal by [Kirchhoff's matrix tree
-theorem](https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem) to the
-determinant of the submatrix of the Laplacian where one row and one
+The number of spanning trees $t(G)$ is equal---by [Kirchhoff's matrix
+tree theorem](https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem)---to
+the determinant of the submatrix of the Laplacian where one row and one
 column are removed.
 
 The Laplacian matrix of a directed multigraph is the difference between
@@ -789,7 +792,7 @@ $$\begin{align}L_{abcd} ~
 \end{array}
 \end{align}$$
 
-or for any such graph constructed from a multiset:
+or for any such graph constructed from a mere multiset:
 
 $$\begin{align}L_{\bf n} ~
 &=~~ D_{\bf n} - A_{\bf n}\\[10pt]
@@ -1004,7 +1007,7 @@ $$\begin{align}ec_{abcd}
 
 and the number of strings
 
-$$\frac{ec_{abcd} \cdot [D_{abcd}']_{00}}{\prod_{i,j}[D_{abcd}']_{ij}!}
+$$\frac{ec_{abcd} \cdot [D_{abcd}']_{00}}{\prod_{i,j}[A_{abcd}']_{ij}!}
 	= \frac{4 \cdot 3}{1} = 12$$
 
 which---since there are two ways to arrange the joints into three

@@ -590,8 +590,17 @@ Benchmark](https://mattmahoney.net/dc/textdata.html) and
 The first $10^9$ bytes of the snapshot are referred to as
 `enwik9`. Truncations of smaller magnitudes are named accordingly:
 
-![](res/chunk/figs/datasets.svg)
+<!-- ![](res/chunk/figs/datasets.svg) -->
+```
+ Filename   Size (N)   Size (bytes)
 
+  enwik4      10^4        10 KB
+  enwik5      10^5       100 KB
+  enwik6      10^6         1 MB
+  enwik7      10^7        10 MB
+  enwik8      10^8       100 MB
+  enwik9      10^9         1 GB
+```
 $$$$
 
 For different sized inputs, we show the evolution of the total code
@@ -639,19 +648,29 @@ rule introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf n}$
 increasing) before they begin to outweigh the reduction on $\mathrm{\bf
 s}$, triggering termination.
 
-Ultimately, exponentially increasing input sizes translate to roughly
-exponentially increasing dictionary sizes (and running time), and
-*linearly* increasing compression factors.
-
 Full outputs: [`enwik4`](res/chunk/out/enwik4.csv),
 [`enwik5`](res/chunk/out/enwik5.csv),
 [`enwik6`](res/chunk/out/enwik6.csv),
 [`enwik7`](res/chunk/out/enwik7.csv).
 
-### Appearance
+Exponentially increasing input sizes translate to roughly exponentially
+increasing dictionary sizes (and running time), and *linearly*
+increasing compression factors. Extrapolating this trend to the larger
+datasets `enwik8` and `enwik9` indicates a possible maximal compression
+ratio of `3.71` and `4.07` respectively,
 
-Chunks produced for `enwik` datasets are a mix of English morphemes,
-words and phrases as well as markup strings from Wikipedia's XML schema:
+![](res/chunk/plots/extrapolated.svg)
+
+which fall way short of the factors [currently
+achieved](https://mattmahoney.net/dc/text.html) by the state of the art
+in large text compression for those exact datasets `enwik8` (around
+`6-7`) and `enwik9` (around `9-10`).
+
+### Subjective Assessment
+
+Chunks produced for `enwik`-type datasets make a mix of English
+morphemes, words and phrases as well as markup strings from Wikipedia's
+XML schema:
 
 ```
 256:  "]"     +  "]"    ==>  "]]"
@@ -720,11 +739,14 @@ words and phrases as well as markup strings from Wikipedia's XML schema:
 
 Full output: [`enwik7`](res/chunk/out/enwik7.csv).
 
+#### Comparison to BPE
+
 Compare these chunks to those that result from a naive combination
-strategy where the most frequent joint is combined into a new symbol
-(e.g. [Re-Pair](https://en.wikipedia.org/wiki/Re-Pair)). The produced
-chunks are shorter and (marginally) less meaningful, at least at the
-start:
+strategy where the most frequent joint is repeatedly formed into a new
+symbol, as in [byte-pair
+encoding](https://en.wikipedia.org/wiki/Byte-pair_encoding) (BPE), or
+[Re-Pair](https://en.wikipedia.org/wiki/Re-Pair). The produced chunks
+are shorter and marginally less meaningful, at least at the start:
 
 ```
 256: "e"   +  " "   ==>  "e "
@@ -805,24 +827,28 @@ Full output: [`enwik7-naive-loss`](res/chunk/out/enwik7-naive-loss.csv).
 
 Naive chunks visibly have a bias towards combining symbols with high
 occurrences even if the combination doesn't hold much more meaning than
-the sum of its parts. For example compared to the more meaningful
+the sum of its parts.
+
+For example compared to the more meaningful
 
 ```
-">\n", "</", "ing", "&quot;",
+"and", ">\n", "</", "ing", "&quot;",
 ```
 
-the following chunks have more occurrences and are therefore selected
-earlier by the naive policy:
+the following chunks have more absolute occurrences and are therefore
+selected earlier by the naive policy:
 
 ```
-"e ", "s ", "d ", "t ".
+"e ", "s ", "d ", "t ", "ti", "ar", "al".
 ```
 
 In terms of probability:
 
 $$p(s_0,s_1) \sim p(s_0)p(s_1)$$
 
-even when the two symbols are independent.
+even if two symbols are independent in their use.
+
+#### Comparison to PMI
 
 Instead, if we are interested in how much a joint occurs *relative* to a
 null hypothesis of independence, we get a ratio:
@@ -895,27 +921,37 @@ which gives a dictionary starting with:
 280:  "&"     +  "q"    ==>  "&q"
 ...:  ...     +  ...    ==>  ...
 ```
-Full output: [`enwik7-spmi-loss`](res/chunk/out/enwik7-spmi-loss.csv)
 
 which is much more similar to the dictionary obtained from our
-informational loss function.
+informational loss function. Full output:
+[`enwik7-spmi-loss`](res/chunk/out/enwik7-spmi-loss.csv).
 
+### Performance of Alternate Policies
 Perhaps surprisingly, the naive dictionary achieves levels of
 compression comparable to ours, and the SPMI dictionary's performance is
 nearly identical to ours:
 
 ![](res/chunk/plots/factors-functions.svg)
 
+As relative to ours:
+![](res/chunk/plots/factors-functions-relative.svg)
+
+which does show the SPMI metric momentarily outperforming the code
+length formula itself, as part of the noise in the performance of early
+introductions.
+
 Measuring the average word lengths across the evolution of the
 dictionary produces a similar pattern:
 
 ![](res/chunk/plots/wl-functions.svg)
 
-where the sudden increase in word length occurring between introductions
-400-1000 is driven by the discovery of strings common in all XML headers
-of pages in the dataset (including redirects) like the `<revision>`,
-`<id>` and `<contributor>` tags (and their indentations) producing
-words of ~30 bytes long.
+A notable feature to explain are the sudden increases in dictionary
+performance and word length achieved earliest by our formula, but also
+present in the two other lines between intros 400-1000. These are driven
+by the discovery of strings common in all XML headers of pages in the
+dataset (including redirects) like the `<revision>`, `<id>` and
+`<contributor>` tags (and their indentations) producing words of ~30
+bytes long.
 
 We also compute for each pair of methods discussed, a coefficient of
 overlap
@@ -923,7 +959,7 @@ overlap
 $$\frac{|\mathrm{\bf r}_a \cap \mathrm{\bf r}_b|}{|\mathrm{\bf r}_a|}
 ~~~~~~~ \mathrm{where} ~~ |\mathrm{\bf r}_a| = |\mathrm{\bf r}_b|$$
 
-between the dictionaries:
+pairwise between dictionaries:
 
 ![](res/chunk/plots/overlap-functions.svg)
 
@@ -932,7 +968,8 @@ approach and ours, but slightly closer to ours.
 
 ## Progressive Sampling
 
-*(tl;dr this is about a feature that ended up not working)*
+*(tl;dr this is about a feature/optimization that ended up not being
+worth it)*
 
 With all this bookkeeping, the memory requirements for processing larger
 strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of 16GB
@@ -1004,8 +1041,8 @@ and with it, the cost associated with re-indexing the invalidated losses
 in the loss map.
 
 This one operation quickly takes a majority share of the
-computation-time and, for all but the smallest strings, makes simply
-starting with the larger string the more time efficient alternative:
+computation-time and---for all but the smallest strings---makes simply
+starting with the larger string the more time efficient alternative.
 
              Data           Time (relative)
 
@@ -1017,6 +1054,6 @@ starting with the larger string the more time efficient alternative:
 	enwik6-7 (progressive)     2868.2
 	enwik7                     1488.6
 
-which demotes the method from a potential entry into processing much
-larger strings into one that only shifts part of the space complexity to
-time.
+This in turn demotes the method from a potential entry into processing
+much larger strings into one that only shifts part of the space
+complexity to time.
