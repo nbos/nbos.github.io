@@ -996,21 +996,22 @@ pairwise between dictionaries:
 showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.
 
-## Progressive Sampling
+## Subsampling
 
 *(tl;dr this is about a feature/optimization that ended up not being
 worth it)*
 
-With all this bookkeeping, the memory requirements for processing larger
-strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of 16GB
-and lead to thrashing on the test computer.
+With all the included bookkeeping, memory requirements for processing
+larger strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of
+16GB and lead to thrashing on the test computer.
 
-Unfortunately, there seems to be little value in stretching or scaling
-smaller samples to model the compression of larger strings. For example,
-simply scaling the collected statistics---assuming sample
+Unfortunately, there appears to be little value in stretching smaller
+samples to model the compression of strings larger than we can
+accomodate bookkeeping for.
+
+For example, simply scaling the collected statistics---assuming sample
 homogeneity---breaks down in the tail of the execution resulting in poor
-chunk choices the closer we get to joint counts of 1, in some sort of
-reverse law of large numbers.
+chunk choices the closer we get to joint counts of 1.
 
 Consider the factors achieved on the compression (eval.) of a large
 string (`enwik7`) given dictionaries derived from (trained on) shorter
@@ -1021,27 +1022,27 @@ strings:
 which is simply the previously shown [compression factor
 graph](#factors) with worse performance for each dataset smaller than
 `enwik7`. Notice that the lines don't taper off because keeping track of
-the code length of a smaller string, we interrupt the derivation of the
-dictionaries earlier than would have been optimal for the larger string.
+the code length of a smaller string, we have no exact way to know when
+introductions stop pulling their weight in information in the larger
+string.
 
 The gap in performance worsens further into the execution we go, but
-early in the execution, the difference is relatively modest. The overlap
-between the dictionaries is also significant:
+early in the execution, the difference is relatively modest.
+
+The overlap between the dictionaries is also significant:
 
 ![](res/chunk/plots/overlap.svg)
 
-Could the key to processing very large strings be to *subsample* the
-statistics in the beginning of the execution, maintaining a smaller,
-manageable, but still statistically significant sample? Since the
-working string shrinks in size over the course of execution, especially
-for larger ones:
+Consider that over the course of execution, strings shrink sufficiently,
+especially the larger ones, such that by the end, bookkeeping for a
+string multiple times its size could reasonably fit in memory again:
 
 ![](res/chunk/plots/str-len.svg)
 
-we could maintain a string of a *fixed size* and append more symbols as
-the introduction of new construction rules shrinks it. It would have the
-added benefit of keeping the memory profile somewhat constant instead of
-heavy at the beginning and light at the end.
+Instead, we could maintain a string of a *fixed size* and append more
+symbols as the introduction of new construction rules shrinks it. It
+would have the added benefit of keeping the memory profile somewhat
+constant instead of heavy at the beginning and light at the end.
 
 The drawback is that appending symbols adds not only to the joint
 counts, but also to the (marginal) counts, changing the loss of each

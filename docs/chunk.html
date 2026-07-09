@@ -114,7 +114,7 @@ compression.</p>
 </ul></li>
 <li><a href="#performance-of-alternate-policies" id="toc-performance-of-alternate-policies"><span class="toc-section-number">6.3</span> Performance of Alternate Policies</a></li>
 </ul></li>
-<li><a href="#progressive-sampling" id="toc-progressive-sampling"><span class="toc-section-number">7</span> Progressive Sampling</a></li>
+<li><a href="#subsampling" id="toc-subsampling"><span class="toc-section-number">7</span> Subsampling</a></li>
 </ul>
 </div>
 <h2 data-number="1" id="note-on-overfitting"><span class="header-section-number">1</span> Note on Overfitting</h2>
@@ -900,18 +900,18 @@ overlap</p>
 <p><img src="res/chunk/plots/overlap-functions.svg" /></p>
 <p>showing the scaled PMI to produce dictionaries between the naive
 approach and ours, but slightly closer to ours.</p>
-<h2 data-number="7" id="progressive-sampling"><span class="header-section-number">7</span> Progressive Sampling</h2>
+<h2 data-number="7" id="subsampling"><span class="header-section-number">7</span> Subsampling</h2>
 <p><em>(tl;dr this is about a feature/optimization that ended up not being
 worth it)</em></p>
-<p>With all this bookkeeping, the memory requirements for processing larger
-strings like <code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) are in excess of 16GB
-and lead to thrashing on the test computer.</p>
-<p>Unfortunately, there seems to be little value in stretching or scaling
-smaller samples to model the compression of larger strings. For example,
-simply scaling the collected statistics—assuming sample
+<p>With all the included bookkeeping, memory requirements for processing
+larger strings like <code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) are in excess of
+16GB and lead to thrashing on the test computer.</p>
+<p>Unfortunately, there appears to be little value in stretching smaller
+samples to model the compression of strings larger than we can
+accomodate bookkeeping for.</p>
+<p>For example, simply scaling the collected statistics—assuming sample
 homogeneity—breaks down in the tail of the execution resulting in poor
-chunk choices the closer we get to joint counts of 1, in some sort of
-reverse law of large numbers.</p>
+chunk choices the closer we get to joint counts of 1.</p>
 <p>Consider the factors achieved on the compression (eval.) of a large
 string (<code>enwik7</code>) given dictionaries derived from (trained on) shorter
 strings:</p>
@@ -919,22 +919,21 @@ strings:</p>
 <p>which is simply the previously shown <a href="#factors">compression factor
 graph</a> with worse performance for each dataset smaller than
 <code>enwik7</code>. Notice that the lines don’t taper off because keeping track of
-the code length of a smaller string, we interrupt the derivation of the
-dictionaries earlier than would have been optimal for the larger string.</p>
+the code length of a smaller string, we have no exact way to know when
+introductions stop pulling their weight in information in the larger
+string.</p>
 <p>The gap in performance worsens further into the execution we go, but
-early in the execution, the difference is relatively modest. The overlap
-between the dictionaries is also significant:</p>
+early in the execution, the difference is relatively modest.</p>
+<p>The overlap between the dictionaries is also significant:</p>
 <p><img src="res/chunk/plots/overlap.svg" /></p>
-<p>Could the key to processing very large strings be to <em>subsample</em> the
-statistics in the beginning of the execution, maintaining a smaller,
-manageable, but still statistically significant sample? Since the
-working string shrinks in size over the course of execution, especially
-for larger ones:</p>
+<p>Consider that over the course of execution, strings shrink sufficiently,
+especially the larger ones, such that by the end, bookkeeping for a
+string multiple times its size could reasonably fit in memory again:</p>
 <p><img src="res/chunk/plots/str-len.svg" /></p>
-<p>we could maintain a string of a <em>fixed size</em> and append more symbols as
-the introduction of new construction rules shrinks it. It would have the
-added benefit of keeping the memory profile somewhat constant instead of
-heavy at the beginning and light at the end.</p>
+<p>Instead, we could maintain a string of a <em>fixed size</em> and append more
+symbols as the introduction of new construction rules shrinks it. It
+would have the added benefit of keeping the memory profile somewhat
+constant instead of heavy at the beginning and light at the end.</p>
 <p>The drawback is that appending symbols adds not only to the joint
 counts, but also to the (marginal) counts, changing the loss of each
 candidate having that symbol as one of its parts, invalidating entries
