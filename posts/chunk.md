@@ -20,53 +20,61 @@ we derive a loss function to guide deterministic construction of
 dictionaries, of which we note their appearance and performance in
 compression.
 
-## Note on Overfitting
+## Overfitting
 
-When modeling data with increasing numbers of parameters, the
-[likelihood](https://en.wikipedia.org/wiki/Likelihood_function) of the
-data can easily reach zero as the complexity of the data gets transferred
-to the model instead of getting distilled into underlying features.
+When trying to represent data using a model, the correspondance between
+the two can become trivially perfect when the model is grown past the
+size of the data it is meant to represent.
+
+If the entire complexity present in the data is absorbed into the model,
+we have failed in identifying the trends, patterns or rules responsible
+for generating the data.
 
 In machine learning, this is called
 [overfitting](https://en.wikipedia.org/wiki/Overfitting) and is best
-pictured by [regression
-lines](https://en.wikipedia.org/wiki/Polynomial_regression)
-(predictions) drifting away in wild and unlikely interpolations as more
+illustrated using an example of fitting [regression
+lines](https://en.wikipedia.org/wiki/Polynomial_regression) to a small
+set of data points, drifting in wild and unlikely interpolations as more
 parameters are added to the model:
 
 ![](res/chunk/figs/overfit.svg)
 
 This behavior is undesirable in machine learning as it undermines the
-*generalizability* of the model which is usually an important aspect of
-the exercise.
+*generalizability* of the model, because we expect the model to perform
+well on data that is not yet accessible.
 
-In the context of compression, where the prediction of unobserved data
-is not as central, the phenomenon is still pathological: as the
-information of the data w.r.t. the model approaches zero, the
-information required to describe the model measurably increases in
+In the context of compression, where the model is *not* expected to
+perform well on outside data, the phenomenon is still pathological: as
+the information content of the data w.r.t. the model approaches zero,
+the information required to *describe* the model increases in
 proportion.
 
 While solutions to overfitting in machine learning almost always
 implicate [carving off sections of the
 data](https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets)
-to hide from the model only to be used later for measuring
-generalizability, the context of compression allows a more direct
-solution.
+to hide from the model only to be used later for approximating
+generalizability (train/valid/test sets), the context of compression
+allows a more complete solution.
 
-Instead of only minimizing the information (maximizing the
-log-likelihood) of data $\mathrm{\bf x}$ given a model $\theta$:
-$$I(\mathrm{\bf x} \mid \theta),$$ we minimize the information of *both*
-the data and the model:
+Instead of only minimizing the information content of data $\mathrm{\bf
+x}$ given a model $\theta$ (i.e. maximizing the
+[log-likelihood](https://en.wikipedia.org/wiki/Likelihood_function#Log-likelihood)):
+$$I(\mathrm{\bf x} \mid \theta),$$ we aim to minimize the information of
+*both* the data and the model:
 
 $$I(\mathrm{\bf x},\theta) = I(\mathrm{\bf x} \mid \theta) + I(\theta).$$
 
-By measuring the information of the model together with the data's, we
-capture any information that merely transfers from data (given the
-model) to the model and avoid an increase in parameters (model
-complexity) that doesn't decrease the *total* information.
+By always measuring their information content together, we automatically
+compensate for any information that merely transfers from data (given
+the model) to the model and avoid increases in the number of parameters
+(model complexity) that doesn't actually decrease the *total*
+information.
 
-<!-- In the spirit of this principle we define a model for text data
-that -->
+The problem then simplifies to a single minimization problem, provided
+we measure the information required to describe both the model and the
+data:
+
+$$\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~].$$
 
 ## Serializing as Combinatorial Objects
 

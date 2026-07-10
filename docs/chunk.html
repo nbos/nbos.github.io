@@ -87,7 +87,7 @@ compression.</p>
 <div class="toc">
 <div class="toc-title">Contents</div>
 <ul>
-<li><a href="#note-on-overfitting" id="toc-note-on-overfitting"><span class="toc-section-number">1</span> Note on Overfitting</a></li>
+<li><a href="#overfitting" id="toc-overfitting"><span class="toc-section-number">1</span> Overfitting</a></li>
 <li><a href="#serializing-as-combinatorial-objects" id="toc-serializing-as-combinatorial-objects"><span class="toc-section-number">2</span> Serializing as Combinatorial Objects</a></li>
 <li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">3</span> Format Description</a>
 <ul>
@@ -117,43 +117,49 @@ compression.</p>
 <li><a href="#subsampling" id="toc-subsampling"><span class="toc-section-number">7</span> Subsampling</a></li>
 </ul>
 </div>
-<h2 data-number="1" id="note-on-overfitting"><span class="header-section-number">1</span> Note on Overfitting</h2>
-<p>When modeling data with increasing numbers of parameters, the
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Likelihood_function">likelihood</a> of the
-data can easily reach zero as the complexity of the data gets transferred
-to the model instead of getting distilled into underlying features.</p>
+<h2 data-number="1" id="overfitting"><span class="header-section-number">1</span> Overfitting</h2>
+<p>When trying to represent data using a model, the correspondance between
+the two can become trivially perfect when the model is grown past the
+size of the data it is meant to represent.</p>
+<p>If the entire complexity present in the data is absorbed into the model,
+we have failed in identifying the trends, patterns or rules responsible
+for generating the data.</p>
 <p>In machine learning, this is called
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Overfitting">overfitting</a> and is best
-pictured by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Polynomial_regression">regression
-lines</a>
-(predictions) drifting away in wild and unlikely interpolations as more
+illustrated using an example of fitting <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Polynomial_regression">regression
+lines</a> to a small
+set of data points, drifting in wild and unlikely interpolations as more
 parameters are added to the model:</p>
 <p><img src="res/chunk/figs/overfit.svg" /></p>
 <p>This behavior is undesirable in machine learning as it undermines the
-<em>generalizability</em> of the model which is usually an important aspect of
-the exercise.</p>
-<p>In the context of compression, where the prediction of unobserved data
-is not as central, the phenomenon is still pathological: as the
-information of the data w.r.t. the model approaches zero, the
-information required to describe the model measurably increases in
+<em>generalizability</em> of the model, because we expect the model to perform
+well on data that is not yet accessible.</p>
+<p>In the context of compression, where the model is <em>not</em> expected to
+perform well on outside data, the phenomenon is still pathological: as
+the information content of the data w.r.t. the model approaches zero,
+the information required to <em>describe</em> the model increases in
 proportion.</p>
 <p>While solutions to overfitting in machine learning almost always
 implicate <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets">carving off sections of the
 data</a>
-to hide from the model only to be used later for measuring
-generalizability, the context of compression allows a more direct
-solution.</p>
-<p>Instead of only minimizing the information (maximizing the
-log-likelihood) of data <span class="math inline">\(\mathrm{\bf x}\)</span> given a model <span class="math inline">\(\theta\)</span>:
-<span class="math display">\[I(\mathrm{\bf x} \mid \theta),\]</span> we minimize the information of <em>both</em>
-the data and the model:</p>
+to hide from the model only to be used later for approximating
+generalizability (train/valid/test sets), the context of compression
+allows a more complete solution.</p>
+<p>Instead of only minimizing the information content of data <span class="math inline">\(\mathrm{\bf
+x}\)</span> given a model <span class="math inline">\(\theta\)</span> (i.e. maximizing the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Likelihood_function#Log-likelihood">log-likelihood</a>):
+<span class="math display">\[I(\mathrm{\bf x} \mid \theta),\]</span> we aim to minimize the information of
+<em>both</em> the data and the model:</p>
 <p><span class="math display">\[I(\mathrm{\bf x},\theta) = I(\mathrm{\bf x} \mid \theta) + I(\theta).\]</span></p>
-<p>By measuring the information of the model together with the data’s, we
-capture any information that merely transfers from data (given the
-model) to the model and avoid an increase in parameters (model
-complexity) that doesn’t decrease the <em>total</em> information.</p>
-<!-- In the spirit of this principle we define a model for text data
-that -->
+<p>By always measuring their information content together, we automatically
+compensate for any information that merely transfers from data (given
+the model) to the model and avoid increases in the number of parameters
+(model complexity) that doesn’t actually decrease the <em>total</em>
+information.</p>
+<p>The problem then simplifies to a single minimization problem, provided
+we measure the information required to describe both the model and the
+data:</p>
+<p><span class="math display">\[\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~].\]</span></p>
 <h2 data-number="2" id="serializing-as-combinatorial-objects"><span class="header-section-number">2</span> Serializing as Combinatorial Objects</h2>
 <p>As shown <a href="count.html#combinatorial-view">previously</a>,
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
