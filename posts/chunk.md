@@ -22,7 +22,7 @@ compression.
 
 ## Overfitting
 
-When trying to represent data using a model, the correspondance between
+When trying to represent data using a model, the correspondence between
 the two can become trivially perfect when the model is grown past the
 size of the data it is meant to represent.
 
@@ -81,7 +81,7 @@ $$\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~].$
 As shown [previously](count.html#combinatorial-view),
 [counting](https://en.wikipedia.org/wiki/Combinatorics) the
 [variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)) of
-parametrized systems can produce simple closed formulas of their
+parameterized systems can produce simple closed formulas of their
 information content (code length) w.r.t. an optimal encoder.
 
 For example, the information in a sequence of $N$ symbols from an
@@ -632,7 +632,7 @@ out as introductions produce fewer modifications to the string. We also
 confirm that greater inputs allow for larger dictionaries and greater
 compressibility.
 
-### Compressability
+### Compressibility
 
 We can compare the compressibility, or "information density" between
 scales by computing a compression *factor* at each point in the model's
@@ -693,7 +693,7 @@ extrapolation of the log-trend is most likely too conservative
 because---as seen with the bump in performance of the other
 algorithms---that dataset specifically contains a substantive section of
 low-entropy "articles" which are essentially only page redirects and
-easily caught by back-referencing algorithms with a large engouh context
+easily caught by back-referencing algorithms with a large enough context
 window.
 
 This feature of `enwik9` is better described and visualized:
@@ -1015,7 +1015,7 @@ larger strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of
 
 Unfortunately, there appears to be little value in stretching smaller
 samples to model the compression of strings larger than we can
-accomodate bookkeeping for.
+accommodate bookkeeping for.
 
 For example, simply scaling the collected statistics---assuming sample
 homogeneity---breaks down in the tail of the execution resulting in poor

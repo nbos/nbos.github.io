@@ -106,7 +106,7 @@ compression.</p>
 </ul></li>
 <li><a href="#results" id="toc-results"><span class="toc-section-number">6</span> Results</a>
 <ul>
-<li><a href="#compressability" id="toc-compressability"><span class="toc-section-number">6.1</span> Compressability</a></li>
+<li><a href="#compressibility" id="toc-compressibility"><span class="toc-section-number">6.1</span> Compressibility</a></li>
 <li><a href="#subjective-assessment" id="toc-subjective-assessment"><span class="toc-section-number">6.2</span> Subjective Assessment</a>
 <ul>
 <li><a href="#bpe" id="toc-bpe"><span class="toc-section-number">6.2.1</span> BPE</a></li>
@@ -118,7 +118,7 @@ compression.</p>
 </ul>
 </div>
 <h2 data-number="1" id="overfitting"><span class="header-section-number">1</span> Overfitting</h2>
-<p>When trying to represent data using a model, the correspondance between
+<p>When trying to represent data using a model, the correspondence between
 the two can become trivially perfect when the model is grown past the
 size of the data it is meant to represent.</p>
 <p>If the entire complexity present in the data is absorbed into the model,
@@ -164,7 +164,7 @@ data:</p>
 <p>As shown <a href="count.html#combinatorial-view">previously</a>,
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> of
-parametrized systems can produce simple closed formulas of their
+parameterized systems can produce simple closed formulas of their
 information content (code length) w.r.t. an optimal encoder.</p>
 <p>For example, the information in a sequence of <span class="math inline">\(N\)</span> symbols from an
 alphabet of size <span class="math inline">\(m\)</span> with known counts
@@ -604,7 +604,7 @@ compressibility occurs with the first few introduced symbols and tapers
 out as introductions produce fewer modifications to the string. We also
 confirm that greater inputs allow for larger dictionaries and greater
 compressibility.</p>
-<h3 data-number="6.1" id="compressability"><span class="header-section-number">6.1</span> Compressability</h3>
+<h3 data-number="6.1" id="compressibility"><span class="header-section-number">6.1</span> Compressibility</h3>
 <p>We can compare the compressibility, or “information density” between
 scales by computing a compression <em>factor</em> at each point in the model’s
 evolution:</p>
@@ -652,7 +652,7 @@ extrapolation of the log-trend is most likely too conservative
 because—as seen with the bump in performance of the other
 algorithms—that dataset specifically contains a substantive section of
 low-entropy “articles” which are essentially only page redirects and
-easily caught by back-referencing algorithms with a large engouh context
+easily caught by back-referencing algorithms with a large enough context
 window.</p>
 <p>This feature of <code>enwik9</code> is better described and visualized:</p>
 <p><a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html"><img src="res/chunk/figs/e9.png" /></a></p>
@@ -914,7 +914,7 @@ larger strings like <code>enwik8</code> (100MB) or <code>enwik9</code> (1GB) are
 16GB and lead to thrashing on the test computer.</p>
 <p>Unfortunately, there appears to be little value in stretching smaller
 samples to model the compression of strings larger than we can
-accomodate bookkeeping for.</p>
+accommodate bookkeeping for.</p>
 <p>For example, simply scaling the collected statistics—assuming sample
 homogeneity—breaks down in the tail of the execution resulting in poor
 chunk choices the closer we get to joint counts of 1.</p>
