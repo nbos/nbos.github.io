@@ -13,14 +13,14 @@ import Text.Pandoc.Definition (Inline(..), Pandoc)
 import Text.Pandoc.Highlighting (Style, pygments, styleToCss)
 import Text.Pandoc.Options
     ( ReaderOptions(readerExtensions),
-      WriterOptions(writerHTMLMathMethod, writerHighlightMethod,
+      WriterOptions(writerMathMethod, writerHighlightMethod,
                     writerNumberSections, writerTableOfContents,
                     writerTOCDepth,       writerTemplate),
       HighlightMethod(Skylighting),
       Extension(Ext_latex_macros, Ext_tex_math_single_backslash,
                 Ext_tex_math_double_backslash, Ext_tex_math_dollars),
       extensionsFromList,
-      HTMLMathMethod(MathJax) )
+      MathMethod(MathJax) )
 import Text.Pandoc.Templates (compileTemplate)
 import Text.Pandoc.Walk (walkM)
 
@@ -122,7 +122,7 @@ myPandocCompiler =
 
     writerOpts = defaultHakyllWriterOptions
       { writerHighlightMethod = Skylighting pandocCodeStyle
-      , writerHTMLMathMethod  = MathJax ""
+      , writerMathMethod      = MathJax ""
       , writerNumberSections  = True
       , writerTableOfContents = True
       , writerTOCDepth        = 4
