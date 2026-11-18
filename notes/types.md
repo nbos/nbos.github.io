@@ -2,6 +2,7 @@
 title: "Chunking with Types"
 author: Nathaniel Bos
 date: 2026-04-14
+edit: 2026-07-09
 ---
 
 In a [previous post](chunk.html), we showed that inductively growing a

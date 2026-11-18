@@ -2,6 +2,7 @@
 title: "Preliminary: Arithmetic Coding"
 author: Nathaniel Bos
 date: 2025-10-13
+edit: 2025-10-25
 ---
 
 [Arithmetic coding](https://en.wikipedia.org/wiki/Arithmetic_coding)

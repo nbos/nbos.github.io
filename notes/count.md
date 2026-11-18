@@ -2,6 +2,7 @@
 title: "Ways to Count Information"
 author: Nathaniel Bos
 date: 2025-10-31
+edit: 2026-07-09
 ---
 
 In data compression with [arithmetic coding](arith.html), the length of

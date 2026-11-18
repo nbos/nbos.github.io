@@ -2,6 +2,7 @@
 title: "Information Theoretic Chunking"
 author: Nathaniel Bos
 date: 2026-01-03
+edit: 2026-07-10
 ---
 
 One of the more salient features of our cognition is the [organization of

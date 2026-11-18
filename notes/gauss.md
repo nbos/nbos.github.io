@@ -2,6 +2,7 @@
 title: "Encoding Numbers with Gaussians"
 author: Nathaniel Bos
 date: 2025-10-26
+edit: 2026-01-19
 ---
 
 [Arithmetic codes](arith.html) are pretty useful for compression.
@@ -90,7 +91,7 @@ De-serialization (decoding) uses the same interface with the same order
 of mutating calls such that deterministic implementations of those
 methods result in reversible (decodable) encodings.
 
-The rest of this post is divided into three parts:
+The rest of this note is divided into three parts:
 
 1. We share bounds on the efficiency of modeling integers with Gaussian
 PDFs that justify the approach,

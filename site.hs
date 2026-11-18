@@ -4,6 +4,9 @@ import Data.Char (toLower)
 import Data.Functor.Identity (runIdentity)
 import qualified Data.List as L
 import qualified Data.Text as T
+import Data.Time (parseTimeM, defaultTimeLocale, formatTime)
+import Data.Time.Clock (UTCTime)
+
 import Numeric (showFFloat)
 import System.Directory (doesFileExist, getFileSize)
 import System.FilePath (takeExtension, takeFileName)
@@ -83,8 +86,20 @@ main = hakyllWith config $ do
 
 noteCtx :: Context String
 noteCtx =
-    dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+  dateField "date" "%B %e, %Y" `mappend`
+  editField                    `mappend`
+  defaultContext
+
+editField :: Context String
+editField = field "edit" $ \item -> do
+  metadata <- getMetadata (itemIdentifier item)
+  case lookupString "edit" metadata of
+    Nothing  -> noResult "No edit date"
+    Just raw ->
+      case parseTimeM True defaultTimeLocale "%Y-%m-%d" raw :: Maybe UTCTime of
+        Nothing -> return raw -- unparseable: show as-is
+        Just t  -> return $ formatTime defaultTimeLocale "%B %e, %Y" t
+
 
 ---------------------------------------------------
 -- Pandoc compiler with download-link annotation --
@@ -95,7 +110,7 @@ pandocCodeStyle = pygments
 
 myPandocCompiler :: Compiler (Item String)
 myPandocCompiler =
-    pandocCompilerWithTransformM readerOpts writerOpts addDownloadInfo
+  pandocCompilerWithTransformM readerOpts writerOpts addDownloadInfo
   where
     tocTmpl = case runIdentity $ compileTemplate "" tmpl of
                 Left  e -> error e
@@ -233,22 +248,22 @@ relocateToc = return . fmap moveToc
 
 moveToc :: String -> String
 moveToc html =
-    case extractMarkedBlock "<!--TOC_START-->" "<!--TOC_END-->" html of
-        Nothing -> html
-        Just (before, tocBlock, after) ->
-            case breakOnFirstHeading after of
-                Nothing   -> before <> tocBlock <> after
-                Just (intro, rest) ->
-                    before <> intro <> tocBlock <> rest
+  case extractMarkedBlock "<!--TOC_START-->" "<!--TOC_END-->" html of
+    Nothing -> html
+    Just (before, tocBlock, after) ->
+      case breakOnFirstHeading after of
+        Nothing   -> before <> tocBlock <> after
+        Just (intro, rest) ->
+          before <> intro <> tocBlock <> rest
 
 extractMarkedBlock :: String -> String -> String
                    -> Maybe (String, String, String)
 extractMarkedBlock startMark endMark s = do
-    (before, rest1) <- breakOnSubstring startMark s
-    let afterStart = drop (length startMark) rest1
-    (between, rest2) <- breakOnSubstring endMark afterStart
-    let after = drop (length endMark) rest2
-    return (before, between, after)
+  (before, rest1) <- breakOnSubstring startMark s
+  let afterStart = drop (length startMark) rest1
+  (between, rest2) <- breakOnSubstring endMark afterStart
+  let after = drop (length endMark) rest2
+  return (before, between, after)
 
 breakOnSubstring :: String -> String -> Maybe (String, String)
 breakOnSubstring _      []         = Nothing
@@ -261,11 +276,11 @@ breakOnSubstring needle hay@(c:cs)
 breakOnFirstHeading :: String -> Maybe (String, String)
 breakOnFirstHeading []       = Nothing
 breakOnFirstHeading s@(c:cs)
-    | isHeadingOpen s = Just ([], s)
-    | otherwise = case breakOnFirstHeading cs of
-        Nothing          -> Nothing
-        Just (pre, note) -> Just (c : pre, note)
+  | isHeadingOpen s = Just ([], s)
+  | otherwise = case breakOnFirstHeading cs of
+      Nothing          -> Nothing
+      Just (pre, note) -> Just (c : pre, note)
 
 isHeadingOpen :: String -> Bool
 isHeadingOpen ('<':'h':n:c:_) = n `L.elem` ("123456" :: String) && (c == ' ' || c == '>')
-isHeadingOpen _               = False
+isHeadingOpen _ = False
