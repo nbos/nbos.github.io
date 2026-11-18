@@ -44,21 +44,21 @@ main = hakyllWith config $ do
       >>= loadAndApplyTemplate "templates/default.html" defaultContext
       >>= relativizeUrls
 
-  match "posts/*" $ do
-    route $ gsubRoute "posts/" (const "") `composeRoutes` setExtension "html"
+  match "notes/*" $ do
+    route $ gsubRoute "notes/" (const "") `composeRoutes` setExtension "html"
     compile $ myPandocCompiler
       >>= relocateToc
-      >>= loadAndApplyTemplate "templates/post.html" postCtx
-      >>= loadAndApplyTemplate "templates/default.html" postCtx
+      >>= loadAndApplyTemplate "templates/note.html" noteCtx
+      >>= loadAndApplyTemplate "templates/default.html" noteCtx
       >>= targetBlankLinks
       >>= relativizeUrls
 
   match "index.html" $ do
     route idRoute
     compile $ do
-      posts <- recentFirst =<< loadAll "posts/*"
+      notes <- recentFirst =<< loadAll "notes/*"
       let indexCtx =
-            listField "posts" postCtx (return posts) `mappend`
+            listField "notes" noteCtx (return notes) `mappend`
             defaultContext
 
       getResourceBody
@@ -81,8 +81,8 @@ main = hakyllWith config $ do
         route idRoute
         compile copyFileCompiler
 
-postCtx :: Context String
-postCtx =
+noteCtx :: Context String
+noteCtx =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
 
@@ -256,7 +256,7 @@ breakOnSubstring needle hay@(c:cs)
     | needle `L.isPrefixOf` hay = Just ([], hay)
     | otherwise = case breakOnSubstring needle cs of
         Nothing          -> Nothing
-        Just (pre, post) -> Just (c : pre, post)
+        Just (pre, note) -> Just (c : pre, note)
 
 breakOnFirstHeading :: String -> Maybe (String, String)
 breakOnFirstHeading []       = Nothing
@@ -264,7 +264,7 @@ breakOnFirstHeading s@(c:cs)
     | isHeadingOpen s = Just ([], s)
     | otherwise = case breakOnFirstHeading cs of
         Nothing          -> Nothing
-        Just (pre, post) -> Just (c : pre, post)
+        Just (pre, note) -> Just (c : pre, note)
 
 isHeadingOpen :: String -> Bool
 isHeadingOpen ('<':'h':n:c:_) = n `L.elem` ("123456" :: String) && (c == ' ' || c == '>')
