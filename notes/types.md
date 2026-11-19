@@ -2,7 +2,7 @@
 title: "Chunking with Types"
 author: Nathaniel Bos
 date: 2026-04-14
-edit: 2026-07-09
+edit: 2026-11-19
 ---
 
 In a [previous post](chunk.html), we showed that inductively growing a
@@ -25,12 +25,25 @@ consecutive symbols---categories are formalized as [sets of possible
 symbols](https://en.wikipedia.org/wiki/Enumerated_type) we refer to as
 *unions*.
 
-## Union Semantics
+## Adding Union Semantics to our Model
 
-Unlike chunking, adding classes to a categorical model doesn't
-immediately improve its predictive power.
+We will work our way up to the model where unions reside by building
+upon the simpler categorical or multiset (superscript $A$ for *atomic*
+symbols only) and joints-only (superscript $*$ for *pairs*) models. The
+order presented is therefore
 
-### Information of Joint Introduction
+$$\underbrace{I^A}_{\mathrm{Categorical}}
+\to
+\underbrace{I^*}_{\mathrm{Joints\ only}}
+\to
+\underbrace{I}_{\mathrm{Joints\ \&\ Unions}}.$$
+
+A subscript $\{\mathrm{\bf n}, \mathrm{\bf s}, \mathrm{\bf r}\}$ will
+indicate a specific component of the model. A delta ($\Delta I$) is for
+a difference in information between two successive states of the
+training phase the model.
+
+### Information of Joint Symbol Introduction
 
 *(this is a recap of the math supporting [the previous
 post](chunk.html#format-description))*
@@ -44,13 +57,15 @@ matching those counts takes information approximately[^1] equal to:
 	$m$ and length of string (sum of counts) $N$. Previous post has full
 	formulas.
 
-$$\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+$$I^A ~=~ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}
-~~~\text{where } N = \sum_i n_i.$$
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}$$
 
-Introducing a new joint symbol means docking the joint count $n_{01}$
+$$\text{where } N = \sum_i n_i.$$
+
+Introducing a new symbol defined as the (immediate) joint occurence of
+two previously defined symbols, means docking the joint count $n_{01}$
 from individual symbol counts $n_0$ and $n_1$ and appending count
 $n_{01}$ as a new "individual" count [resulting
 in](chunk.html#loss-function) an increase in the description length of
@@ -58,8 +73,9 @@ the counts vector:
 
 $$\begin{align}
 \Delta I^*_{\mathrm{\bf n}}
-&= \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
-&= \log \left(\frac{(N + m - n_{01})!\,N!}
+&~=~ I^{*\prime}_{\mathrm{\bf n}} - I^*_{\mathrm{\bf n}}\\[5pt]
+&~=~ \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
+&~=~ \log \left(\frac{(N + m - n_{01})!\,N!}
 	{m\,(N + m - 1)!\,(N - n_{01})!}\right) \\[5pt]
 \end{align}$$
 
@@ -68,9 +84,10 @@ and a decrease in the length of the encoding of the string (as a ranked
 
 $$\begin{align}
 \Delta I^*_\mathrm{\bf s}
-&= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
+&~=~ I^{*\prime}_\mathrm{\bf s} - I^*_\mathrm{\bf s} \\[5pt]
+&~=~ \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
 	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
-&= \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
+&~=~ \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
 	\log \left(\frac{\displaystyle 1}{\displaystyle (n_0 - 2n_{01})!} \right)
 	& \text{when } s_0 = s_1 \\
 	\log \left(\frac{\displaystyle n_1!}
@@ -79,18 +96,24 @@ $$\begin{align}
 	\end{cases}
 \end{align}$$
 
-which, together, are negative (i.e. reduce total information) only if
-the joint count $n_{01}$ is sufficiently larger than what could be
-expected by independence.
+which, together, are negative (i.e. reduce total information) if the
+joint count $n_{01}$ is sufficiently larger than what is expected by
+independence.
 
-### Information of Union Introduction
+### Information of Union of Symbol Introduction
 
-Because of the way permutations (and their
+Transposing the logic of joint introduction unto union
+introduction---like updating a categorical distribution by
+re-classifying symbols, then adding the appropriate codes to resolve the
+ambiguity inside those unions---always has an *insignificant* effect on
+the total code length.
+
+This is similar to the way permutations (and their
 [coefficients](https://en.wikipedia.org/wiki/Multinomial_theorem#Multinomial_coefficients))
-compose, changing a categorical distribution by re-classifying symbols,
-then adding the appropriate codes to resolve the ambiguity inside those
-unions always has an *insignificant* effect on the total code length.
+compose, and how a re-arrangements of layers has no effect on the final
+variety.
 
+#### Demonstration
 Say, for whichever reason, we place $\ell$ symbols under a union
 $S_{0\ell} = \{s_0,s_1,...,s_{\ell-1}\}$ with a cumulative count
 $n_{0\ell}$ where
@@ -159,8 +182,8 @@ compression of the data.
 The way to make unions do work for us is to put them into joints.
 <!-- Categorization is only useful in the context of chunking. -->
 
-Where the previously described structure of categorization produces
-clusters of symbols in the alphabet:
+Where the naive union introduction produces clusters of symbols in the
+alphabet:
 
 ![](res/types/figs/subset.svg)
 
@@ -176,7 +199,7 @@ and right symbols. Then, we are looking for a subgraph with high
 connectivity.
 
 Logically, this is a [type](https://en.wikipedia.org/wiki/Type_theory)
-of joint, specifically a [product
+of joint. Specifically, this is simply a [product
 type](https://en.wikipedia.org/wiki/Product_type) containing the set of
 joints corresponding to the [Cartesian
 product](https://en.wikipedia.org/wiki/Cartesian_product) of the left
@@ -190,6 +213,10 @@ unions will allow joint types to be defined between groups of symbols
 which, individually, would lack the numbers to justify the introduction
 of a construction rule for all the individual joints that the type
 covers.
+
+<!-- Moreover, as more and more unions are introduced as part of joint types, -->
+<!-- we are motivated to find and leverage similarities in unions, -->
+<!-- correlation between membership of different symbols, into -->
 
 <!-- This is another way (together with [the sparsity of a -->
 <!-- dictionary](chunk.html#inductive-constructions)) that we overcome the -->

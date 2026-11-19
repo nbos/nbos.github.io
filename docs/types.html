@@ -68,7 +68,7 @@
     by Nathaniel Bos
     
     
-    <span class="edit-note">· Last edited July  9, 2026</span>
+    <span class="edit-note">· Last edited November 19, 2026</span>
     
   </section>
   <section>
@@ -94,10 +94,13 @@ symbols</a> we refer to as
 <div class="toc">
 <div class="toc-title">Contents</div>
 <ul>
-<li><a href="#union-semantics" id="toc-union-semantics"><span class="toc-section-number">1</span> Union Semantics</a>
+<li><a href="#adding-union-semantics-to-our-model" id="toc-adding-union-semantics-to-our-model"><span class="toc-section-number">1</span> Adding Union Semantics to our Model</a>
 <ul>
-<li><a href="#information-of-joint-introduction" id="toc-information-of-joint-introduction"><span class="toc-section-number">1.1</span> Information of Joint Introduction</a></li>
-<li><a href="#information-of-union-introduction" id="toc-information-of-union-introduction"><span class="toc-section-number">1.2</span> Information of Union Introduction</a></li>
+<li><a href="#information-of-joint-symbol-introduction" id="toc-information-of-joint-symbol-introduction"><span class="toc-section-number">1.1</span> Information of Joint Symbol Introduction</a></li>
+<li><a href="#information-of-union-of-symbol-introduction" id="toc-information-of-union-of-symbol-introduction"><span class="toc-section-number">1.2</span> Information of Union of Symbol Introduction</a>
+<ul>
+<li><a href="#demonstration" id="toc-demonstration"><span class="toc-section-number">1.2.1</span> Demonstration</a></li>
+</ul></li>
 <li><a href="#joints-of-unions" id="toc-joints-of-unions"><span class="toc-section-number">1.3</span> Joints of Unions</a></li>
 </ul></li>
 <li><a href="#strategy" id="toc-strategy"><span class="toc-section-number">2</span> Strategy</a>
@@ -131,39 +134,53 @@ symbols</a> we refer to as
 </ul></li>
 </ul>
 </div>
-<h2 data-number="1" id="union-semantics"><span class="header-section-number">1</span> Union Semantics</h2>
-<p>Unlike chunking, adding classes to a categorical model doesn’t
-immediately improve its predictive power.</p>
-<h3 data-number="1.1" id="information-of-joint-introduction"><span class="header-section-number">1.1</span> Information of Joint Introduction</h3>
+<h2 data-number="1" id="adding-union-semantics-to-our-model"><span class="header-section-number">1</span> Adding Union Semantics to our Model</h2>
+<p>We will work our way up to the model where unions reside by building
+upon the simpler categorical or multiset (superscript <span class="math inline">\(A\)</span> for <em>atomic</em>
+symbols only) and joints-only (superscript <span class="math inline">\(*\)</span> for <em>pairs</em>) models. The
+order presented is therefore</p>
+<p><span class="math display">\[\underbrace{I^A}_{\mathrm{Categorical}}
+\to
+\underbrace{I^*}_{\mathrm{Joints\ only}}
+\to
+\underbrace{I}_{\mathrm{Joints\ \&amp;\ Unions}}.\]</span></p>
+<p>A subscript <span class="math inline">\(\{\mathrm{\bf n}, \mathrm{\bf s}, \mathrm{\bf r}\}\)</span> will
+indicate a specific component of the model. A delta (<span class="math inline">\(\Delta I\)</span>) is for
+a difference in information between two successive states of the
+training phase the model.</p>
+<h3 data-number="1.1" id="information-of-joint-symbol-introduction"><span class="header-section-number">1.1</span> Information of Joint Symbol Introduction</h3>
 <p><em>(this is a recap of the math supporting <a href="chunk.html#format-description">the previous
 post</a>)</em></p>
 <p>Encoding a categorical model of counts
 (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multiplicity_(mathematics)">multiplicities</a>)
 <span class="math inline">\(n_0, n_1, ... n_{m-1}\)</span> and instantiating it into a string of symbols
 matching those counts takes information approximately<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> equal to:</p>
-<p><span class="math display">\[\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
+<p><span class="math display">\[I^A ~=~ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}
-~~~\text{where } N = \sum_i n_i.\]</span></p>
-<p>Introducing a new joint symbol means docking the joint count <span class="math inline">\(n_{01}\)</span>
+	_{\displaystyle\mathrm{String} \vphantom{\prod}}\]</span></p>
+<p><span class="math display">\[\text{where } N = \sum_i n_i.\]</span></p>
+<p>Introducing a new symbol defined as the (immediate) joint occurence of
+two previously defined symbols, means docking the joint count <span class="math inline">\(n_{01}\)</span>
 from individual symbol counts <span class="math inline">\(n_0\)</span> and <span class="math inline">\(n_1\)</span> and appending count
 <span class="math inline">\(n_{01}\)</span> as a new “individual” count <a href="chunk.html#loss-function">resulting
 in</a> an increase in the description length of
 the counts vector:</p>
 <p><span class="math display">\[\begin{align}
 \Delta I^*_{\mathrm{\bf n}}
-&amp;= \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
-&amp;= \log \left(\frac{(N + m - n_{01})!\,N!}
+&amp;~=~ I^{*\prime}_{\mathrm{\bf n}} - I^*_{\mathrm{\bf n}}\\[5pt]
+&amp;~=~ \log {N + m - n_{01} \choose m} - \log {N + m - 1 \choose m - 1}\\[5pt]
+&amp;~=~ \log \left(\frac{(N + m - n_{01})!\,N!}
 	{m\,(N + m - 1)!\,(N - n_{01})!}\right) \\[5pt]
 \end{align}\]</span></p>
 <p>and a decrease in the length of the encoding of the string (as a ranked
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets">permutation</a>):</p>
 <p><span class="math display">\[\begin{align}
 \Delta I^*_\mathrm{\bf s}
-&amp;= \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
+&amp;~=~ I^{*\prime}_\mathrm{\bf s} - I^*_\mathrm{\bf s} \\[5pt]
+&amp;~=~ \log {N - n_{01} \choose n_0 - n_{01}, n_1 - n_{01},\ldots,n_{m-1}, n_{01}}
 	- \log {N \choose n_0,n_1,\ldots,n_{m-1}}\\[5pt]
-&amp;= \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
+&amp;~=~ \log \left( \frac{(N - n_{01})!\,n_0!}{N!\,n_{01}!} \right) + \begin{cases}
 	\log \left(\frac{\displaystyle 1}{\displaystyle (n_0 - 2n_{01})!} \right)
 	&amp; \text{when } s_0 = s_1 \\
 	\log \left(\frac{\displaystyle n_1!}
@@ -171,15 +188,20 @@ the counts vector:</p>
 	&amp; \text{when } s_0 \neq s_1
 	\end{cases}
 \end{align}\]</span></p>
-<p>which, together, are negative (i.e. reduce total information) only if
-the joint count <span class="math inline">\(n_{01}\)</span> is sufficiently larger than what could be
-expected by independence.</p>
-<h3 data-number="1.2" id="information-of-union-introduction"><span class="header-section-number">1.2</span> Information of Union Introduction</h3>
-<p>Because of the way permutations (and their
+<p>which, together, are negative (i.e. reduce total information) if the
+joint count <span class="math inline">\(n_{01}\)</span> is sufficiently larger than what is expected by
+independence.</p>
+<h3 data-number="1.2" id="information-of-union-of-symbol-introduction"><span class="header-section-number">1.2</span> Information of Union of Symbol Introduction</h3>
+<p>Transposing the logic of joint introduction unto union
+introduction—like updating a categorical distribution by
+re-classifying symbols, then adding the appropriate codes to resolve the
+ambiguity inside those unions—always has an <em>insignificant</em> effect on
+the total code length.</p>
+<p>This is similar to the way permutations (and their
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multinomial_theorem#Multinomial_coefficients">coefficients</a>)
-compose, changing a categorical distribution by re-classifying symbols,
-then adding the appropriate codes to resolve the ambiguity inside those
-unions always has an <em>insignificant</em> effect on the total code length.</p>
+compose, and how a re-arrangements of layers has no effect on the final
+variety.</p>
+<h4 data-number="1.2.1" id="demonstration"><span class="header-section-number">1.2.1</span> Demonstration</h4>
 <p>Say, for whichever reason, we place <span class="math inline">\(\ell\)</span> symbols under a union
 <span class="math inline">\(S_{0\ell} = \{s_0,s_1,...,s_{\ell-1}\}\)</span> with a cumulative count
 <span class="math inline">\(n_{0\ell}\)</span> where</p>
@@ -231,8 +253,8 @@ compression of the data.</p>
 <h3 data-number="1.3" id="joints-of-unions"><span class="header-section-number">1.3</span> Joints of Unions</h3>
 <p>The way to make unions do work for us is to put them into joints.
 <!-- Categorization is only useful in the context of chunking. --></p>
-<p>Where the previously described structure of categorization produces
-clusters of symbols in the alphabet:</p>
+<p>Where the naive union introduction produces clusters of symbols in the
+alphabet:</p>
 <p><img src="res/types/figs/subset.svg" /></p>
 <p>we instead look for clusters in pairs—a “joint-of-unions”—such that
 they have a relatively high number of joints between them.</p>
@@ -243,7 +265,7 @@ graph</a> connecting left
 and right symbols. Then, we are looking for a subgraph with high
 connectivity.</p>
 <p>Logically, this is a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Type_theory">type</a>
-of joint, specifically a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Product_type">product
+of joint. Specifically, this is simply a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Product_type">product
 type</a> containing the set of
 joints corresponding to the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cartesian_product">Cartesian
 product</a> of the left
@@ -255,6 +277,9 @@ unions will allow joint types to be defined between groups of symbols
 which, individually, would lack the numbers to justify the introduction
 of a construction rule for all the individual joints that the type
 covers.</p>
+<!-- Moreover, as more and more unions are introduced as part of joint types, -->
+<!-- we are motivated to find and leverage similarities in unions, -->
+<!-- correlation between membership of different symbols, into -->
 <!-- This is another way (together with [the sparsity of a -->
 <!-- dictionary](chunk.html#inductive-constructions)) that we overcome the -->
 <!-- traditional limitations of the [$n$-gram -->
