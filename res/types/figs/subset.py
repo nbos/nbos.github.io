@@ -8,7 +8,7 @@ line_width = 2.3
 margin = 0.01  # Adjustable margin parameter
 
 # 9 dots in a horizontal line
-n = 9
+n = 7
 x_positions = np.linspace(0.2, 0.8, n)
 y = 0.5  # All dots at same y position
 

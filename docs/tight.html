@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Generating Random Joint Types on Text</title>
+
+    <script>
+      (function() {
+	  function applyDark() {
+	      var isDark = localStorage.getItem('darkMode') === 'true';
+	      document.documentElement.classList.toggle('dark-mode', isDark);
+	      var el = document.getElementById('dark-toggle');
+	      if (el) el.textContent = isDark ? '☾' : '☀';
+	  }
+
+	  // Immediate (prevents flash on fresh loads)
+	  applyDark();
+
+	  // Re-apply when restored from bfcache (back/forward navigation)
+	  window.addEventListener('pageshow', function(e) {
+	      if (e.persisted) applyDark();
+	  });
+      })();
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+
+    <script>
+      window.MathJax = {
+	  startup: {
+	      ready() {
+		  MathJax.startup.defaultReady();
+		  MathJax.startup.promise.then(() => {
+		      const y = window.scrollY;
+		      window.scrollTo(0, y);
+		  });
+	      }
+	  }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Notes</a>
+        <a href="./hackage.html">Hackage</a>
+        <a href="./contact.html">Contact</a>
+	<a href="#" id="dark-toggle" onclick="toggleDark(event)" title="Toggle dark mode">☀</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Generating Random Joint Types on Text</h1>
+      <article>
+  <section class="header">
+    Posted on November 19, 2026
+    
+    by Nathaniel Bos
+    
+    
+  </section>
+  <section>
+    
+<p>This is an addendum of <a href="types.html">this post</a> regarding the random
+initialization of <a href="types.html#joints-of-unions">joint types</a> for
+hill-climbing.</p>
+<p><em>(tl;dr naive approaches don’t satisfy our constraints so we build types
+incrementally, with constraint-propagation after each uniformly selected
+component—arguably still naive)</em></p>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#definitions" id="toc-definitions"><span class="toc-section-number">1</span> Definitions</a></li>
+<li><a href="#the-problem" id="toc-the-problem"><span class="toc-section-number">2</span> The Problem</a></li>
+<li><a href="#naive-workaround" id="toc-naive-workaround"><span class="toc-section-number">3</span> Naive Workaround</a></li>
+<li><a href="#uniformly-sampling-tight-subgraphs" id="toc-uniformly-sampling-tight-subgraphs"><span class="toc-section-number">4</span> Uniformly Sampling Tight Subgraphs</a></li>
+<li><a href="#conclusion" id="toc-conclusion"><span class="toc-section-number">5</span> Conclusion</a></li>
+</ul>
+</div>
+<h1 data-number="1" id="definitions"><span class="header-section-number">1</span> Definitions</h1>
+<p>We work on a single string of symbols. A pair of consecutive symbols on
+the string is called a <em>joint symbol</em> (or simply <em>joint</em>).</p>
+<p>The set of all joints on the string, makes a bipartite graph, with left
+and right symbols making a left and right subsets.</p>
+<p><img src="res/types/figs/bipartite.svg" /></p>
+<p>We want to find a pair of sets (a <em>joint type</em>) on this bipartite graph:</p>
+<p><img src="res/types/figs/bipartite-joint.svg" /></p>
+<p>These <em>joint types</em> logically correspond to <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Product_type">product
+type</a> in type theory,</p>
+<p><span class="math display">\[\frac{s_0 \in A ~~~~ s_1 \in B}{(s_0,s_1) \in A \times B}.\]</span></p>
+<p>containing all joints where each symbol belongs to the respective subset
+of the type.</p>
+<p>Because the set of possible solutions <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Power_set">is
+exponential</a>, we proceed by
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hill_climbing">hill-climbing</a>, using
+atomic modifications to the working solution, re-initializing multiple
+times from random <em>joint types</em>.</p>
+<p>Hence our interest in generating random joint types, given a particular
+set of joints.</p>
+<h1 data-number="2" id="the-problem"><span class="header-section-number">2</span> The Problem</h1>
+<p>Although the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">inclusion/exclusion</a>
+of all available symbols for a right and left union form a simple
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hamming_space">Hamming</a> basis in the
+space of possible types, e.g.</p>
+<pre><code>+---------- A ----------+
+|                       |
+{s0, s1, s2, s3, s4, ...} × {s0, s1, s2, s3, s4, ...},
+ 0   0   0   0   1   ...     1   1   0   0   1   ...
+                            |                       |
+                            +---------- B ----------+</code></pre>
+<p>randomly sampling this space and then counting the affected joints by
+the type rule:</p>
+<p><span class="math display">\[\frac{s_i \in A ~~~~ s_j \in B}{(s_i,s_j) \in A \times B}\]</span></p>
+<p>won’t always produce types that are optimal w.r.t. the joints they
+cover—in the sense that some symbols included in one side’s union type
+could have no joint with any of the symbols of the opposite union.</p>
+<!-- Informationally, the introduction could immediately be improved by -->
+<!-- dropping them from the type, thereby reducing the length of the code -->
+<!-- required to resolve the unions back into concrete symbols. -->
+<p>On the bipartite graph, this would correspond to unconnected vertices
+inside the subgraph of the joint type (but connected outside of it).</p>
+<p>Fixing the randomly generated types by dropping unconnected symbols as a
+normalization step will produce a biased generation pointing away from
+the inclusion of any symbol with few associated joints.</p>
+<p>Similarly, enforcing “tightness” by including random neighbors for every
+dangling vertex, will be biased in the opposite direction.</p>
+<h1 data-number="3" id="naive-workaround"><span class="header-section-number">3</span> Naive Workaround</h1>
+<p>For an unbiased, uniform sampling of the space, we could re-sample every
+time “tightness” is violated, but experiments will show this is not
+reliable. We <a target="_blank" rel="noopener" href="https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4">try this
+method</a>
+on our dataset of choice: <a target="_blank" rel="noopener" href="https://mattmahoney.net/dc/textdata.html">a 2006 snapshot of the English
+Wikipedia</a> (XML format)
+truncated at different magnitudes from the start:</p>
+<pre><code> Filename   Size (N)   Size (bytes)
+
+  enwik1      10^1        10 B
+  enwik2      10^2       100 B
+  enwik3      10^3         1 KB
+  enwik4      10^4        10 KB
+  enwik5      10^5       100 KB
+   ...        ...          ...</code></pre>
+<p>For a given string, we collect all joint occurrences of pairs of symbols,
+form <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Any_type">top</a> left and right
+unions, randomly select symbols with a <code>0.5</code> probability in each union
+and check whether the “tightness” property holds.</p>
+<p>We repeat this at least <span class="math inline">\(10^6\)</span> times for each dataset.</p>
+<p>The <em>unlikelihood</em> of generating “tightness” by accident is
+immediately noticeable on a large enough dataset:</p>
+<pre><code> Filename    P_tight (%)
+
+   enwik1    1.56208 %
+   enwik2    0.00157 %
+   enwik3    0.06044 %
+   enwik4    0.54991 %
+   enwik5    0.00000 %</code></pre>
+<p>Intuitively: for a sufficiently large and diverse dataset, there are
+enough symbols which form isolated joints (two symbols that only appear
+in one joint together) that a random assignment either selects both or
+neither (the only arrangements that don’t break tightness) <em>in every
+case</em> becomes exponentially close to 0.</p>
+<h1 data-number="4" id="uniformly-sampling-tight-subgraphs"><span class="header-section-number">4</span> Uniformly Sampling Tight Subgraphs</h1>
+<p>We can call a bipartite graph “tight” if it contains no isolated vertex,
+i.e. no vertex without an edge connecting it to an opposing vertex.</p>
+<p>Since the left and right unions of all joints in a string contain only
+symbols that have at least one joint with another symbol in the string,
+the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Any_type">top</a> joint type is “tight”.</p>
+<p>The number of subgraphs in a “tight” graph that are also “tight” is the
+number of ways, for each subset of one of the unions, to select at least
+one vertex neighboring each vertex in that subset. In other words, given
+a subset of either the left or right union, the number of possible
+accompanying subsets on the opposite side is the number of ways to
+select at least one vertex for each set of neighbors of vertices in the
+given subset.</p>
+<p>This reduces to the problem of counting <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem#Hitting_set_formulation">hitting
+sets</a>,
+(which is equivalent to counting <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Set_cover_problem">set
+covers</a>) for each
+subset of one of the unions, which is
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/%E2%99%AFP-complete">intractable</a> in
+general. This means that sampling types by
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">unranking</a>
+uniformly sampled integers is equally intractable.</p>
+<h1 data-number="5" id="conclusion"><span class="header-section-number">5</span> Conclusion</h1>
+<p>The best option we have at this point is to enforce the tightness
+invariant progressively through a sufficiently randomized selection,
+hoping that no bias arises.</p>
+<p>By randomly selecting a side, a symbol in that side and a selection for
+that symbol (included/excluded), then propagating the choice by
+eliminating possible symbols that would be made dangling if later
+selected or introducing a random symbol among its neighbors if none are
+so far selected, we achieve a uniform-looking, 100% “tight” random type
+generation.</p>
+  </section>
+  <footer>
+    <a href="./">Return</a>
+  </footer>
+</article>
+
+    </main>
+
+    <script>
+      function toggleDark(e) {
+	  e.preventDefault();
+	  var isDark = document.documentElement.classList.toggle('dark-mode');
+	  localStorage.setItem('darkMode', isDark);
+	  updateIcon(isDark);
+      }
+
+      function updateIcon(isDark) {
+	  var el = document.getElementById('dark-toggle');
+	  if (el) el.textContent = isDark ? '☾' : '☀';
+      }
+
+      // Set correct icon on load
+      updateIcon(document.documentElement.classList.contains('dark-mode'));
+    </script>
+
+  </body>
+</html>
