@@ -51,13 +51,13 @@ for algo in legend_order:
                 color=s['color'], linestyle=s['linestyle'],
                 linewidth=s['linewidth'], zorder=2)
 
-        # Draw each dot individually so we can colour enwik8/9 differently
         for xi, yi in zip(x_pos, y):
             x_label = x_labels[xi]
-            dot_color = '#cccccc' if x_label in ('enwik8', 'enwik9') else 'black'
+            if x_label in ('enwik8', 'enwik9'):
+                continue
             ax.plot(xi, yi,
                     marker=s['marker'], markersize=s['markersize'],
-                    color=dot_color,
+                    color='black',
                     # markeredgecolor='black',
                     markeredgewidth=0.6,
                     zorder=3)

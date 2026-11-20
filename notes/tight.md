@@ -13,7 +13,7 @@ hill-climbing.
 incrementally, with constraint-propagation after each uniformly selected
 component---arguably still naive)*
 
-# Definitions
+## Definitions
 
 We work on a single string of symbols. A pair of consecutive symbols on
 the string is called a *joint symbol* (or simply *joint*).
@@ -44,7 +44,7 @@ times from random *joint types*.
 Hence our interest in generating random joint types, given a particular
 set of joints.
 
-# The Problem
+## The Problem
 Although the
 [inclusion/exclusion](https://en.wikipedia.org/wiki/Indicator_function)
 of all available symbols for a right and left union form a simple
@@ -83,7 +83,7 @@ the inclusion of any symbol with few associated joints.
 Similarly, enforcing "tightness" by including random neighbors for every
 dangling vertex, will be biased in the opposite direction.
 
-# Naive Workaround
+## Naive Workaround
 For an unbiased, uniform sampling of the space, we could re-sample every
 time "tightness" is violated, but experiments will show this is not
 reliable. We [try this
@@ -129,7 +129,7 @@ in one joint together) that a random assignment either selects both or
 neither (the only arrangements that don't break tightness) *in every
 case* becomes exponentially close to 0.
 
-# Uniformly Sampling Tight Subgraphs
+## Uniformly Sampling Tight Subgraphs
 
 We can call a bipartite graph "tight" if it contains no isolated vertex,
 i.e. no vertex without an edge connecting it to an opposing vertex.
@@ -156,7 +156,7 @@ general. This means that sampling types by
 [unranking](https://en.wikipedia.org/wiki/Combinatorial_number_system)
 uniformly sampled integers is equally intractable.
 
-# Conclusion
+## Conclusion
 
 The best option we have at this point is to enforce the tightness
 invariant progressively through a sufficiently randomized selection,

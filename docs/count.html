@@ -68,20 +68,26 @@
     by Nathaniel Bos
     
     
-    <span class="edit-note">· Last edited July  9, 2026</span>
+    <span class="edit-note">· Last edited November 20, 2026</span>
     
   </section>
   <section>
     
 <p>In data compression with <a href="arith.html">arithmetic coding</a>, the length of
-the produced code is within 2 bits of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
+the produced code stays within 2 bits of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information
 content</a> of the
-encoded data, which you get from the probability:</p>
+encoded data, which you get from the probability of the data through:</p>
 <p><span class="math display">\[I(x)=-\log P(x).\]</span></p>
-<p>where <span class="math inline">\(P(x)\)</span> is the probability of <span class="math inline">\(x\)</span>. The information content of a
-sequence of events or symbols is just the sum of the information
-contents of each, just as the concatenated codes will have length equal
-to the sum of individual codes.</p>
+<p>The information content of a sequence of independent events (or symbols)
+is just the sum of the information contents of each (the log of the
+product of the probabilities), just as the concatenated codes will have
+length equal to the sum of individual codes.</p>
+<p>When computing the information content of a discrete system, where all
+parameters are integers, it is more natural to compute the logarithm of
+the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">number of
+states</a> than to
+conform it to the probabilistic interpretation.</p>
+<p>This note is a summary of my encountering this fact.</p>
 
 <div class="toc">
 <div class="toc-title">Contents</div>
@@ -177,7 +183,7 @@ which is the formula with updated parameters.
 clearing them out for the rest of the inference, or not) has no bearing
 on the information content of a <em>without replacement</em> strategy. It is
 uniquely determined by the length (<span class="math inline">\(N\)</span>) and bin sizes (<span class="math inline">\(n_0, n_1, n_2,
-...\)</span>) with no regard to the actual structure of the sequence.</p>
+...\)</span>) and invariant to the specific instantiation of the sequence.</p>
 <h2 data-number="3" id="discussion"><span class="header-section-number">3</span> Discussion</h2>
 <p>So how much smaller is the information of a sequenced modeled <em>without
 replacement</em>:</p>
@@ -185,7 +191,7 @@ replacement</em>:</p>
 <p>than one modeled <em>with replacement</em>:</p>
 <p><span class="math display">\[N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...\\[10pt]\]</span></p>
 <p>Obviously, we have that, for <span class="math inline">\(n &gt; 0\)</span>:</p>
-<p><span class="math display">\[\log(n!) &lt; n\log n,\]</span></p>
+<p><span class="math display">\[\log(n!) ~~&lt;~~ n\log n,\]</span></p>
 <p>because <span class="math inline">\(n\log n = \log(n^n)\)</span> and <span class="math inline">\(n! &lt; n^n\)</span>.</p>
 <p>Asymptotically, however:</p>
 <p><span class="math display">\[O(\log(n!)) = O(n\log n)\]</span></p>
@@ -195,14 +201,14 @@ of <span class="math inline">\(\log(n!)\)</span> where the leading terms is <spa
 <p><span class="math display">\[\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n)
 	+ O\left(\frac{1}{n}\right)\]</span></p>
 <p><img src="res/count/stirling.svg" /></p>
-<p>or <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Srinivasa_Ramanujan">Ramanujan</a>’s more
-precise approximation:</p>
-<p><span class="math display">\[\begin{align}
-\log(n!) =~&amp;n\log n - n\log e \\
-	&amp;+\frac{1}{6}\log(n(1+4n(1+2n))) \\
-	&amp;+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)
-\end{align}\]</span></p>
-<p><img src="res/count/ramanujan.svg" /></p>
+<!-- or [Ramanujan](https://en.wikipedia.org/wiki/Srinivasa_Ramanujan)'s more -->
+<!-- precise approximation: -->
+<!-- $$\begin{align} -->
+<!-- \log(n!) =~&n\log n - n\log e \\ -->
+<!-- 	&+\frac{1}{6}\log(n(1+4n(1+2n))) \\ -->
+<!-- 	&+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right) -->
+<!-- \end{align}$$ -->
+<!-- ![](res/count/ramanujan.svg) -->
 <p>but these additional terms correct a mostly constant factor <span class="math inline">\(n\log e\)</span>
 between the two functions:</p>
 <p><img src="res/count/difference.svg" /></p>
@@ -246,7 +252,7 @@ same parameters.</p>
 <!-- the case *with replacement* as it is not the $\log$ of an integer value -->
 <!-- in general. -->
 <h3 data-number="3.2" id="information-from-variety"><span class="header-section-number">3.2</span> Information From Variety</h3>
-<p>This motivates a simpler description of information.</p>
+<p>This hints at a simpler description of information.</p>
 <p>If the probabilistic model is equivalent to one with <span class="math inline">\(N\)</span> equiprobable
 states, the denominator position of the size cancels out the negation of
 the <span class="math inline">\(\log,\)</span> leaving only:</p>
@@ -254,15 +260,12 @@ the <span class="math inline">\(\log,\)</span> leaving only:</p>
 &amp;= -\log P(x) \\[5pt]
 &amp;= -\log \left(\frac{1}{N}\right) \\[5pt]
 &amp;= \log N. \\[5pt]
-&amp;
 \end{align}\]</span></p>
 <p>This applies more generally to the information of a
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a>, which is
-simply:</p>
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a>. Simply:</p>
 <p><span class="math display">\[I(x) = \log \left(V(X)\right),\]</span></p>
-<p>where the <strong>variety</strong> <span class="math inline">\(V(X)\)</span> is the total number of states a system <span class="math inline">\(X\)</span>
-can find itself in.</p>
-<p>$$$$</p>
+<p>where the <strong>variety</strong> <span class="math inline">\(V(X)\)</span> is the total number of equiprobable states
+a system <span class="math inline">\(X\)</span> can find itself in.</p>
 <p>Even when the probabilities are not equal, but derived from
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Frequentist_probability">frequencies</a>:</p>
 <p><span class="math display">\[\begin{align} I(x_i)
@@ -273,7 +276,7 @@ can find itself in.</p>
 <p>the information content of a part (<span class="math inline">\(n_i\)</span>) from a whole (<span class="math inline">\(N\)</span>) can be
 interpreted as the information to specify one among the whole (<span class="math inline">\(\log N\)</span>)
 minus the information to specify one among the part (<span class="math inline">\(\log n_i\)</span>)—like
-an interval between <span class="math inline">\(n_i\)</span> and <span class="math inline">\(N\)</span> in <span class="math inline">\(\log\)</span>-space.</p>
+some sort of interval.</p>
   </section>
   <footer>
     <a href="./">Return</a>

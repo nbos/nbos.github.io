@@ -88,7 +88,7 @@ component—arguably still naive)</em></p>
 <li><a href="#conclusion" id="toc-conclusion"><span class="toc-section-number">5</span> Conclusion</a></li>
 </ul>
 </div>
-<h1 data-number="1" id="definitions"><span class="header-section-number">1</span> Definitions</h1>
+<h2 data-number="1" id="definitions"><span class="header-section-number">1</span> Definitions</h2>
 <p>We work on a single string of symbols. A pair of consecutive symbols on
 the string is called a <em>joint symbol</em> (or simply <em>joint</em>).</p>
 <p>The set of all joints on the string, makes a bipartite graph, with left
@@ -108,7 +108,7 @@ atomic modifications to the working solution, re-initializing multiple
 times from random <em>joint types</em>.</p>
 <p>Hence our interest in generating random joint types, given a particular
 set of joints.</p>
-<h1 data-number="2" id="the-problem"><span class="header-section-number">2</span> The Problem</h1>
+<h2 data-number="2" id="the-problem"><span class="header-section-number">2</span> The Problem</h2>
 <p>Although the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Indicator_function">inclusion/exclusion</a>
 of all available symbols for a right and left union form a simple
@@ -136,7 +136,7 @@ normalization step will produce a biased generation pointing away from
 the inclusion of any symbol with few associated joints.</p>
 <p>Similarly, enforcing “tightness” by including random neighbors for every
 dangling vertex, will be biased in the opposite direction.</p>
-<h1 data-number="3" id="naive-workaround"><span class="header-section-number">3</span> Naive Workaround</h1>
+<h2 data-number="3" id="naive-workaround"><span class="header-section-number">3</span> Naive Workaround</h2>
 <p>For an unbiased, uniform sampling of the space, we could re-sample every
 time “tightness” is violated, but experiments will show this is not
 reliable. We <a target="_blank" rel="noopener" href="https://github.com/nbos/diagram/tree/8424b2182aad989f4da9e9143c070d8c4327b7a4">try this
@@ -171,7 +171,7 @@ enough symbols which form isolated joints (two symbols that only appear
 in one joint together) that a random assignment either selects both or
 neither (the only arrangements that don’t break tightness) <em>in every
 case</em> becomes exponentially close to 0.</p>
-<h1 data-number="4" id="uniformly-sampling-tight-subgraphs"><span class="header-section-number">4</span> Uniformly Sampling Tight Subgraphs</h1>
+<h2 data-number="4" id="uniformly-sampling-tight-subgraphs"><span class="header-section-number">4</span> Uniformly Sampling Tight Subgraphs</h2>
 <p>We can call a bipartite graph “tight” if it contains no isolated vertex,
 i.e. no vertex without an edge connecting it to an opposing vertex.</p>
 <p>Since the left and right unions of all joints in a string contain only
@@ -193,7 +193,7 @@ subset of one of the unions, which is
 general. This means that sampling types by
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">unranking</a>
 uniformly sampled integers is equally intractable.</p>
-<h1 data-number="5" id="conclusion"><span class="header-section-number">5</span> Conclusion</h1>
+<h2 data-number="5" id="conclusion"><span class="header-section-number">5</span> Conclusion</h2>
 <p>The best option we have at this point is to enforce the tightness
 invariant progressively through a sufficiently randomized selection,
 hoping that no bias arises.</p>

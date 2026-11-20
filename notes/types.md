@@ -1,8 +1,7 @@
 ---
 title: "Chunking with Types"
 author: Nathaniel Bos
-date: 2026-11-20
-<!-- edit: 2026-11-19 -->
+date: 2026-11-21
 ---
 
 In a [previous post](chunk.html), we showed that inductively growing a
@@ -25,12 +24,12 @@ consecutive symbols---categories are formalized as [sets of possible
 symbols](https://en.wikipedia.org/wiki/Enumerated_type) we refer to as
 *unions*.
 
-## Adding Union Semantics to our Model
+## Union Semantics and our Model
 
-We will work our way up to the model where unions reside by building
-upon the simpler categorical or multiset (superscript $A$ for *atomic*
-symbols only) and joints-only (superscript $*$ for *pairs*) models. The
-order presented is therefore
+We work our way up to the model where unions reside by building upon the
+simpler categorical or multiset (superscript $A$ for *atomic* symbols
+only) and joints-only (superscript $*$ for *pairs*) models. The order
+presented is therefore
 
 $$\underbrace{I^A}_{\mathrm{Categorical}}
 \to
@@ -43,10 +42,10 @@ indicate a specific component of the model. A delta ($\Delta I$) is for
 a difference in information between two successive states of the
 training phase the model.
 
-### Information of Joint Symbol Introduction
+*(Both the categorical and joints-only model is more extensively
+presented in [the previous post](chunk.html#format-description))*.
 
-*(this is a recap of the math supporting [the previous
-post](chunk.html#format-description))*
+### Information of a Categorical Model
 
 Encoding a categorical model of counts
 ([multiplicities](https://en.wikipedia.org/wiki/Multiplicity_(mathematics)))
@@ -60,12 +59,14 @@ matching those counts takes information approximately[^1] equal to:
 $$I^A ~=~ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}$$
+	_{\displaystyle\mathrm{String\ order} \vphantom{\prod}}$$
 
 $$\text{where } N = \sum_i n_i.$$
 
-Introducing a new symbol defined as the (immediate) joint occurence of
-two previously defined symbols, means docking the joint count $n_{01}$
+### Information of Joint Introduction
+
+Introducing a new symbol defined as the consecutive occurence of two
+previously defined symbols, implies docking the joint count $n_{01}$
 from individual symbol counts $n_0$ and $n_1$ and appending count
 $n_{01}$ as a new "individual" count [resulting
 in](chunk.html#loss-function) an increase in the description length of
@@ -79,7 +80,7 @@ $$\begin{align}
 	{m\,(N + m - 1)!\,(N - n_{01})!}\right) \\[5pt]
 \end{align}$$
 
-and a decrease in the length of the encoding of the string (as a ranked
+and a decrease in the length of the encoding of the string (as a
 [permutation](https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets)):
 
 $$\begin{align}
@@ -96,17 +97,23 @@ $$\begin{align}
 	\end{cases}
 \end{align}$$
 
-which, together, are negative (i.e. reduce total information) if the
-joint count $n_{01}$ is sufficiently larger than what is expected by
-independence.
+as well as a flat cost
 
-### Information of Union of Symbol Introduction
+$$\Delta I^*_\mathrm{\bf r} = 2\log m$$
 
-Transposing the logic of joint introduction unto union
-introduction---like updating a categorical distribution by
-re-classifying symbols, then adding the appropriate codes to resolve the
-ambiguity inside those unions---always has an *insignificant* effect on
-the total code length.
+required to specify which two previously defined symbols make this joint
+symbol.
+
+Together, the sum of those differences is negative (i.e. reduce total
+information) if the joint count $n_{01}$ is sufficiently larger than
+what is expected by independence.
+
+### Information of Union Introduction
+
+Mirroring the logic of joint introduction unto unions---like updating a
+categorical distribution by re-classifying symbols, then adding the
+appropriate codes to resolve the ambiguity inside those unions---always
+has an *insignificant* effect on the total code length.
 
 This is similar to the way permutations (and their
 [coefficients](https://en.wikipedia.org/wiki/Multinomial_theorem#Multinomial_coefficients))
@@ -114,6 +121,7 @@ compose, and how a re-arrangements of layers has no effect on the final
 variety.
 
 #### Demonstration
+
 Say, for whichever reason, we place $\ell$ symbols under a union
 $S_{0\ell} = \{s_0,s_1,...,s_{\ell-1}\}$ with a cumulative count
 $n_{0\ell}$ where
@@ -182,21 +190,20 @@ compression of the data.
 The way to make unions do work for us is to put them into joints.
 <!-- Categorization is only useful in the context of chunking. -->
 
-Where the naive union introduction produces clusters of symbols in the
-alphabet:
+Where the naive union appreared as clusters of symbols in the alphabet:
 
 ![](res/types/figs/subset.svg)
 
 we instead look for clusters in pairs---a "joint-of-unions"---such that
 they have a relatively high number of joints between them.
 
-![](res/types/figs/bipartite-joint.svg)
-
 As a [graph](https://en.wikipedia.org/wiki/Graph_theory), the set of
 joint occurrences of symbols in a string form edges in a [bipartite
 graph](https://en.wikipedia.org/wiki/Bipartite_graph) connecting left
 and right symbols. Then, we are looking for a subgraph with high
 connectivity.
+
+![](res/types/figs/bipartite-joint.svg)
 
 Logically, this is a [type](https://en.wikipedia.org/wiki/Type_theory)
 of joint. Specifically, this is simply a [product
@@ -214,9 +221,11 @@ which, individually, would lack the numbers to justify the introduction
 of a construction rule for all the individual joints that the type
 covers.
 
-<!-- Moreover, as more and more unions are introduced as part of joint types, -->
-<!-- we are motivated to find and leverage similarities in unions, -->
-<!-- correlation between membership of different symbols, into -->
+Furthermore, if the same (or similar) unions are repeatedly used for
+different joint types, the compressor is incentivized to find
+correlations, and possibly merging and/or organizing them in a
+hierarchy, leading to what could be seen as the reason for a type
+structure, or ontology.
 
 <!-- This is another way (together with [the sparsity of a -->
 <!-- dictionary](chunk.html#inductive-constructions)) that we overcome the -->
@@ -225,7 +234,7 @@ covers.
 <!-- regarding exponentially large datasets required to support words of -->
 <!-- increasing size. -->
 
-## Strategy
+## Overview
 
 Unlike the enumeration of all joints which is a $O(n^2)$ operation, the
 enumeration of [all pairs of subsets of two
@@ -242,20 +251,20 @@ top-down fashion.
 
 Hill-climbing consists in:
 
-1) generating random types (expounded in ), and
+1) generating random types (expounded on in a [separate
+note](tight.html)), and
 
 2) mutating those types greedily until (local) maxima are reached.
 
-We go in detail regarding the random generation step in a [separate
-note](tight.html) for brevity. The following section tackles the scoring
-of joint types, and therefore transitions/mutations.
+The following section tackles the scoring of joint types, and thus of
+transitions/mutations.
 
 ## Extending the Categorical Model
 
-To score different mutations of a randomly sampled joint type to
-greedily select the best, we express the length of the whole encoding
-before and after the introduction of a joint type and prior and after
-each possible mutation of that joint type.
+To score different mutations of a given joint type to greedily select
+the best, we express the length of the whole encoding before and after
+the introduction of a joint type and prior and after each possible
+mutation of that joint type.
 
 Starting from the format used in the joints-only logic (marked with a
 ${}^*$) as a sum of code lengths
@@ -271,7 +280,7 @@ I^*(m,{\bf n})
 &+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{{\bf s} : String} \vphantom{\prod}},
+	_{\displaystyle\mathrm{{\bf s} : String\ order} \vphantom{\prod}},
 \end{align}$$
 
 the $\mathrm{Rules}$ term is replaced with one defining the joint types
@@ -485,478 +494,3 @@ mutations) and advance the state of the type to be introduced in
 alternating phases of evaluation and selection
 (i.e. [expectation-maximization](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm))
 until the minimum is reached.
-
-### Complexity Issues
-
-Given the [heavy bookkeeping required to make the previous algorithm
-usable](chunk.html#optimizations), we approach the implementation with
-the intention of eliminating all operations equal or greater than $O(N)$
-in complexity, if not for each introduction, then at least for each
-mutation, and certainly when evaluating each mutation candidate.
-
-Unfortunately, it looks like the expressiveness of joint types
-introduces too many contextual dependencies to make this possible.
-
-#### Counting Joints in a String
-
-For a pair of symbols
-
-$$(s_0,s_1)$$
-
-and a string of length $N$, the loss associated with its introduction
-according the the previous logic is a function of three values:
-individual symbol counts $n_0$ and $n_1$, and the joint count
-$n_{01}$. All of those parameters can be gathered in one $O(N)$ pass
-over the string and only require $O(n_{01})$ updates per introduction.
-
-When $s_0 \neq s_1$, all encountered joints count towards the joint
-count:
-
-![](res/types/figs/joints-neq.svg)
-
-but when $s_0 = s_1$, there is the subtlety that consecutive occurrences
-of the joint overlap:
-
-![](res/types/figs/joints-eq.svg)
-
-and every other pair must be skipped and not contribute towards the
-joint count $n_{01}$. This is easily managed by keeping track of parity
-when encountering spans of identical symbols while scanning the string
-and discarding joints that are not "constructible".
-
-#### Counting Joints of a Type in a String
-
-For a joint type
-
-$$A \times B$$
-
-and a string of length $N$, the loss associated with its introduction is
-a function of the total joint count $n_m$ and as many individual symbols
-counts as there are symbols in both unions:
-
-$$\Delta{\bf n} = \{~n_i ~|~ s_i \in A \cup B~\}.$$
-
-Since every new type will produce distinct overlap events along the
-string, a single pass over the string is no longer sufficient to gather
-a record of those values.
-
-Still, assuming we do a $O(N)$ pass over the string for each newly
-sampled type, we must find a way to efficiently compute or bookkeep the
-differences in $\Delta{\bf n}$ produced by each candidate mutation after
-each mutation application.
-
-This becomes problematic when chains or arbitrary length of overlapping
-joints
-
-![](res/types/figs/joints-eq.svg)
-
-can have their parity flipped by the introduction of a new symbol in the
-left union
-
-![](res/types/figs/joints-mut.svg)
-
-producing a cascading effect in the structure of construction,
-ultimately only incrementing or decrementing the individual count of the
-last symbol in the chain.
-
-By itself, this is still manageable if we keep track of all joint sites,
-constructive or not, for all joints in binary trees that merge and
-resolve collisions in less than $O(N)$, keeping pointers between head
-and tail of each such segment, etc. But deletions of joints at random
-positions in a segment now requires each joint to also point to either
-the head or the tail, which would require on the order of $O(n_m)$
-updates at each mutation application, etc.
-
-The simple fact that our permutation format has to deal with the
-introduction of non-overlapping chunks, while candidates for chunking
-*are* overlapping, creates a tension that keeps a seemingly
-straightforward extension from progressing further.
-
-We therefore swap the underlying combinatorial model for something more
-appropriate.
-
-## A Conditional Model
-
-While a multiset permutation model can be simplified by reducing the
-size of the string through the introduction of ever larger
-(non-overlapping) chunks,
-
-![](res/types/figs/joints-neq.svg)
-
-we would be saved from micromanaging ever expanding sequences of chunks
-on the working string if we could freely introduce joints that overlap,
-turning individually separable chunks into something more like
-transitions between states.
-
-![](res/types/figs/joints-eq.svg)
-
-Therefore, instead of using a vector of counts:
-
-![](res/chunk/figs/counts-fig.svg)
-
-that is resolved into a string through the encoding of a permutation:
-
-![](res/chunk/figs/permutation.svg)
-
-we transition to using a directed
-**[multigraph](https://en.wikipedia.org/wiki/Multigraph)**:
-
-![](res/types/figs/graph-cat.svg)
-
-that is resolved into a string through the encoding of a **path**:
-
-![](res/types/figs/graph-path.svg)
-
-![](res/chunk/figs/string-fig.svg)
-
-For isntance, in this case, the path
-
-$$\begin{align}
-\varepsilon &\to \boxed{b} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{d} \to \\
-\varepsilon &\to \boxed{a} \to \varepsilon \to \boxed{b} \to \varepsilon \to \boxed{b} \to \varepsilon.\end{align}$$
-
-The translation between the first model to the second goes like this: a
-vertex is introduced for each symbol in the alphabet as well as an
-auxiliary [empty string](https://en.wikipedia.org/wiki/Empty_string)
-vertex labeled $\varepsilon$ (epsilon). For as many occurrences of each
-symbol there is in the string, pairs of edges go back and forth to the
-$\varepsilon$ vertex. Then, any path walking every edge in the graph---a
-[Eulerian path](https://en.wikipedia.org/wiki/Eulerian_path)---
-corresponds to a single string with appropriate symbol counts.
-
-It so happens that counting Eulerian paths in a directed graph is only
-as complex as computing a certain
-[determinant](https://en.wikipedia.org/wiki/Determinant) on the
-[Laplacian matrix](https://en.wikipedia.org/wiki/Laplacian_matrix) which
-has complexity $O(n^3)$ for a graph of $n$ vertices, or $O(m^3)$ for an
-alphabet of $m$ symbols. And since a counting procedure can be converted
-into an encoding procedure through
-[ranking/unranking](https://en.wikipedia.org/wiki/Combinatorial_number_system),
-we get both a serialization algorithm and a code length formula.
-
-### Counting Strings on a Graph
-
-The exact number of Eulerian circuits in a directed multigraph is given
-by the [BEST theorem](https://en.wikipedia.org/wiki/BEST_theorem) as the
-product of the number of [spanning
-trees](https://en.wikipedia.org/wiki/Spanning_tree) and the factorial of
-each vertex's
-[degree](https://en.wikipedia.org/wiki/Degree_(graph_theory)) minus one.
-
-$$ec(G) = t(G) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!$$
-
-The number of spanning trees $t(G)$ is equal---by [Kirchhoff's matrix
-tree theorem](https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem)---to
-the determinant of the submatrix of the Laplacian where one row and one
-column are removed.
-
-The Laplacian matrix of a directed multigraph is the difference between
-matrices $D$ and $A$:
-
-$$L = D - A$$
-
-where $D$ is a diagonal matrix holding the outdegree of each vertex and
-$A$ is the adjacency matrix where elements $a_{ij}$ is the number of
-edges going from vertex $i$ to vertex $j$.
-
-Using the example above, we would have the Laplacian:
-
-$$\begin{align}L_{abcd} ~
-&=~~\begin{array}{c@{\hspace{4pt}}c}
- & \begin{array}{ccccccccccc}
-	\varepsilon & a & b & c & d & ~~~~~~~ & \varepsilon & a & b & c & d
-\end{array} \\[2pt]
-\begin{array}{c}
-	\varepsilon \\ a \\ b \\ c \\ d
-\end{array}
-&
-\begin{bmatrix}
- ~~7 &  0 &  0 &  0 &  0~~ \\
- ~~0 &  1 &  0 &  0 &  0~~ \\
- ~~0 &  0 &  3 &  0 &  0~~ \\
- ~~0 &  0 &  0 &  2 &  0~~ \\
- ~~0 &  0 &  0 &  0 &  1~~
-\end{bmatrix}
--
-\begin{bmatrix}
- ~~0 &  1 &  3 &  2 &  1~~ \\
- ~~1 &  0 &  0 &  0 &  0~~ \\
- ~~3 &  0 &  0 &  0 &  0~~ \\
- ~~2 &  0 &  0 &  0 &  0~~ \\
- ~~1 &  0 &  0 &  0 &  0~~
-\end{bmatrix}
-\end{array}\\[10pt]
-&=~~\begin{array}{c@{\hspace{4pt}}c}
- & \begin{array}{ccccc}
-	\,~\varepsilon\,~ & \,~a\,~ & \,~b\,~ & \,~c\,~ & \,~d\,~
-\end{array} \\[2pt]
-\begin{array}{c}
-	\varepsilon \\ a \\ b \\ c \\ d
-\end{array}
-&
-\begin{bmatrix}
-~{ 7} & -1 & -3 & -2 & -1~~ \\
-~{-1} &  1 &  0 &  0 &  0~~ \\
-~{-3} &  0 &  3 &  0 &  0~~ \\
-~{-2} &  0 &  0 &  2 &  0~~ \\
-~{-1} &  0 &  0 &  0 &  1~~
-\end{bmatrix}
-\end{array}
-\end{align}$$
-
-or for any such graph constructed from a mere multiset:
-
-$$\begin{align}L_{\bf n} ~
-&=~~ D_{\bf n} - A_{\bf n}\\[10pt]
-&=~~\begin{array}{c@{\hspace{4pt}}c}
- & \begin{array}{ccccccccccc}
-	~~~\varepsilon ~&~ s_0 ~& s_1 & \cdots &~ s_{m-1} ~& ~~~ &~ \varepsilon ~&~ s_0 ~&~ s_1 ~& \cdots &~ s_{m-1}~
-\end{array} \\[2pt]
-\begin{array}{c}
-	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
-\end{array}
-&
-\begin{bmatrix}
- ~~N &  0 &  0 & \cdots &  0 \\
- ~~0 &  n_0 &  0 & \cdots &  0 \\
- ~~0 &  0 &  n_1 & \cdots &  0 \\
- ~~\vdots & \vdots & \vdots & \ddots &  0 \\
- ~~0 &  0 &  0 &  0 &  n_{m-1}
-\end{bmatrix}
--
-\begin{bmatrix}
- 0 & n_0 & n_1 & \cdots & n_{m-1} \\
- n_0 & 0 &  0 & \cdots &  0 \\
- n_1 & 0 &  0 & \cdots &  0 \\
-\vdots & \vdots & \vdots & \ddots &  0 \\
- n_{m-1} &  0 &  0 &  0 &  0
-\end{bmatrix}
-\end{array}\\[10pt]
-&=~~\begin{array}{c@{\hspace{4pt}}c}
- & \begin{array}{ccccc}
-	~~\varepsilon~~~~~ & ~~s_0~~ & ~~s_1~~ & \cdots & ~~s_{m-1}
-\end{array} \\[2pt]
-\begin{array}{c}
-	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
-\end{array}
-&
-\begin{bmatrix}
- N & -n_0 & -n_1 & \cdots & -n_{m-1} \\
--n_0 &  n_0 &  0 & \cdots &  0 \\
--n_1 &  0 &  n_1 & \cdots &  0 \\
-\vdots & \vdots & \vdots & \ddots &  0 \\
--n_{m-1} &  0 &  0 &  0 &  n_{m-1}
-\end{bmatrix}
-\end{array}
-\end{align}$$
-
-where $N = \sum_i n_i$.
-
-By Kirchhoff's theorem, the number of spanning trees is the
-[minor](https://en.wikipedia.org/wiki/Minor_(linear_algebra)) resulting
-from the deletion any one row and any one column in the
-Laplacian. Arbitrarily, we delete the firsts:
-
-$$t(L_{\bf n}) = \mathrm{det}
-\begin{bmatrix}
-~n_0 &  0 & \cdots &  0~ \\
-~0 &  n_1 & \cdots &  0~ \\
-~\vdots & \vdots & \ddots &  0~ \\
-~0 &  0 &  0 &  n_{m-1}~
-\end{bmatrix}
-= \prod_{i=0}^{m-1} n_i.$$
-
-Then, the number of Eulerian circuits is
-
-$$\begin{align}ec({\bf n})
-&= t(L_{\bf n}) \cdot \prod_{i=0}^{m}\left([D_{\bf n}]_{ii}-1\right)!\\
-&= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
-&= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
-\end{align}$$
-
-which *does not* correspond to the number of strings (permutations)
-given a multiset, which is typically computed from the multinomial
-coefficient:
-
-$${N \choose n_0,n_1,\ldots,n_{m-1}}
-~=~ \frac{N!}{\prod_i n_i!}.$$
-
-#### Corrections on the Multiset Case
-
-Inspecting the structure of a Eulerian circuit,
-
-![](res/types/figs/graph-path.svg)
-
-it is defined as a circular sequence of edges, while a string is defined
-as a sequence of characters, which here correspond to vertices. For each
-pair of vertices $u$ and $v$, all edges $u \to v$ and all edges $v \to
-u$ form equivalence classes that are **overcounted** in the number of
-Eulerian circuits from the perspective of strings.
-
-Because in this case there are $n_i$ incoming and outgoing edges for
-each symbol vertex, we get
-
-$$\begin{align}\frac{ec({\bf n})}{\prod_i (n_i!)^2}
-&= \frac{(N-1)! \cdot \prod_i n_i!}{\prod_i (n_i!)^2}\\[10pt]
-&= \frac{(N-1)!}{\prod_i n_i!}.
-\end{align}$$
-
-Finally, the BEST theorem counts *unrooted* circuits, meaning paths with
-their ends connected, a.k.a. cycles. On the other hand, a string has a
-definite beginning and end. This means the formula **undercounts** the
-number of strings by a factor of $N$---or the number of places a circuit
-can be "cut" into a string.
-
-$$\begin{align}\frac{ec({\bf n}) \cdot N}{\prod_i (n_i!)^2}
-&= \frac{(N-1)!}{\prod_i n_i!} \cdot N \\[5pt]
-&= \frac{N!}{\prod_i n_i!}\\[5pt]
-&= {N \choose n_0,n_1,\ldots,n_{m-1}}
-\end{align}$$
-
-With these corrections to the the BEST theorem, we can produce a formula
-for the number of strings given the adjacency and degree matrices.
-
-#### General Formulation
-
-Starting from the BEST theorem,
-
-$$ec(D,A) = t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)!$$
-
-we divide by the factorial of the size of each set of equivalent
-edges---which are all the entries of the adjacency matrix:
-
-$$\begin{align}\frac{ec(D,A)}{\prod_{i,j}A_{ij}!}
-&= \frac{t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)!}{\prod_{i,j}A_{ij}!}
-\end{align}$$
-
-and multiply by the number of ways to cut open a circuit at the starting
-vertex $\varepsilon$:
-
-$$\begin{align}\frac{ec(D,A) \cdot D_{00}}{\prod_{i,j}A_{ij}!}
-&= \frac{t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)! \cdot D_{00}}
-	{\prod_{i,j}A_{ij}!}\\[10pt]
-&= \frac{t(L) \cdot D_{00}! \cdot \prod_{i=1}^m\left(D_{ii}-1\right)!}
-	{\prod_{i,j}A_{ij}!}.
-\end{align}$$
-
-### Example
-
-Using a graph instead of a multiset as a parametric model allows us to
-use counts of intersecting joints in the string. Consider the following
-chunking of the example string and corresponding graph.
-
-![](res/types/figs/graph-joints.svg)
-![](res/types/figs/string-fig-chunked.svg)
-
-The path to be encoded becomes
-
-$$\varepsilon \to \boxed{b} \to \boxed{c} \to \boxed{c} \to \varepsilon \to \boxed{d} \to \varepsilon \to \boxed{a} \to \boxed{b} \to \boxed{b} \to \varepsilon.$$
-
-The degree, adjacency and Laplacian matrices are:
-
-$$\begin{align}L_{abcd}' ~
-&= D_{abcd}' - A_{abcd}'\\[10pt]
-&=~~\begin{array}{c@{\hspace{4pt}}c}
- & \begin{array}{ccccccccccc}
-	\varepsilon & a & b & c & d & ~~~~~~~ & \varepsilon & a & b & c & d
-\end{array} \\[2pt]
-\begin{array}{c}
-	\varepsilon \\ a \\ b \\ c \\ d
-\end{array}
-&
-\begin{bmatrix}
- ~~3 &  0 &  0 &  0 &  0~~ \\
- ~~0 &  1 &  0 &  0 &  0~~ \\
- ~~0 &  0 &  3 &  0 &  0~~ \\
- ~~0 &  0 &  0 &  2 &  0~~ \\
- ~~0 &  0 &  0 &  0 &  1~~
-\end{bmatrix}
--
-\begin{bmatrix}
- ~~0 &  1 &  1 &  0 &  1~~ \\
- ~~0 &  0 &  1 &  0 &  0~~ \\
- ~~1 &  0 &  1 &  1 &  0~~ \\
- ~~1 &  0 &  0 &  1 &  0~~ \\
- ~~1 &  0 &  0 &  0 &  0~~
-\end{bmatrix}
-\end{array}\\[10pt]
-&=~~\begin{array}{c@{\hspace{4pt}}c}
- & \begin{array}{ccccc}
-	\,~\varepsilon\,~ & \,~a\,~ & \,~b\,~ & \,~c\,~ & \,~d\,~
-\end{array} \\[2pt]
-\begin{array}{c}
-	\varepsilon \\ a \\ b \\ c \\ d
-\end{array}
-&
-\begin{bmatrix}
-~{ 3} & -1 & -1 &  0 & -1~~ \\
-~{ 0} &  1 & -1 &  0 &  0~~ \\
-~{-1} &  0 &  2 & -1 &  0~~ \\
-~{-1} &  0 &  0 &  1 &  0~~ \\
-~{-1} &  0 &  0 &  0 &  1~~
-\end{bmatrix}
-\end{array}.
-\end{align}$$
-
-The cofactor of the Laplacian and number of spanning trees is
-
-$$t(L_{abcd}') = \mathrm{det}
-\begin{bmatrix}
-~1 & -1 &  0 & 0~ \\
-~0 &  2 & -1 & 0~ \\
-~0 &  0 &  1 & 0~ \\
-~0 &  0 &  0 & 1~
-\end{bmatrix}
-= 2$$
-
-making the number of Eulerian circuits
-
-$$\begin{align}ec_{abcd}
-&= t(L_{abcd}') \cdot \prod_{i=0}^{m}\left([D_{abcd}']_{ii}-1\right)!\\
-&= 2 \cdot 2! \cdot 0! \cdot 1! \cdot 0! \cdot 0!\\
-&= 4
-\end{align}$$
-
-and the number of strings
-
-$$\frac{ec_{abcd} \cdot [D_{abcd}']_{00}}{\prod_{i,j}[A_{abcd}']_{ij}!}
-	= \frac{4 \cdot 3}{1} = 12$$
-
-which---since there are two ways to arrange the joints into three
-contiguous chains of joints---are as follows (our string in parens):
-
-```
- abb bcc d	 ab bbbc d
- abb d bcc	 ab d bbbc
- bcc abb d	 bbbc ab d
-(bcc d abb)	 bbbc d ab
- d abb bcc	 d ab bbbc
- d bcc abb	 d bbbc ab.
-```
-
-One can observe in the above enumeration that some strings of chunks
-will become equivalent after concatenation since there are two ways to
-walk across the graph to produce the substring `a-b-b-b-c-c`, namely
-
-```
-abb [ε] bcc
-```
-
-and
-
-```
-ab [ε] bbcc
-```
-
-which results in two pairs of equivalent strings in our enumeration,
-bringing the actual number of string to 10.
-
-While only the first subpath is canonical for this substring assuming
-eager construction, I'm unsure of a the exact way to count and subtract
-those from the computation efficiently.
-
-Ultimately, it is also possible that this increase in number of strings
-is not large enough to warrant consideration. Since code length is the
-log of the variety, as long as there are less non-canonical than
-canonical strings in our count, as is the case here, the difference in
-code length will be less than 1 bit.

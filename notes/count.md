@@ -2,20 +2,28 @@
 title: "Ways to Count Information"
 author: Nathaniel Bos
 date: 2025-10-31
-edit: 2026-07-09
+edit: 2026-11-20
 ---
 
 In data compression with [arithmetic coding](arith.html), the length of
-the produced code is within 2 bits of the [information
+the produced code stays within 2 bits of the [information
 content](https://en.wikipedia.org/wiki/Information_content) of the
-encoded data, which you get from the probability:
+encoded data, which you get from the probability of the data through:
 
 $$I(x)=-\log P(x).$$
 
-where $P(x)$ is the probability of $x$. The information content of a
-sequence of events or symbols is just the sum of the information
-contents of each, just as the concatenated codes will have length equal
-to the sum of individual codes.
+The information content of a sequence of independent events (or symbols)
+is just the sum of the information contents of each (the log of the
+product of the probabilities), just as the concatenated codes will have
+length equal to the sum of individual codes.
+
+When computing the information content of a discrete system, where all
+parameters are integers, it is more natural to compute the logarithm of
+the [number of
+states](https://en.wikipedia.org/wiki/Variety_(cybernetics)) than to
+conform it to the probabilistic interpretation.
+
+This note is a summary of my encountering this fact.
 
 ## Information of the Categorical MLE
 
@@ -123,7 +131,7 @@ Of note is that the *order* in which symbols appear in the sequence
 clearing them out for the rest of the inference, or not) has no bearing
 on the information content of a *without replacement* strategy. It is
 uniquely determined by the length ($N$) and bin sizes ($n_0, n_1, n_2,
-...$) with no regard to the actual structure of the sequence.
+...$) and invariant to the specific instantiation of the sequence.
 
 ## Discussion
 
@@ -138,7 +146,7 @@ $$N \log N -n_0 \log n_0 - n_1 \log n_1 - n_2 \log n_2 -\ ...\\[10pt]$$
 
 Obviously, we have that, for $n > 0$:
 
-$$\log(n!) < n\log n,$$
+$$\log(n!) ~~<~~ n\log n,$$
 
 because $n\log n = \log(n^n)$ and $n! < n^n$.
 
@@ -155,16 +163,16 @@ $$\log(n!) = n\log n - n\log e + \frac{1}{2}\log(2\pi n)
 
 ![](res/count/stirling.svg)
 
-or [Ramanujan](https://en.wikipedia.org/wiki/Srinivasa_Ramanujan)'s more
-precise approximation:
+<!-- or [Ramanujan](https://en.wikipedia.org/wiki/Srinivasa_Ramanujan)'s more -->
+<!-- precise approximation: -->
 
-$$\begin{align}
-\log(n!) =~&n\log n - n\log e \\
-	&+\frac{1}{6}\log(n(1+4n(1+2n))) \\
-	&+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right)
-\end{align}$$
+<!-- $$\begin{align} -->
+<!-- \log(n!) =~&n\log n - n\log e \\ -->
+<!-- 	&+\frac{1}{6}\log(n(1+4n(1+2n))) \\ -->
+<!-- 	&+\frac{1}{2}\log \pi + O\left(\frac{1}{n^3}\right) -->
+<!-- \end{align}$$ -->
 
-![](res/count/ramanujan.svg)
+<!-- ![](res/count/ramanujan.svg) -->
 
 but these additional terms correct a mostly constant factor $n\log e$
 between the two functions:
@@ -225,7 +233,7 @@ same parameters.
 
 ### Information From Variety
 
-This motivates a simpler description of information.
+This hints at a simpler description of information.
 
 If the probabilistic model is equivalent to one with $N$ equiprobable
 states, the denominator position of the size cancels out the negation of
@@ -235,19 +243,15 @@ $$\begin{align}I(x)
 &= -\log P(x) \\[5pt]
 &= -\log \left(\frac{1}{N}\right) \\[5pt]
 &= \log N. \\[5pt]
-&
 \end{align}$$
 
 This applies more generally to the information of a
-[variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)), which is
-simply:
+[variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)). Simply:
 
 $$I(x) = \log \left(V(X)\right),$$
 
-where the **variety** $V(X)$ is the total number of states a system $X$
-can find itself in.
-
-$$$$
+where the **variety** $V(X)$ is the total number of equiprobable states
+a system $X$ can find itself in.
 
 Even when the probabilities are not equal, but derived from
 [frequencies](https://en.wikipedia.org/wiki/Frequentist_probability):
@@ -261,4 +265,4 @@ $$\begin{align} I(x_i)
 the information content of a part ($n_i$) from a whole ($N$) can be
 interpreted as the information to specify one among the whole ($\log N$)
 minus the information to specify one among the part ($\log n_i$)---like
-an interval between $n_i$ and $N$ in $\log$-space.
+some sort of interval.

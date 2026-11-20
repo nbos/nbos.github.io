@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Modeling a String with a Graph</title>
+
+    <script>
+      (function() {
+	  function applyDark() {
+	      var isDark = localStorage.getItem('darkMode') === 'true';
+	      document.documentElement.classList.toggle('dark-mode', isDark);
+	      var el = document.getElementById('dark-toggle');
+	      if (el) el.textContent = isDark ? '☾' : '☀';
+	  }
+
+	  // Immediate (prevents flash on fresh loads)
+	  applyDark();
+
+	  // Re-apply when restored from bfcache (back/forward navigation)
+	  window.addEventListener('pageshow', function(e) {
+	      if (e.persisted) applyDark();
+	  });
+      })();
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+
+    <script>
+      window.MathJax = {
+	  startup: {
+	      ready() {
+		  MathJax.startup.defaultReady();
+		  MathJax.startup.promise.then(() => {
+		      const y = window.scrollY;
+		      window.scrollTo(0, y);
+		  });
+	      }
+	  }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Notes</a>
+        <a href="./hackage.html">Hackage</a>
+        <a href="./contact.html">Contact</a>
+	<a href="#" id="dark-toggle" onclick="toggleDark(event)" title="Toggle dark mode">☀</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Modeling a String with a Graph</h1>
+      <article>
+  <section class="header">
+    Posted on November 20, 2026
+    
+    by Nathaniel Bos
+    
+    
+  </section>
+  <section>
+    
+<p>Motivated by higher book-keeping requirements of purely disjoint
+construction on strings (bigrams,
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bag-of-words_model">bag-of-words</a>, etc.),
+we move to a integer, conditional model (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Markov_chain">Markov
+chain</a>) whose adaptive
+(read: combinatorial) equivalent selects one among all possible
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian path</a> on a
+multigraph.</p>
+<p>Counting the information of the model then reduces to counting the
+number of such paths, which is given to us by the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/BEST_theorem">BEST
+theorem</a>.</p>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#why-binary-construction" id="toc-why-binary-construction"><span class="toc-section-number">1</span> Why Binary Construction</a></li>
+<li><a href="#complexity-issues" id="toc-complexity-issues"><span class="toc-section-number">2</span> Complexity Issues</a>
+<ul>
+<li><a href="#counting-joints-in-a-string" id="toc-counting-joints-in-a-string"><span class="toc-section-number">2.1</span> Counting Joints in a String</a></li>
+<li><a href="#counting-joints-of-a-type-in-a-string" id="toc-counting-joints-of-a-type-in-a-string"><span class="toc-section-number">2.2</span> Counting Joints of a Type in a String</a></li>
+</ul></li>
+<li><a href="#a-conditional-model" id="toc-a-conditional-model"><span class="toc-section-number">3</span> A Conditional Model</a></li>
+<li><a href="#counting-strings-on-a-graph" id="toc-counting-strings-on-a-graph"><span class="toc-section-number">4</span> Counting Strings on a Graph</a>
+<ul>
+<li><a href="#corrections-on-the-multiset-case" id="toc-corrections-on-the-multiset-case"><span class="toc-section-number">4.1</span> Corrections on the Multiset Case</a></li>
+<li><a href="#general-formulation" id="toc-general-formulation"><span class="toc-section-number">4.2</span> General Formulation</a></li>
+</ul></li>
+<li><a href="#example" id="toc-example"><span class="toc-section-number">5</span> Example</a></li>
+</ul>
+</div>
+<h2 data-number="1" id="why-binary-construction"><span class="header-section-number">1</span> Why Binary Construction</h2>
+<p>In the realm of simplest possible logics capable of expressing our
+languages of math or computing, some domains are representable by unary
+constructors, like the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Peano_axioms">Peano
+representation</a> of natural
+numbers</p>
+<p><span class="math display">\[\begin{align}
+0 &amp;\in \mathbb{N}\\[5pt]
+n &amp;\in \mathbb{N} \Rightarrow S(n) \in \mathbb{N}
+\end{align}\]</span></p>
+<p>leading to constructions such as</p>
+<p><span class="math display">\[S(S(S(0))) = 3.\]</span></p>
+<p>But anything logic trying to make sense of languages more generally,
+strings of symbols, etc. construcors with two arguments are
+<em>necessary</em>. Moreover, two arguments are also <strong>sufficient</strong> to
+represent constructors of any
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Arity">arity</a>.</p>
+<p>For example, a triple can be represented as a pair nested in another
+pair</p>
+<p><span class="math display">\[(a,b,c) = (a,(b,c))\]</span></p>
+<p>which can be repeated for any number of arguments.</p>
+<p>Currying makes functions of any number of arguments representable by
+functions of one arguments (i.e. arrows of two arguments):</p>
+<p><span class="math display">\[A \to B \to C \to D ~~=~~ A \to (B \to (C \to D))\]</span></p>
+<p>which is also implicit in any binary logical or arithmetic operators,
+made ubiquitous through associativity laws.</p>
+<p>More generally, all <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free
+grammars</a> can be
+shown to be equivalent to one in <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Chomsky_normal_form">Chomsky normal
+form</a> with only
+either unary or binary production rules of the form:</p>
+<p><span class="math display">\[\begin{align}
+\{~&amp; A \to BC \\
+,~&amp; A \to a  \\
+,~&amp; S \to \epsilon ~~\}
+\end{align}\]</span></p>
+<p>Given a string generated by an unknown grammar or logic, we can
+therefore be confident that a regiment of binary construction will at
+least be capable of representing any of its hidden structure.</p>
+<h2 data-number="2" id="complexity-issues"><span class="header-section-number">2</span> Complexity Issues</h2>
+<p>Given the <a href="chunk.html#optimizations">heavy bookkeeping required to make the previous algorithm
+usable</a>, we approach the implementation with
+the intention of eliminating all operations equal or greater than <span class="math inline">\(O(N)\)</span>
+in complexity, if not for each introduction, then at least for each
+mutation, and certainly when evaluating each mutation candidate.</p>
+<p>Unfortunately, it looks like the expressiveness of joint types
+introduces too many contextual dependencies to make this possible.</p>
+<h3 data-number="2.1" id="counting-joints-in-a-string"><span class="header-section-number">2.1</span> Counting Joints in a String</h3>
+<p>For a pair of symbols</p>
+<p><span class="math display">\[(s_0,s_1)\]</span></p>
+<p>and a string of length <span class="math inline">\(N\)</span>, the loss associated with its introduction
+according the the previous logic is a function of three values:
+individual symbol counts <span class="math inline">\(n_0\)</span> and <span class="math inline">\(n_1\)</span>, and the joint count
+<span class="math inline">\(n_{01}\)</span>. All of those parameters can be gathered in one <span class="math inline">\(O(N)\)</span> pass
+over the string and only require <span class="math inline">\(O(n_{01})\)</span> updates per introduction.</p>
+<p>When <span class="math inline">\(s_0 \neq s_1\)</span>, all encountered joints count towards the joint
+count:</p>
+<p><img src="res/types/figs/joints-neq.svg" /></p>
+<p>but when <span class="math inline">\(s_0 = s_1\)</span>, there is the subtlety that consecutive occurrences
+of the joint overlap:</p>
+<p><img src="res/types/figs/joints-eq.svg" /></p>
+<p>and every other pair must be skipped and not contribute towards the
+joint count <span class="math inline">\(n_{01}\)</span>. This is easily managed by keeping track of parity
+when encountering spans of identical symbols while scanning the string
+and discarding joints that are not “constructible”.</p>
+<h3 data-number="2.2" id="counting-joints-of-a-type-in-a-string"><span class="header-section-number">2.2</span> Counting Joints of a Type in a String</h3>
+<p>For a joint type</p>
+<p><span class="math display">\[A \times B\]</span></p>
+<p>and a string of length <span class="math inline">\(N\)</span>, the loss associated with its introduction is
+a function of the total joint count <span class="math inline">\(n_m\)</span> and as many individual symbols
+counts as there are symbols in both unions:</p>
+<p><span class="math display">\[\Delta{\bf n} = \{~n_i ~|~ s_i \in A \cup B~\}.\]</span></p>
+<p>Since every new type will produce distinct overlap events along the
+string, a single pass over the string is no longer sufficient to gather
+a record of those values.</p>
+<p>Still, assuming we do a <span class="math inline">\(O(N)\)</span> pass over the string for each newly
+sampled type, we must find a way to efficiently compute or bookkeep the
+differences in <span class="math inline">\(\Delta{\bf n}\)</span> produced by each candidate mutation after
+each mutation application.</p>
+<p>This becomes problematic when chains or arbitrary length of overlapping
+joints</p>
+<p><img src="res/types/figs/joints-eq.svg" /></p>
+<p>can have their parity flipped by the introduction of a new symbol in the
+left union</p>
+<p><img src="res/types/figs/joints-mut.svg" /></p>
+<p>producing a cascading effect in the structure of construction,
+ultimately only incrementing or decrementing the individual count of the
+last symbol in the chain.</p>
+<p>By itself, this is still manageable if we keep track of all joint sites,
+constructive or not, for all joints in binary trees that merge and
+resolve collisions in less than <span class="math inline">\(O(N)\)</span>, keeping pointers between head
+and tail of each such segment, etc. But deletions of joints at random
+positions in a segment now requires each joint to also point to either
+the head or the tail, which would require on the order of <span class="math inline">\(O(n_m)\)</span>
+updates at each mutation application, etc.</p>
+<p>The simple fact that our permutation format has to deal with the
+introduction of non-overlapping chunks, while candidates for chunking
+<em>are</em> overlapping, creates a tension that keeps a seemingly
+straightforward extension from progressing further.</p>
+<p>We therefore swap the underlying combinatorial model for something more
+appropriate.</p>
+<h2 data-number="3" id="a-conditional-model"><span class="header-section-number">3</span> A Conditional Model</h2>
+<p>While a multiset permutation model can be simplified by reducing the
+size of the string through the introduction of ever larger
+(non-overlapping) chunks,</p>
+<p><img src="res/types/figs/joints-neq.svg" /></p>
+<p>we would be saved from micromanaging ever expanding sequences of chunks
+on the working string if we could freely introduce joints that overlap,
+turning individually separable chunks into something more like
+transitions between states.</p>
+<p><img src="res/types/figs/joints-eq.svg" /></p>
+<p>Therefore, instead of using a vector of counts:</p>
+<p><img src="res/chunk/figs/counts-fig.svg" /></p>
+<p>that is resolved into a string through the encoding of a permutation:</p>
+<p><img src="res/chunk/figs/permutation.svg" /></p>
+<p>we transition to using a directed
+<strong><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multigraph">multigraph</a></strong>:</p>
+<p><img src="res/types/figs/graph-cat.svg" /></p>
+<p>that is resolved into a string through the encoding of a <strong>path</strong>:</p>
+<p><img src="res/types/figs/graph-path.svg" /></p>
+<p><img src="res/chunk/figs/string-fig.svg" /></p>
+<p>For isntance, in this case, the path</p>
+<p><span class="math display">\[\begin{align}
+\varepsilon &amp;\to \boxed{b} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{c} \to \varepsilon \to \boxed{d} \to \\
+\varepsilon &amp;\to \boxed{a} \to \varepsilon \to \boxed{b} \to \varepsilon \to \boxed{b} \to \varepsilon.\end{align}\]</span></p>
+<p>The translation between the first model to the second goes like this: a
+vertex is introduced for each symbol in the alphabet as well as an
+auxiliary <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Empty_string">empty string</a>
+vertex labeled <span class="math inline">\(\varepsilon\)</span> (epsilon). For as many occurrences of each
+symbol there is in the string, pairs of edges go back and forth to the
+<span class="math inline">\(\varepsilon\)</span> vertex. Then, any path walking every edge in the graph—a
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian path</a>—
+corresponds to a single string with appropriate symbol counts.</p>
+<p>It so happens that counting Eulerian paths in a directed graph is only
+as complex as computing a certain
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Determinant">determinant</a> on the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Laplacian_matrix">Laplacian matrix</a> which
+has complexity <span class="math inline">\(O(n^3)\)</span> for a graph of <span class="math inline">\(n\)</span> vertices, or <span class="math inline">\(O(m^3)\)</span> for an
+alphabet of <span class="math inline">\(m\)</span> symbols. And since a counting procedure can be converted
+into an encoding procedure through
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorial_number_system">ranking/unranking</a>,
+we get both a serialization algorithm and a code length formula.</p>
+<h2 data-number="4" id="counting-strings-on-a-graph"><span class="header-section-number">4</span> Counting Strings on a Graph</h2>
+<p>The exact number of Eulerian circuits in a directed multigraph is given
+by the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/BEST_theorem">BEST theorem</a> as the
+product of the number of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Spanning_tree">spanning
+trees</a> and the factorial of
+each vertex’s
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Degree_(graph_theory)">degree</a> minus one.</p>
+<p><span class="math display">\[ec(G) = t(G) \cdot \prod_{v\in V}\left(\mathrm{deg}(v)-1\right)!\]</span></p>
+<p>The number of spanning trees <span class="math inline">\(t(G)\)</span> is equal—by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Kirchhoff%27s_theorem">Kirchhoff’s matrix
+tree theorem</a>—to
+the determinant of the submatrix of the Laplacian where one row and one
+column are removed.</p>
+<p>The Laplacian matrix of a directed multigraph is the difference between
+matrices <span class="math inline">\(D\)</span> and <span class="math inline">\(A\)</span>:</p>
+<p><span class="math display">\[L = D - A\]</span></p>
+<p>where <span class="math inline">\(D\)</span> is a diagonal matrix holding the outdegree of each vertex and
+<span class="math inline">\(A\)</span> is the adjacency matrix where elements <span class="math inline">\(a_{ij}\)</span> is the number of
+edges going from vertex <span class="math inline">\(i\)</span> to vertex <span class="math inline">\(j\)</span>.</p>
+<p>Using the example above, we would have the Laplacian:</p>
+<p><span class="math display">\[\begin{align}L_{abcd} ~
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccccccccc}
+	\varepsilon &amp; a &amp; b &amp; c &amp; d &amp; ~~~~~~~ &amp; \varepsilon &amp; a &amp; b &amp; c &amp; d
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\begin{bmatrix}
+~~7 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  1 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  3 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  0 &amp;  2 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  0 &amp;  0 &amp;  1~~
+\end{bmatrix}
+-
+\begin{bmatrix}
+~~0 &amp;  1 &amp;  3 &amp;  2 &amp;  1~~ \\
+~~1 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~3 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~2 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~
+\end{bmatrix}
+\end{array}\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccc}
+	\,~\varepsilon\,~ &amp; \,~a\,~ &amp; \,~b\,~ &amp; \,~c\,~ &amp; \,~d\,~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\begin{bmatrix}
+~{ 7} &amp; -1 &amp; -3 &amp; -2 &amp; -1~~ \\
+~{-1} &amp;  1 &amp;  0 &amp;  0 &amp;  0~~ \\
+~{-3} &amp;  0 &amp;  3 &amp;  0 &amp;  0~~ \\
+~{-2} &amp;  0 &amp;  0 &amp;  2 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  0 &amp;  0 &amp;  1~~
+\end{bmatrix}
+\end{array}
+\end{align}\]</span></p>
+<p>or for any such graph constructed from a mere multiset:</p>
+<p><span class="math display">\[\begin{align}L_{\bf n} ~
+&amp;=~~ D_{\bf n} - A_{\bf n}\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccccccccc}
+	~~~\varepsilon ~&amp;~ s_0 ~&amp; s_1 &amp; \cdots &amp;~ s_{m-1} ~&amp; ~~~ &amp;~ \varepsilon ~&amp;~ s_0 ~&amp;~ s_1 ~&amp; \cdots &amp;~ s_{m-1}~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
+\end{array}
+&amp;
+\begin{bmatrix}
+~~N &amp;  0 &amp;  0 &amp; \cdots &amp;  0 \\
+~~0 &amp;  n_0 &amp;  0 &amp; \cdots &amp;  0 \\
+~~0 &amp;  0 &amp;  n_1 &amp; \cdots &amp;  0 \\
+~~\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp;  0 \\
+~~0 &amp;  0 &amp;  0 &amp;  0 &amp;  n_{m-1}
+\end{bmatrix}
+-
+\begin{bmatrix}
+0 &amp; n_0 &amp; n_1 &amp; \cdots &amp; n_{m-1} \\
+n_0 &amp; 0 &amp;  0 &amp; \cdots &amp;  0 \\
+n_1 &amp; 0 &amp;  0 &amp; \cdots &amp;  0 \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp;  0 \\
+n_{m-1} &amp;  0 &amp;  0 &amp;  0 &amp;  0
+\end{bmatrix}
+\end{array}\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccc}
+	~~\varepsilon~~~~~ &amp; ~~s_0~~ &amp; ~~s_1~~ &amp; \cdots &amp; ~~s_{m-1}
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ s_0 \\ s_1 \\ \vdots \\ s_{m-1}
+\end{array}
+&amp;
+\begin{bmatrix}
+N &amp; -n_0 &amp; -n_1 &amp; \cdots &amp; -n_{m-1} \\
+-n_0 &amp;  n_0 &amp;  0 &amp; \cdots &amp;  0 \\
+-n_1 &amp;  0 &amp;  n_1 &amp; \cdots &amp;  0 \\
+\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp;  0 \\
+-n_{m-1} &amp;  0 &amp;  0 &amp;  0 &amp;  n_{m-1}
+\end{bmatrix}
+\end{array}
+\end{align}\]</span></p>
+<p>where <span class="math inline">\(N = \sum_i n_i\)</span>.</p>
+<p>By Kirchhoff’s theorem, the number of spanning trees is the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)">minor</a> resulting
+from the deletion any one row and any one column in the
+Laplacian. Arbitrarily, we delete the firsts:</p>
+<p><span class="math display">\[t(L_{\bf n}) = \mathrm{det}
+\begin{bmatrix}
+~n_0 &amp;  0 &amp; \cdots &amp;  0~ \\
+~0 &amp;  n_1 &amp; \cdots &amp;  0~ \\
+~\vdots &amp; \vdots &amp; \ddots &amp;  0~ \\
+~0 &amp;  0 &amp;  0 &amp;  n_{m-1}~
+\end{bmatrix}
+= \prod_{i=0}^{m-1} n_i.\]</span></p>
+<p>Then, the number of Eulerian circuits is</p>
+<p><span class="math display">\[\begin{align}ec({\bf n})
+&amp;= t(L_{\bf n}) \cdot \prod_{i=0}^{m}\left([D_{\bf n}]_{ii}-1\right)!\\
+&amp;= \prod_{i=0}^{m-1} n_i \cdot (N-1)! \cdot \prod_{i=0}^{m-1}\left(n_i-1\right)!\\
+&amp;= (N-1)! \cdot \prod_{i=0}^{m-1}n_i!
+\end{align}\]</span></p>
+<p>which <em>does not</em> correspond to the number of strings (permutations)
+given a multiset, which is typically computed from the multinomial
+coefficient:</p>
+<p><span class="math display">\[{N \choose n_0,n_1,\ldots,n_{m-1}}
+~=~ \frac{N!}{\prod_i n_i!}.\]</span></p>
+<h3 data-number="4.1" id="corrections-on-the-multiset-case"><span class="header-section-number">4.1</span> Corrections on the Multiset Case</h3>
+<p>Inspecting the structure of a Eulerian circuit,</p>
+<p><img src="res/types/figs/graph-path.svg" /></p>
+<p>it is defined as a circular sequence of edges, while a string is defined
+as a sequence of characters, which here correspond to vertices. For each
+pair of vertices <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span>, all edges <span class="math inline">\(u \to v\)</span> and all edges <span class="math inline">\(v \to
+u\)</span> form equivalence classes that are <strong>overcounted</strong> in the number of
+Eulerian circuits from the perspective of strings.</p>
+<p>Because in this case there are <span class="math inline">\(n_i\)</span> incoming and outgoing edges for
+each symbol vertex, we get</p>
+<p><span class="math display">\[\begin{align}\frac{ec({\bf n})}{\prod_i (n_i!)^2}
+&amp;= \frac{(N-1)! \cdot \prod_i n_i!}{\prod_i (n_i!)^2}\\[10pt]
+&amp;= \frac{(N-1)!}{\prod_i n_i!}.
+\end{align}\]</span></p>
+<p>Finally, the BEST theorem counts <em>unrooted</em> circuits, meaning paths with
+their ends connected, a.k.a. cycles. On the other hand, a string has a
+definite beginning and end. This means the formula <strong>undercounts</strong> the
+number of strings by a factor of <span class="math inline">\(N\)</span>—or the number of places a circuit
+can be “cut” into a string.</p>
+<p><span class="math display">\[\begin{align}\frac{ec({\bf n}) \cdot N}{\prod_i (n_i!)^2}
+&amp;= \frac{(N-1)!}{\prod_i n_i!} \cdot N \\[5pt]
+&amp;= \frac{N!}{\prod_i n_i!}\\[5pt]
+&amp;= {N \choose n_0,n_1,\ldots,n_{m-1}}
+\end{align}\]</span></p>
+<p>With these corrections to the the BEST theorem, we can produce a formula
+for the number of strings given the adjacency and degree matrices.</p>
+<h3 data-number="4.2" id="general-formulation"><span class="header-section-number">4.2</span> General Formulation</h3>
+<p>Starting from the BEST theorem,</p>
+<p><span class="math display">\[ec(D,A) = t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)!\]</span></p>
+<p>we divide by the factorial of the size of each set of equivalent
+edges—which are all the entries of the adjacency matrix:</p>
+<p><span class="math display">\[\begin{align}\frac{ec(D,A)}{\prod_{i,j}A_{ij}!}
+&amp;= \frac{t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)!}{\prod_{i,j}A_{ij}!}
+\end{align}\]</span></p>
+<p>and multiply by the number of ways to cut open a circuit at the starting
+vertex <span class="math inline">\(\varepsilon\)</span>:</p>
+<p><span class="math display">\[\begin{align}\frac{ec(D,A) \cdot D_{00}}{\prod_{i,j}A_{ij}!}
+&amp;= \frac{t(L) \cdot \prod_{i=0}^m\left(D_{ii}-1\right)! \cdot D_{00}}
+	{\prod_{i,j}A_{ij}!}\\[10pt]
+&amp;= \frac{t(L) \cdot D_{00}! \cdot \prod_{i=1}^m\left(D_{ii}-1\right)!}
+	{\prod_{i,j}A_{ij}!}.
+\end{align}\]</span></p>
+<h2 data-number="5" id="example"><span class="header-section-number">5</span> Example</h2>
+<p>Using a graph instead of a multiset as a parametric model allows us to
+use counts of intersecting joints in the string. Consider the following
+chunking of the example string and corresponding graph.</p>
+<p><img src="res/types/figs/graph-joints.svg" />
+<img src="res/types/figs/string-fig-chunked.svg" /></p>
+<p>The path to be encoded becomes</p>
+<p><span class="math display">\[\varepsilon \to \boxed{b} \to \boxed{c} \to \boxed{c} \to \varepsilon \to \boxed{d} \to \varepsilon \to \boxed{a} \to \boxed{b} \to \boxed{b} \to \varepsilon.\]</span></p>
+<p>The degree, adjacency and Laplacian matrices are:</p>
+<p><span class="math display">\[\begin{align}L_{abcd}' ~
+&amp;= D_{abcd}' - A_{abcd}'\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccccccccc}
+	\varepsilon &amp; a &amp; b &amp; c &amp; d &amp; ~~~~~~~ &amp; \varepsilon &amp; a &amp; b &amp; c &amp; d
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\begin{bmatrix}
+~~3 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  1 &amp;  0 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  3 &amp;  0 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  0 &amp;  2 &amp;  0~~ \\
+~~0 &amp;  0 &amp;  0 &amp;  0 &amp;  1~~
+\end{bmatrix}
+-
+\begin{bmatrix}
+~~0 &amp;  1 &amp;  1 &amp;  0 &amp;  1~~ \\
+~~0 &amp;  0 &amp;  1 &amp;  0 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  1 &amp;  1 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  0 &amp;  1 &amp;  0~~ \\
+~~1 &amp;  0 &amp;  0 &amp;  0 &amp;  0~~
+\end{bmatrix}
+\end{array}\\[10pt]
+&amp;=~~\begin{array}{c@{\hspace{4pt}}c}
+&amp; \begin{array}{ccccc}
+	\,~\varepsilon\,~ &amp; \,~a\,~ &amp; \,~b\,~ &amp; \,~c\,~ &amp; \,~d\,~
+\end{array} \\[2pt]
+\begin{array}{c}
+	\varepsilon \\ a \\ b \\ c \\ d
+\end{array}
+&amp;
+\begin{bmatrix}
+~{ 3} &amp; -1 &amp; -1 &amp;  0 &amp; -1~~ \\
+~{ 0} &amp;  1 &amp; -1 &amp;  0 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  2 &amp; -1 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  0 &amp;  1 &amp;  0~~ \\
+~{-1} &amp;  0 &amp;  0 &amp;  0 &amp;  1~~
+\end{bmatrix}
+\end{array}.
+\end{align}\]</span></p>
+<p>The cofactor of the Laplacian and number of spanning trees is</p>
+<p><span class="math display">\[t(L_{abcd}') = \mathrm{det}
+\begin{bmatrix}
+~1 &amp; -1 &amp;  0 &amp; 0~ \\
+~0 &amp;  2 &amp; -1 &amp; 0~ \\
+~0 &amp;  0 &amp;  1 &amp; 0~ \\
+~0 &amp;  0 &amp;  0 &amp; 1~
+\end{bmatrix}
+= 2\]</span></p>
+<p>making the number of Eulerian circuits</p>
+<p><span class="math display">\[\begin{align}ec_{abcd}
+&amp;= t(L_{abcd}') \cdot \prod_{i=0}^{m}\left([D_{abcd}']_{ii}-1\right)!\\
+&amp;= 2 \cdot 2! \cdot 0! \cdot 1! \cdot 0! \cdot 0!\\
+&amp;= 4
+\end{align}\]</span></p>
+<p>and the number of strings</p>
+<p><span class="math display">\[\frac{ec_{abcd} \cdot [D_{abcd}']_{00}}{\prod_{i,j}[A_{abcd}']_{ij}!}
+	= \frac{4 \cdot 3}{1} = 12\]</span></p>
+<p>which—since there are two ways to arrange the joints into three
+contiguous chains of joints—are as follows (our string in parens):</p>
+<pre><code> abb bcc d	 ab bbbc d
+ abb d bcc	 ab d bbbc
+ bcc abb d	 bbbc ab d
+(bcc d abb)	 bbbc d ab
+ d abb bcc	 d ab bbbc
+ d bcc abb	 d bbbc ab.</code></pre>
+<p>One can observe in the above enumeration that some strings of chunks
+will become equivalent after concatenation since there are two ways to
+walk across the graph to produce the substring <code>a-b-b-b-c-c</code>, namely</p>
+<pre><code>abb [ε] bcc</code></pre>
+<p>and</p>
+<pre><code>ab [ε] bbcc</code></pre>
+<p>which results in two pairs of equivalent strings in our enumeration,
+bringing the actual number of string to 10.</p>
+<p>While only the first subpath is canonical for this substring assuming
+eager construction, I’m unsure of a the exact way to count and subtract
+those from the computation efficiently.</p>
+<p>Ultimately, it is also possible that this increase in number of strings
+is not large enough to warrant consideration. Since code length is the
+log of the variety, as long as there are less non-canonical than
+canonical strings in our count, as is the case here, the difference in
+code length will be less than 1 bit.</p>
+  </section>
+  <footer>
+    <a href="./">Return</a>
+  </footer>
+</article>
+
+    </main>
+
+    <script>
+      function toggleDark(e) {
+	  e.preventDefault();
+	  var isDark = document.documentElement.classList.toggle('dark-mode');
+	  localStorage.setItem('darkMode', isDark);
+	  updateIcon(isDark);
+      }
+
+      function updateIcon(isDark) {
+	  var el = document.getElementById('dark-toggle');
+	  if (el) el.textContent = isDark ? '☾' : '☀';
+      }
+
+      // Set correct icon on load
+      updateIcon(document.documentElement.classList.contains('dark-mode'));
+    </script>
+
+  </body>
+</html>

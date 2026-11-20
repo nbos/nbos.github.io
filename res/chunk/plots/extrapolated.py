@@ -162,7 +162,7 @@ for label, x_e, y_e in [('enwik8', x_enwik8, y_enwik8),
             zorder=3)
     # Y value label to the right of the triangle
     ax.text(x_plot_left + Y_LABEL_X_OFFSET, y_e,
-            f"{y_e:.2f} ({label}) (predicted)",
+            f"{y_e:.2f} ({label}, extrapolated)",
             fontfamily='monospace',
             fontsize=12,
             va='center',

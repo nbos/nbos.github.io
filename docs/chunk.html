@@ -68,7 +68,7 @@
     by Nathaniel Bos
     
     
-    <span class="edit-note">· Last edited July 10, 2026</span>
+    <span class="edit-note">· Last edited November 20, 2026</span>
     
   </section>
   <section>
@@ -91,7 +91,7 @@ compression.</p>
 <div class="toc-title">Contents</div>
 <ul>
 <li><a href="#overfitting" id="toc-overfitting"><span class="toc-section-number">1</span> Overfitting</a></li>
-<li><a href="#serializing-as-combinatorial-objects" id="toc-serializing-as-combinatorial-objects"><span class="toc-section-number">2</span> Serializing as Combinatorial Objects</a></li>
+<li><a href="#ranking-and-unranking" id="toc-ranking-and-unranking"><span class="toc-section-number">2</span> Ranking and Unranking</a></li>
 <li><a href="#format-description" id="toc-format-description"><span class="toc-section-number">3</span> Format Description</a>
 <ul>
 <li><a href="#inductive-constructions" id="toc-inductive-constructions"><span class="toc-section-number">3.1</span> Inductive Constructions</a></li>
@@ -99,7 +99,7 @@ compression.</p>
 <li><a href="#loss-function" id="toc-loss-function"><span class="toc-section-number">4</span> Loss Function</a></li>
 <li><a href="#implementation" id="toc-implementation"><span class="toc-section-number">5</span> Implementation</a>
 <ul>
-<li><a href="#optimizations" id="toc-optimizations"><span class="toc-section-number">5.1</span> Optimizations</a>
+<li><a href="#optimizations-bookkeeping" id="toc-optimizations-bookkeeping"><span class="toc-section-number">5.1</span> Optimizations (Bookkeeping)</a>
 <ul>
 <li><a href="#counts-bookkeeping" id="toc-counts-bookkeeping"><span class="toc-section-number">5.1.1</span> Counts Bookkeeping</a></li>
 <li><a href="#joint-counts-bookkeeping" id="toc-joint-counts-bookkeeping"><span class="toc-section-number">5.1.2</span> Joint Counts Bookkeeping</a></li>
@@ -163,7 +163,7 @@ information.</p>
 we measure the information required to describe both the model and the
 data:</p>
 <p><span class="math display">\[\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~].\]</span></p>
-<h2 data-number="2" id="serializing-as-combinatorial-objects"><span class="header-section-number">2</span> Serializing as Combinatorial Objects</h2>
+<h2 data-number="2" id="ranking-and-unranking"><span class="header-section-number">2</span> Ranking and Unranking</h2>
 <p>As shown <a href="count.html#combinatorial-view">previously</a>,
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Combinatorics">counting</a> the
 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a> of
@@ -419,7 +419,7 @@ step.</p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/nbos/diagram_">Source (GitHub)</a></li>
 </ul>
-<h3 data-number="5.1" id="optimizations"><span class="header-section-number">5.1</span> Optimizations</h3>
+<h3 data-number="5.1" id="optimizations-bookkeeping"><span class="header-section-number">5.1</span> Optimizations (Bookkeeping)</h3>
 <p>A number of additional optimizations were required to run the program on
 inputs of significant length in a reasonable amount of time.</p>
 <p>They mostly consist of maintaining different partial values required in

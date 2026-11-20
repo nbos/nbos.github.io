@@ -2,7 +2,7 @@
 title: "Information Theoretic Chunking"
 author: Nathaniel Bos
 date: 2026-01-03
-edit: 2026-07-10
+edit: 2026-11-20
 ---
 
 One of the more salient features of our cognition is the [organization of
@@ -77,7 +77,7 @@ data:
 
 $$\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~].$$
 
-## Serializing as Combinatorial Objects
+## Ranking and Unranking
 
 As shown [previously](count.html#combinatorial-view),
 [counting](https://en.wikipedia.org/wiki/Combinatorics) the
@@ -400,7 +400,7 @@ The program is written in Haskell:
 
 - [Source (GitHub)](https://github.com/nbos/diagram_)
 
-### Optimizations
+### Optimizations (Bookkeeping)
 
 A number of additional optimizations were required to run the program on
 inputs of significant length in a reasonable amount of time.
