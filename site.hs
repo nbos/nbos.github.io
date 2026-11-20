@@ -88,6 +88,7 @@ noteCtx :: Context String
 noteCtx =
   dateField "date" "%B %e, %Y" `mappend`
   editField                    `mappend`
+  summaryField                 `mappend`
   defaultContext
 
 editField :: Context String
@@ -100,6 +101,12 @@ editField = field "edit" $ \item -> do
         Nothing -> return raw -- unparseable: show as-is
         Just t  -> return $ formatTime defaultTimeLocale "%B %e, %Y" t
 
+summaryField :: Context String
+summaryField = field "summary" $ \item -> do
+  metadata <- getMetadata (itemIdentifier item)
+  case lookupString "summary" metadata of
+    Nothing  -> noResult "No summary"
+    Just s   -> return s
 
 ---------------------------------------------------
 -- Pandoc compiler with download-link annotation --

@@ -70,6 +70,17 @@ article .header {
     color: var(--color-text-muted);
 }
 
+.note-summary {
+    font-size: var(--font-size-sm);
+    font-style: italic;
+    color: var(--color-text-muted);
+    margin-top: 0.2rem;
+}
+
+main > ul > li {
+    margin-bottom: 2rem;
+}
+
 .logo a {
     font-weight: bold;
     color: var(--color-text);
