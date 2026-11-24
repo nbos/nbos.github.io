@@ -1,0 +1,8 @@
+graph T3 {
+    // label="(())()"
+    fontname="Courier New"
+    node [shape=circle, label=""]
+    a -- b
+    b -- c
+    a -- d
+}

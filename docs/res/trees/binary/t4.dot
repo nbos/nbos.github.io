@@ -1,0 +1,18 @@
+graph T4 {
+    // label="()(())"
+    fontname="Courier New"
+    node [shape=circle, label=""]
+
+    node [style=invis] b_h
+    node [style=""]
+    edge[style=invis]
+    a -- b_h
+
+    edge[style=""]
+    a -- b
+    b -- c
+
+    node [style=invis] c_h
+    edge[style=invis]
+    b -- c_h
+}

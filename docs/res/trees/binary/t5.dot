@@ -1,0 +1,12 @@
+graph T5 {
+    // label="()()()"
+    fontname="Courier New"
+    node [shape=circle, label=""]
+    node [style=invis] b_h c_h
+    node [style=""]
+    a -- b
+    b -- c
+    edge[style=invis]
+    a -- b_h
+    b -- c_h
+}
