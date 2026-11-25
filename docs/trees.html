@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Counting Trees</title>
+
+    <script>
+      (function() {
+	  function applyDark() {
+	      var isDark = localStorage.getItem('darkMode') === 'true';
+	      document.documentElement.classList.toggle('dark-mode', isDark);
+	      var el = document.getElementById('dark-toggle');
+	      if (el) el.textContent = isDark ? '☾' : '☀';
+	  }
+
+	  // Immediate (prevents flash on fresh loads)
+	  applyDark();
+
+	  // Re-apply when restored from bfcache (back/forward navigation)
+	  window.addEventListener('pageshow', function(e) {
+	      if (e.persisted) applyDark();
+	  });
+      })();
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="res/images/tess.svg">
+    <link rel="stylesheet" href="./css/default.css">
+    <link rel="stylesheet" href="./css/syntax.css">
+
+    <script>
+      window.MathJax = {
+	  startup: {
+	      ready() {
+		  MathJax.startup.defaultReady();
+		  MathJax.startup.promise.then(() => {
+		      const y = window.scrollY;
+		      window.scrollTo(0, y);
+		  });
+	      }
+	  }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">
+        <a href="./">nbos.ca</a>
+      </div>
+      <nav>
+        <a href="./">Notes</a>
+        <a href="./hackage.html">Hackage</a>
+        <a href="./contact.html">Contact</a>
+	<a href="#" id="dark-toggle" onclick="toggleDark(event)" title="Toggle dark mode">☀</a>
+      </nav>
+    </header>
+
+    <main role="main">
+      <h1>Counting Trees</h1>
+      <article>
+  <section class="header">
+    Posted on November 24, 2026
+    
+    by Nathaniel Bos
+    
+    
+  </section>
+  <section>
+    
+<p>One may encounter, in the field of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Formal_language">formal
+languages</a>, the language
+of balanced strings of brackets</p>
+<p><span class="math display">\[\epsilon,\,\texttt{()},\,\texttt{(())},\,\texttt{()()},
+\,\texttt{((()))},\,\texttt{(()())},\,...\]</span></p>
+<p>named the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dyck_language">Dyck language</a>.</p>
+<p>Strings from this language, called <strong>Dyck words</strong>, having the same
+length <span class="math inline">\(2n\)</span> always have a matching set of <span class="math inline">\(n\)</span> left-brackets and <span class="math inline">\(n\)</span>
+right-brackets.</p>
+<p>The number of Dyck words of a given length <span class="math inline">\(n\)</span> is given by the
+<span class="math inline">\(n\)</span><sup>th</sup> <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Catalan_number">Catalan
+number</a>, defined as:</p>
+<p><span class="math display">\[\begin{align}
+C_n &amp;= \frac{1}{n+1}{2n \choose n}\\[5pt]
+	&amp;= \frac{1}{n+1}\frac{(2n)!}{n!\,n!}\\[5pt]
+	&amp;= \frac{(2n)!}{(n+1)!\,n!}
+\end{align}\]</span></p>
+<p>a function on integers <span class="math inline">\(n \ge 0\)</span>, making the rapidly growing
+<a target="_blank" rel="noopener" href="https://oeis.org/A000108">series</a>:</p>
+<pre><code>+-----+---+---+---+---+----+----+-----+-----+-----
+| n   | 0   1   2   3    4   5     6     7    ...
++-----+---+---+---+---+----+----+-----+-----+-----
+| C_n | 1   1   2   5   14   42   132   429   ...
++-----+---+---+---+---+----+----+-----+-----+-----</code></pre>
+<p>We are interested in these numbers since Dyck words have a one-to-one
+mapping on different classes of trees. Being able to count them allows
+us to rank and unrank—and therefore efficiently serialize
+(i.e. compress)—tree data structures.</p>
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#rooted-ordered-trees" id="toc-rooted-ordered-trees"><span class="toc-section-number">1</span> Rooted, Ordered Trees</a></li>
+<li><a href="#binary-trees" id="toc-binary-trees"><span class="toc-section-number">2</span> Binary Trees</a></li>
+<li><a href="#full-binary-trees" id="toc-full-binary-trees"><span class="toc-section-number">3</span> Full Binary Trees</a></li>
+<li><a href="#code-length" id="toc-code-length"><span class="toc-section-number">4</span> Code Length</a></li>
+</ul>
+</div>
+<h2 data-number="1" id="rooted-ordered-trees"><span class="header-section-number">1</span> Rooted, Ordered Trees</h2>
+<p>Rooted (as usually expected of trees) and ordered (meaning node order is
+significant) trees map the most naturally onto Dyck words, by
+interpreting the nesting of parentheses as parent and children in the
+tree, with empty sets <span class="math inline">\(\texttt{()}\)</span> corresponding to leaves.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><img src="res/trees/general/t1.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span class="math display">\[\mathcal{D_3}\texttt{[0]} = \texttt{((()))}\]</span></td>
+</tr>
+</tbody>
+</table>
+<p>The order of the concatenation of sub-Dyck expression is preserved as
+order of sibling sub-trees. For <span class="math inline">\(\mathcal{D_3}\texttt{[1,2,3]}\)</span>:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/general/t2.svg" /></th>
+<th style="text-align: center;"><img src="res/trees/general/t3.svg" /></th>
+<th style="text-align: center;"><img src="res/trees/general/t4.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\texttt{(()())}\]</span></td>
+<td style="text-align: center;"><span class="math display">\[\texttt{(())()}\]</span></td>
+<td style="text-align: center;"><span class="math display">\[\texttt{()(())}\]</span></td>
+</tr>
+<tr>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
+<p>Although every pair of parentheses can be thought of as a node, the root
+node does not appear as such in the word, but can be thought of as
+implicit.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><img src="res/trees/general/t5.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span class="math display">\[\mathcal{D_3}\texttt{[4]} = \texttt{()()()}\]</span></td>
+</tr>
+</tbody>
+</table>
+<p>Which gives, for the class of ordered trees of <span class="math inline">\(n+1\)</span> nodes, a
+correspondance to Dyck words of length <span class="math inline">\(2n\)</span>, with cardinality given by
+the Catalan number:</p>
+<p><span class="math display">\[|\mathcal{D_n}| = C_n.\]</span></p>
+<h2 data-number="2" id="binary-trees"><span class="header-section-number">2</span> Binary Trees</h2>
+<p>Binary trees, in the simplest sense, have for each node either a left
+child, a right child, or both, unless the node is a leaf. This means
+that we differentiate between a left- or right-child even if that node
+has no siblings.</p>
+<p>This class of trees maps onto non-binary trees (from the previous
+section) through a so called <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Left-child_right-sibling_binary_tree">“left-child right-sibling
+representation”</a>.</p>
+<p>Every first child connection is introduced as a node to the left (or
+root) of its parent and each successive sibling is introduced as a node
+to the right (child) of its previous sibling.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/binary/t1.svg" /></th>
+<th style="text-align: center;"><img src="res/trees/binary/t2.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[0]} = \texttt{((()))}\]</span></td>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[1]} = \texttt{(()())}\]</span></td>
+</tr>
+</tbody>
+</table>
+<p>In other words, to get a binary tree from a non-binary tree:</p>
+<ul>
+<li>discard the root node and its edges</li>
+<li>discard all edges besides those going from the first sibling to its
+parent (left-child)</li>
+<li>connect with an edge every sibling after the first to its previous
+sibling (right-sibling)</li>
+<li>rotate tree 45° clockwise</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/binary/t3.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[2]} = \texttt{(())()}\]</span></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/binary/t4.svg" /></th>
+<th style="text-align: center;"><img src="res/trees/binary/t5.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[3]} = \texttt{()(())}\]</span></td>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[4]} = \texttt{()()()}\]</span></td>
+</tr>
+</tbody>
+</table>
+<p>Notice that, since edges in the non-binary tree equivalent corresponds
+to nodes in this binary representation, we have trees of <span class="math inline">\(n\)</span> nodes for
+Dyck words of length <span class="math inline">\(2n\)</span>, with cardinality <span class="math inline">\(C_n\)</span>.</p>
+<h2 data-number="3" id="full-binary-trees"><span class="header-section-number">3</span> Full Binary Trees</h2>
+<p>Restricting the space to binary trees where every non-leaf node has
+exactly two children—like expressions built fromt binray
+operators—we get for a Dyck word of length <span class="math inline">\(2n\)</span>, trees with <span class="math inline">\(n+1\)</span>
+leaves, or <span class="math inline">\(2n-1\)</span> total nodes.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/binary-full/t1.svg" /></th>
+<th style="text-align: center;"><img src="res/trees/binary-full/t2.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[0]} = \texttt{((()))}\]</span></td>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[1]} = \texttt{(()())}\]</span></td>
+</tr>
+</tbody>
+</table>
+<p>The mapping matches the “left-child right-sibling” representation of the
+non-full binary trees, except that every node becomes an internal one,
+leaves getting two children and unsaturated internal nodes becoming
+saturated.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/binary-full/t3.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[2]} = \texttt{(())()}\]</span></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center;"><img src="res/trees/binary-full/t4.svg" /></th>
+<th style="text-align: center;"><img src="res/trees/binary-full/t5.svg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[3]} = \texttt{()(())}\]</span></td>
+<td style="text-align: center;"><span class="math display">\[\mathcal{D_3}\texttt{[4]} = \texttt{()()()}\]</span></td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="4" id="code-length"><span class="header-section-number">4</span> Code Length</h2>
+<p>Code length (or
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Information_content">information</a> being
+the logarithm of the
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Variety_(cybernetics)">variety</a>, we have
+for a Dyck word of length <span class="math inline">\(2n\)</span>,</p>
+<p><span class="math display">\[\begin{align}
+I(\mathcal{D_n}) &amp;= \log V(\mathcal{D_n})\\[5pt]
+	&amp;= \log C_n\\[5pt]
+	&amp;= \log \left(\frac{(2n)!}{(n+1)!\,n!}\right)\\[5pt]
+	&amp;= \log ((2n!)) - \log ((n+1)!) - \log (n!)
+\end{align}\]</span></p>
+<p>which grows on the order of <span class="math inline">\(O(n)\)</span>.</p>
+<p><img src="res/trees/plots/on.svg" /></p>
+  </section>
+  <footer>
+    <a href="./">Return</a>
+  </footer>
+</article>
+
+    </main>
+
+    <script>
+      function toggleDark(e) {
+	  e.preventDefault();
+	  var isDark = document.documentElement.classList.toggle('dark-mode');
+	  localStorage.setItem('darkMode', isDark);
+	  updateIcon(isDark);
+      }
+
+      function updateIcon(isDark) {
+	  var el = document.getElementById('dark-toggle');
+	  if (el) el.textContent = isDark ? '☾' : '☀';
+      }
+
+      // Set correct icon on load
+      updateIcon(document.documentElement.classList.contains('dark-mode'));
+    </script>
+
+  </body>
+</html>

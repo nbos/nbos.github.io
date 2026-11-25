@@ -95,6 +95,18 @@ img {
     margin: 0 auto;
 }
 
+table {
+    margin: 0 auto;
+}
+
+table img {
+    scale: 0.8;
+}
+
+table col {
+    width: auto !important;
+}
+
 a {
     color: var(--color-text-link);
 }
@@ -114,7 +126,7 @@ pre {
 }
 
 /* Mobile Styles */
-@media (max-width: 639px) {
+@media (max-width: 640px) {
     body {
         width: var(--layout-width-mobile);
         margin: 0;
@@ -150,7 +162,7 @@ pre {
 }
 
 /* Larger Mobile Screens */
-@media (min-width: 320px) and (max-width: 639px) {
+@media (min-width: 320px) and (max-width: 640px) {
     nav a {
         display: inline;
         margin: 0 0.6rem;
@@ -197,6 +209,10 @@ pre {
     /* Images constrained on larger screens */
     img {
         max-width: 70%;
+    }
+
+    table img {
+        max-width: 100%;
     }
 }
 
