@@ -2,34 +2,30 @@
 title: "Information Theoretic Chunking"
 author: Nathaniel Bos
 date: 2026-01-03
-edit: 2026-11-20
+edit: 2026-11-26
 ---
 
-One of the more salient features of our cognition is the [organization of
-related parts into
-wholes](https://en.wikipedia.org/wiki/Chunking_(psychology)).
+One of the most basic and unavoidable features of human cognition is the
+organization of related parts into wholes, or
+[chunking](https://en.wikipedia.org/wiki/Chunking_(psychology)).
 
 In the absence of clear statistical principles guiding this drive to
-*construct*, we attempt to reproduce similar structure by growing a
-prediction model greedily in the direction of maximal compression.
+construct, we attempt to reproduce such structure by growing a model
+greedily in the direction of maximal compression.
 
 For this, a serialization format is defined for text, based on
 combinatorial objects [equivalent](count.html) to such a model, which
-produces codes of known lengths (i.e. [information
+produces codes of known lengths (or [information
 content](https://en.wikipedia.org/wiki/Information_content)), from which
-we derive a loss function to guide deterministic construction of
-dictionaries, of which we note their appearance and performance in
-compression.
+we derive a loss function to guide a deterministic construction of
+dictionaries given different strings, of which we note their appearance
+and performance in compression.
 
-## Overfitting
+## About Overfitting
 
 When trying to represent data using a model, the correspondence between
-the two can become trivially perfect when the model is grown past the
-size of the data it is meant to represent.
-
-If the entire complexity present in the data is absorbed into the model,
-we have failed in identifying the trends, patterns or rules responsible
-for generating the data.
+the two can become trivially perfect when the size of the model is grown
+past that of the data it is meant to represent.
 
 In machine learning, this is called
 [overfitting](https://en.wikipedia.org/wiki/Overfitting) and is best
@@ -42,44 +38,50 @@ parameters are added to the model:
 
 This behavior is undesirable in machine learning as it undermines the
 *generalizability* of the model, because we expect the model to perform
-well on data that is not yet accessible.
+well on data that is not yet accessible. If the entire complexity
+present in the data is absorbed into the model, we have failed in
+identifying the trends, patterns or rules responsible for generating the
+data.
 
 In the context of compression, where the model is *not* expected to
-perform well on outside data, the phenomenon is still pathological: as
-the information content of the data w.r.t. the model approaches zero,
-the information required to *describe* the model increases in
-proportion.
+perform well on outside data, the analogous phenomenon is still
+problematic: as the information content of the data w.r.t. the model
+approaches zero, the information required to *describe* the model
+increases in proportion.
 
 While solutions to overfitting in machine learning almost always
 implicate [carving off sections of the
 data](https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets)
 to hide from the model only to be used later for approximating
-generalizability (train/valid/test sets), the context of compression
-allows a more complete solution.
+generalizability (train/valid/test sets), the same in the context of
+compression is simpler and more complete.
 
 Instead of only minimizing the information content of data $\mathrm{\bf
 x}$ given a model $\theta$ (i.e. maximizing the
 [log-likelihood](https://en.wikipedia.org/wiki/Likelihood_function#Log-likelihood)):
-$$I(\mathrm{\bf x} \mid \theta),$$ we aim to minimize the information of
-*both* the data and the model:
+
+$$I(\mathrm{\bf x} \mid \theta),$$
+
+we minimize the information of *both* the data and the model:
 
 $$I(\mathrm{\bf x},\theta) = I(\mathrm{\bf x} \mid \theta) + I(\theta).$$
 
 By always measuring their information content together, we automatically
-compensate for any information that merely transfers from data (given
-the model) to the model and avoid increases in the number of parameters
-(model complexity) that doesn't actually decrease the *total*
+compensate for any information that has merely transferred from data
+(given the model) to the model and avoid increases in the number of
+parameters (model complexity) that doesn't actually decrease the *total*
 information.
 
-The problem then simplifies to a single minimization problem, provided
-we measure the information required to describe both the model and the
-data:
+The problem then simplifies to a minimization problem on a single
+objective function
 
-$$\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~].$$
+$$\displaystyle\min_{\theta} ~ [~ I(\mathrm{\bf x} \mid \theta) + I(\theta) ~]$$
+
+which cannot possibly suffer from overfitting.
 
 ## Ranking and Unranking
 
-As shown [previously](count.html#combinatorial-view),
+As discussed in [another note](count.html#combinatorial-view),
 [counting](https://en.wikipedia.org/wiki/Combinatorics) the
 [variety](https://en.wikipedia.org/wiki/Variety_(cybernetics)) of
 parameterized systems can produce simple closed formulas of their
@@ -111,7 +113,9 @@ one can derive so-called ["ranking" and
 "unranking"]((https://en.wikipedia.org/wiki/Combinatorial_number_system))
 algorithms to map to and from natural numbers.
 
-For example, given the string
+### Serialization Example
+
+Given the string
 
 ![](res/chunk/figs/string-fig.svg)
 
@@ -149,8 +153,8 @@ equivalent in compression efficiency to entropy coding the sequence
 symbol-by-symbol using probabilities derived from the counts of the
 multiset used for the permutation.
 
-We now define a serialization format for text data and its model using
-such combinatorial codes.
+We now define a serialization format for text data and its model made
+from a concatenation of such combinatorial codes.
 
 ## Format Description
 
@@ -160,7 +164,7 @@ with information:
 
 $$\underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}},
 \vphantom{\prod_{\displaystyle i}}}
-_{\displaystyle\mathrm{String} \vphantom{\prod}}$$
+_{\displaystyle\mathrm{String\ order} \vphantom{\prod}}$$
 
 given that the counts are known.
 
@@ -183,7 +187,7 @@ the sequence:
 $$\underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}$$
+	_{\displaystyle\mathrm{String\ order} \vphantom{\prod}}$$
 
 This, in turn, assumes knowledge of parameters $N$ and $m$.
 
@@ -204,28 +208,30 @@ $$\underbrace{2\log m\vphantom{\prod_{\displaystyle i}}}
 + \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{String} \vphantom{\prod}}.$$
+	_{\displaystyle\mathrm{String\ order} \vphantom{\prod}}.$$
 
-Assuming the data is not random and contains repeating patterns, we can
-reduce the size of this encoding by *chunking* symbols together into new
-symbols (a.k.a. tokens), provided we append these definitions to the
+Assuming the data is not random and contains repeating patterns, we
+expect the size of this encoding to reduce by *chunking* symbols
+together into new symbols, provided we append those definitions to the
 encoding.
 
-### Inductive Constructions
+### Inductive Construction
 
-For a sufficiently *universal* method of dictionary construction
-(tokenization) that affords *incremental* *greedy* additions, we opt for
-a dictionary defined inductively with *rules* consisting of two
-previously defined symbols that concatenate to form a new *joint*
-symbol.
-
-By incrementally growing the dictionary and substituting instances where
-the parts appear together in the string with joint symbols,
+For a sufficiently *universal* method of construction, we opt for a
+dictionary defined inductively with *rules* consisting of two previously
+defined symbols concatenate to form a new *joint* symbol.
 
 ![](res/chunk/figs/joints.svg)
 
-the length of the string $N$ will shrink, and so will the code required
-to describe its permutations.
+In the fashion of [Re-Pair](https://en.wikipedia.org/wiki/Re-Pair),
+substituting joint occurences of the two parts for the newly defined
+symbol, we can repeat until no improvement in code length is achieved,
+resulting in a dictionary of inductive definitions.
+
+<!-- By incrementally growing the dictionary and substituting instances where -->
+<!-- the parts appear together in the string with joint symbols, the length -->
+<!-- of the string $N$ will shrink, and so will the code required to describe -->
+<!-- its permutations. -->
 
 This exploration into the space of
 [$n$-grams](https://en.wikipedia.org/wiki/Word_n-gram_language_model)
@@ -270,7 +276,7 @@ I_{(m, \mathrm{\bf r}, N, \mathrm{\bf n}, \mathrm{\bf s})}
 &+ \underbrace{\log {N + m - 1 \choose m - 1} \vphantom{\prod_{\displaystyle i}}}
 	_{\displaystyle \mathrm{\bf n}: n_0,n_1,\ldots,n_{m-1} \vphantom{\prod}}
 + \underbrace{\log {N \choose n_0,n_1,\ldots,n_{m-1}} \vphantom{\prod_{\displaystyle i}}}
-	_{\displaystyle\mathrm{{\bf s}: String} \vphantom{\prod}}
+	_{\displaystyle\mathrm{{\bf s}: String\ order} \vphantom{\prod}}
 \end{align}$$
 
 which is only a function of dictionary size $m$ and counts vector
@@ -278,20 +284,23 @@ $\mathrm{\bf n}: n_0, n_1, ..., n_{m-1}$ since $N = \sum\mathrm{\bf n}$.
 
 ## Loss Function
 
-Evaluating the above formula in whole for each possible addition to the
-model to determine the optimal next step is logically what we want to
-achieve but computationally excessive.
+We formulate the difference between the code length our encoding will
+achieve before and after a joint symbol introduction to get a loss
+function that we can use to evaluate the available introductions and
+find the best.
 
-The terms for the length of the encoding of $m$ (dictionary size) and
-$\mathrm{\bf r}$ (dictionary) are constant in information regardless of
-*which* symbols are chosen for the next construction. While they
-contribute in determining when the program stops (when the total length
-stops decreasing), they can be dropped when sorting candidate
-joints. Same goes for the encoding of parameter $N$ which is mostly
-constant between introductions and at worse only a few bits in size at
-specific steps between powers of two, which at most one will be crossed
-as the maximum change $N$ can take is to get halved if every consecutive
-pair in the working string gets constructed into a new symbol.
+We drop the terms for the length of the encoding of $m$ (dictionary
+size) and $\mathrm{\bf r}$ (dictionary) which stay constant in
+information regardless of *which* symbols are chosen for the
+introduction. Same goes for the encoding of parameter $N$ which is
+mostly constant and at worse only a few bits in size at deterministic
+steps between powers of two.
+
+We are left with the terms for the length of the encoding of the
+multiplicities and the ordering permutation.
+
+$$ \Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} = \Delta I_{\mathrm{\bf n}}
++ \Delta I_{\mathrm{\bf s}} $$
 
 For the introduction of a joint symbol with count $n_{01}$, constructed
 from symbols with counts $(n_0,n_1)$, the main terms that affect the
@@ -341,7 +350,7 @@ $$\begin{align}
 
 $$$$
 
-Together, some additional factors cancel out:
+Together, additional factors cancel out:
 
 <div id="loss-formula">
 $$\begin{align}
@@ -384,23 +393,29 @@ $n_{01}$ which **minimizes** this function is sufficient to find the
 rule to introduce which locally maximizes the compressibility of the
 entire encoding.
 
-As long as this loss---together with $N$'s term---offsets the increase
-in code length from terms $\{m,\mathrm{\bf r}\}$ incurred by an
-introduction, we grow the dictionary (rule set).
+As long as this loss offsets the increase in code length from the terms
+for the lengths of $\{m,\mathrm{\bf r},N\}$ incurred by an introduction,
+we grow the dictionary.
 
 ## Implementation
 
-We implement a greedy algorithm that, given a text file, repeatedly
-combines the pair of symbols that brings the greatest reduction in the
-overall information content until no pair produces a loss below zero. We
-log the introduced construction rules and information content at each
-step.
+<!-- We implement a greedy algorithm that, given a text file, repeatedly -->
+<!-- combines the pair of symbols that brings the greatest reduction in the -->
+<!-- overall information content until no pair produces a loss below zero. We -->
+<!-- log the introduced construction rules and information content at each -->
+<!-- step. -->
 
 The program is written in Haskell:
 
 - [Source (GitHub)](https://github.com/nbos/diagram_)
 
-### Optimizations (Bookkeeping)
+The following section covers the main optimizations that were applied to
+the program, essentially all forms of bookkeeping of the partial values
+that are required for the exact evaluation of the loss function over all
+available introductions. A section discussing [results](#results)
+follows after that.
+
+### Optimizations
 
 A number of additional optimizations were required to run the program on
 inputs of significant length in a reasonable amount of time.
@@ -410,12 +425,11 @@ the selection of optimal introductions.
 
 #### Counts Bookkeeping
 
-First, as most of the symbol counts $n_0,n_1,\ldots,n_{m-1}$ stay
+Obviously, as most of the symbol counts $n_0,n_1,\ldots,n_{m-1}$ stay
 constant between rule introductions, the count vector ($O(m)$ space) is
-obviously preserved between iterations and only those affected by the
-introduced rule (the counts of the parts and the count of the new
-symbol) get modified. This can be achieved in $O(1)$ time with a mutable
-dynamic array.
+preserved between iterations and only those affected by the introduced
+rule (the counts of the parts and the count of the new symbol) get
+modified.
 
 #### Joint Counts Bookkeeping
 
@@ -434,11 +448,11 @@ counts, but in practice where -->
 
 #### Joint Positions Bookkeeping
 
-With the above optimizations, the program can handle strings of
-thousands (KB) up to a million (MB) symbols.
+With the above optimizations, our implementation can handle strings of
+thousands (KB) up to a million symbols (MB).
 
-At this point, the operation taking by far most of the run time on large
-strings is the $O(N)$ pass over the input required to
+At this point, the dominating operation taking by far most of the run
+time on large strings is the $O(N)$ pass over the input required to
 
 1) rewrite joint occurrences of $(s_0,s_1)$ into $s_{01}$ and
 
@@ -446,12 +460,12 @@ strings is the $O(N)$ pass over the input required to
 
 The cost of this operation is especially noticeable after the first few
 symbols have been introduced and joint counts---for a sample of natural
-text---fall sharply following a
+text---fall sharply, following a
 [Pareto](https://en.wikipedia.org/wiki/Pareto_distribution)-like drop
-into a very long tail. The algorithm then spends most of its time
-performing uneventful $O(N)$ scans of the working string, looking for
-the few locations where the joint it has already decided to introduce
-appears.
+into a very long tail of minor introductions. The algorithm then spends
+most of its time performing uneventful $O(N)$ scans of the working
+string, looking for the few locations where the joint it has already
+decided to introduce appears.
 
 The obvious alternative to this is to store the set of construction
 sites (as indexes) for each candidate joint and use a string
@@ -463,24 +477,23 @@ of symbols traditionally indexed either accumulates gaps of arbitrary
 length over time, hindering access, or requires on the order of $O(N)$
 rewrites per introduction to close them.
 
-The solution is to use a doubly linked list and the permanent memory
-addresses (or something equivalent) of nodes as indexes allowing both
-random access and closing gaps in constant time without affecting
-indexes down the line.
+We use a doubly linked list and the permanent memory addresses (or
+something equivalent) of nodes as indexes allowing both random access
+and closing gaps in constant time without affecting indexes down the
+line.
 
-In practice, this incurs significant time overhead at the beginning of
-the execution of the program, but pays for itself many times over by
-accelerating the long tail of the execution.
+In practice, this incurs significant overhead at the beginning of the
+execution of the program, but pays for itself many times over by
+accelerating the tail of the execution.
 
 #### Joint Loss Bookkeeping
 
-The next operations which appropriates the bulk of the run-time on large
-inputs is the evaluation and sorting of all joints according to the
-[loss function](#loss-formula).
+The next operations which dominates the run-time on larger inputs is the
+evaluation and sorting of all joints according to the [loss
+function](#loss-formula).
 
-We can see this becomes severe when the size of the dictionary ($m$) is
-large as the number of possible joints grows on the order of
-$$O(\min(m^2,N)).$$
+This becomes severe when the size of the dictionary ($m$) is large as
+the number of possible joints grows on the order of $$O(\min(m^2,N)).$$
 
 Examining our loss formula:
 
@@ -613,7 +626,7 @@ The first $10^9$ bytes of the snapshot are referred to as
 $$$$
 
 For different sized inputs, we show the evolution of the total code
-length (information) divided among the different components (terms) of
+length (information) as a stack of the different components (terms) of
 the encoding (formula) as the dictionary grows. The contributions of the
 encodings of parameters $m$ and $N$ are too small to be noticeable and
 left out. The size of the encoding at $m=256$ (empty dictionary) is
@@ -635,9 +648,8 @@ compressibility.
 
 ### Compressibility
 
-We can compare the compressibility, or "information density" between
-scales by computing a compression *factor* at each point in the model's
-evolution:
+We can compare the compressibility between magnitudes by computing a
+compression *factor* at each point of the model's evolution:
 
 $$\text{compression factor} = \frac{\text{original size}}
 {\text{compressed size}}.$$
@@ -652,12 +664,12 @@ is displayed in log-scale:
 </div>
 
 For a given number of symbols, greater factors are achieved by smaller
-sets, probably due to the reduced variance of a smaller dataset, but
-larger inputs are amenable to greater factors in the long run, as the
-large string encoding term ($\mathrm{\bf s}$ decreasing) can support
-rule introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf n}$
-increasing) before they begin to outweigh the reduction on $\mathrm{\bf
-s}$, triggering termination.
+sets, probably due to the reduced variance of a smaller dataset (better
+fit possible), but larger inputs are capable greater factors in the long
+run, as the large string encoding term ($\mathrm{\bf s}$ decreasing) can
+support rule introductions for longer ($\mathrm{\bf r}$ and $\mathrm{\bf
+n}$ increasing) before they begin to outweigh the reduction on
+$\mathrm{\bf s}$, triggering termination.
 
 Full outputs: [`enwik4`](res/chunk/out/enwik4.csv),
 [`enwik5`](res/chunk/out/enwik5.csv),
@@ -675,29 +687,35 @@ respectively,
 
 ![](res/chunk/plots/extrapolated.svg)
 
-which fall way short of the factors [currently
-achieved](https://mattmahoney.net/dc/text.html) by the state of the art
-in large text compression for those exact datasets `enwik8` (around
-`6-7`) and `enwik9` (around `9-10`).
+which fall short of the
+[state-of-the-art](https://mattmahoney.net/dc/text.html) in large text
+compression for those exact datasets `enwik8` (around `6-7`) and
+`enwik9` (around `9-10`), but also expected considering the simplicity
+of the method.
 
 They are more in the range of compression ratios achieved by classic
 compression algorithms:
 [DEFLATE](https://en.wikipedia.org/wiki/Deflate),
 [BZip2](https://en.wikipedia.org/wiki/Bzip2), or
-[LZMA2](https://en.wikipedia.org/wiki/LZMA)---although these operate at
-much faster scales.
+[LZMA2](https://en.wikipedia.org/wiki/LZMA)---although these programs
+have much better time and space complexity.
 
 ![](res/chunk/plots/benchmark_results.svg)
 
-Of note is that our estimation of our performance on `enwik9` from the
-extrapolation of the log-trend is most likely too conservative
-because---as seen with the bump in performance of the other
-algorithms---that dataset specifically contains a substantive section of
-low-entropy "articles" which are essentially only page redirects and
-easily caught by back-referencing algorithms with a large enough context
-window.
+Our linear fit is also conservative considering `enwik9` contains a
+large patch of highly compressible articles---essentially only page
+redirects---which shows as an increase in the performance of the
+algorithms listed above specifically for that string, and visualized:
 
-This feature of `enwik9` is better described and visualized:
+<!-- Of note is that our estimation of our performance on `enwik9` from the -->
+<!-- extrapolation of the log-trend is most likely too conservative -->
+<!-- because---as seen with the bump in performance of the other -->
+<!-- algorithms---that dataset specifically contains a substantive section of -->
+<!-- low-entropy "articles" which are essentially only page redirects and -->
+<!-- easily caught by back-referencing algorithms with a large enough context -->
+<!-- window. -->
+
+<!-- This feature of `enwik9` is better described and visualized: -->
 
 [![](res/chunk/figs/e9.png)](https://mattmahoney.net/dc/textdata.html)
 
@@ -707,7 +725,7 @@ website.
 
 ### Subjective Assessment
 
-Chunks produced for `enwik`-type datasets make a mix of English
+Chunks produced for the `enwik`-type datasets make a mix of English
 morphemes, words and phrases as well as markup strings from Wikipedia's
 XML schema:
 
@@ -782,10 +800,10 @@ Full output: [`enwik7`](res/chunk/out/enwik7.csv).
 
 Compare these chunks to those that result from a naive combination
 strategy where the most frequent joint is repeatedly formed into a new
-symbol, as in [byte-pair
-encoding](https://en.wikipedia.org/wiki/Byte-pair_encoding) (BPE), or
-[Re-Pair](https://en.wikipedia.org/wiki/Re-Pair). The produced chunks
-are shorter and marginally less meaningful, at least at the start:
+symbol, as in [Re-Pair](https://en.wikipedia.org/wiki/Re-Pair) or
+[byte-pair encoding](https://en.wikipedia.org/wiki/Byte-pair_encoding)
+(BPE). The produced chunks are shorter and marginally less meaningful,
+at least at the start:
 
 ```
 256: "e"   +  " "   ==>  "e "
@@ -863,6 +881,8 @@ are shorter and marginally less meaningful, at least at the start:
 <!-- 70024: "trag"         +  "edy "       ==>  "tragedy " -->
 
 Full output: [`enwik7-naive-loss`](res/chunk/out/enwik7-naive-loss.csv).
+
+##### Interpretation
 
 For example compared to the more meaningful chunks
 
@@ -984,13 +1004,11 @@ dictionary produces a similar pattern:
 
 ![](res/chunk/plots/wl-functions.svg)
 
-A notable feature to explain are the sudden increases in dictionary
-performance and word length achieved earliest by our formula, but also
-present in the two other lines between intros 400-1000. These are driven
-by the discovery of strings common in all XML headers of pages in the
-dataset (including redirects) like the `<revision>`, `<id>` and
-`<contributor>` tags (and their indentations) producing words of ~30
-bytes long.
+Of note: the sudden increases in dictionary performance and word length
+achieved between intros 400-1000 are driven by the discovery of strings
+common in all XML headers of pages in the dataset (including redirects)
+like the `<revision>`, `<id>` and `<contributor>` tags (and their
+indentations) producing words of ~30 bytes long.
 
 We also compute for each pair of methods discussed, a coefficient of
 overlap
@@ -1007,8 +1025,8 @@ approach and ours, but slightly closer to ours.
 
 ## Subsampling
 
-*(tl;dr this is about a feature/optimization that ended up not being
-worth it)*
+*(tl;dr this is about an additional optimization that ended up making
+the performance worse)*
 
 With all the included bookkeeping, memory requirements for processing
 larger strings like `enwik8` (100MB) or `enwik9` (1GB) are in excess of
