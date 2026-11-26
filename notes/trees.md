@@ -4,27 +4,36 @@ author: Nathaniel Bos
 date: 2026-11-24
 ---
 
-One may encounter, in the field of [formal
-languages](https://en.wikipedia.org/wiki/Formal_language), the language
-of balanced strings of brackets
+The [formal language](https://en.wikipedia.org/wiki/Formal_language) of
+balanced strings of brackets
 
-$$\epsilon,\,\texttt{()},\,\texttt{(())},\,\texttt{()()},
-\,\texttt{((()))},\,\texttt{(()())},\,...$$
+$$\mathcal{D} = \{~\epsilon,\,\texttt{()},\,\texttt{(())},\,\texttt{()()},
+\,\texttt{((()))},\,\texttt{(()())},\,...~\}$$
 
-named the [Dyck language](https://en.wikipedia.org/wiki/Dyck_language).
+named the [Dyck language](https://en.wikipedia.org/wiki/Dyck_language),
+containing strings called **Dyck words**, always have, for a given
+length $2n$, a matching set of $n$ opening brackets and $n$ closing
+brackets.
 
-Strings from this language, called **Dyck words**, having the same
-length $2n$ always have a matching set of $n$ left-brackets and $n$
-right-brackets.
+Any string of brackets with more closing than opening brackets in any of
+its prefixes, like
+
+$$\texttt{)()(} ~\notin~ \mathcal{D}$$
+
+is excluded from this language.
 
 The number of Dyck words of a given length $n$ is given by the
 $n$<sup>th</sup> [Catalan
-number](https://en.wikipedia.org/wiki/Catalan_number), defined as:
+number](https://en.wikipedia.org/wiki/Catalan_number)
+
+$$|\mathcal{D_n}| = C_n,$$
+
+defined as:
 
 $$\begin{align}
 C_n &= \frac{1}{n+1}{2n \choose n}\\[5pt]
 	&= \frac{1}{n+1}\frac{(2n)!}{n!\,n!}\\[5pt]
-	&= \frac{(2n)!}{(n+1)!\,n!}
+	&= \frac{(2n)!}{(n+1)!\,n!},
 \end{align}$$
 
 a function on integers $n \ge 0$, making the rapidly growing
@@ -43,10 +52,12 @@ mapping on different classes of trees. Being able to count them allows
 us to rank and unrank---and therefore efficiently serialize
 (i.e. compress)---tree data structures.
 
+We show three such mappings below.
+
 ## Rooted, Ordered Trees
 
-Rooted (as usually expected of trees) and ordered (meaning node order is
-significant) trees map the most naturally onto Dyck words, by
+Trees which are rooted (as is usually expected of trees) and ordered
+(meaning sibling order is significant) map naturally onto Dyck words, by
 interpreting the nesting of parentheses as parent and children in the
 tree, with empty sets $\texttt{()}$ corresponding to leaves.
 
@@ -72,19 +83,17 @@ implicit.
 
 Which gives, for the class of ordered trees of $n+1$ nodes, a
 correspondance to Dyck words of length $2n$, with cardinality given by
-the Catalan number:
-
-$$|\mathcal{D_n}| = C_n.$$
+the Catalan number $C_n$.
 
 ## Binary Trees
 
 Binary trees, in the simplest sense, have for each node either a left
 child, a right child, or both, unless the node is a leaf. This means
 that we differentiate between a left- or right-child even if that node
-has no siblings.
+has no siblings, unlike in the previous section.
 
-This class of trees maps onto non-binary trees (from the previous
-section) through a so called ["left-child right-sibling
+These binary trees map onto non-binary trees through a so called
+["left-child right-sibling
 representation"](https://en.wikipedia.org/wiki/Left-child_right-sibling_binary_tree).
 
 Every first child connection is introduced as a node to the left (or

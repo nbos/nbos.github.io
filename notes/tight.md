@@ -5,13 +5,15 @@ date: 2026-11-19
 <!-- edit: 2026-11-19 -->
 ---
 
-This is an addendum of [this post](types.html) regarding the random
-initialization of [joint types](types.html#joints-of-unions) for
-hill-climbing.
+This is a section removed from [this post](types.html), kept only for
+reference, regarding the random initialization of [joint
+types](types.html#joints-of-unions) for the hill-climbing algorithm.
 
 *(tl;dr naive approaches don't satisfy our constraints so we build types
 incrementally, with constraint-propagation after each uniformly selected
-component---arguably still naive)*
+component---arguably still naive, but the output looks random)*
+
+$$$$
 
 ## Definitions
 

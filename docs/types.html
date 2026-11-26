@@ -399,7 +399,7 @@ type structure so we also ignore it for the scoring of types.</p>
 &amp;= \log \left(\frac
 	{(N + m - n_m)!}
 	{m\,(N + m - 1)!\,n_m!} \right)\\
-&amp;~~~~~ + \begin{cases}
+&amp;~~~~~+~ \begin{cases}
 	\log \left(\frac{\displaystyle n_0!}{\displaystyle (n_0 - 2n_m)!} \right)
 	&amp; \text{when } t_0 = t_1 \\
 	\log \left(\frac{\displaystyle n_0!\,n_1!}
@@ -430,12 +430,13 @@ the addition of resolutions for <span class="math inline">\(t_m\)</span>:</p>
 <div id="loss-formula">
 <p>All together, we get:</p>
 <p><span class="math display">\[\begin{align}
-\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} &amp;=
-\log \left(\frac
+\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}
+	&amp;= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} + \Delta I_{\bf r} \\[5pt]
+	&amp;= \log \left(\frac
 	{(N + m - n_m)!}
 	{m\,(N + m - 1)!\,n_m!} \right)
-+ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
-+ n_m \log v_m.
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)\\
+&amp;~~~~~+~ n_m \log v_m.
 \end{align}\]</span></p>
 </div>
 <h3 data-number="3.4" id="difference-across-mutations"><span class="header-section-number">3.4</span> Difference Across Mutations</h3>
@@ -459,8 +460,8 @@ on the whole serialization.</p>
 - \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
 - n_m \log v_m\\[10pt]
 &amp;= \log \left(\frac{(N + m - n_m')!\,n_m!}{(N + m - n_m)!\,n_m'!} \right)
-+ \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)
-+ n_m' \log v_m' - n_m \log v_m
++ \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)\\
+&amp;~~~~~+~ n_m' \log v_m' - n_m \log v_m
 \end{align}\]</span></p>
 <p>where <span class="math inline">\(n_i'\)</span> and <span class="math inline">\(n_i''\)</span> are the updated symbol counts of a symbol <span class="math inline">\(s_i\)</span>
 by the introduction before and after the mutation,

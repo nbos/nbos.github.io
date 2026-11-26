@@ -401,7 +401,7 @@ $$\begin{align}
 &= \log \left(\frac
 	{(N + m - n_m)!}
 	{m\,(N + m - 1)!\,n_m!} \right)\\
-&~~~~~ + \begin{cases}
+&~~~~~+~ \begin{cases}
 	\log \left(\frac{\displaystyle n_0!}{\displaystyle (n_0 - 2n_m)!} \right)
 	& \text{when } t_0 = t_1 \\
 	\log \left(\frac{\displaystyle n_0!\,n_1!}
@@ -443,12 +443,13 @@ $$n_m \log v_m$$
 All together, we get:
 
 $$\begin{align}
-\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})} &=
-\log \left(\frac
+\Delta I_{(\mathrm{\bf n},\mathrm{\bf s},\mathrm{\bf r})}
+	&= \Delta I_{(\mathrm{\bf n},\mathrm{\bf s})} + \Delta I_{\bf r} \\[5pt]
+	&= \log \left(\frac
 	{(N + m - n_m)!}
 	{m\,(N + m - 1)!\,n_m!} \right)
-+ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
-+ n_m \log v_m.
++ \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)\\
+&~~~~~+~ n_m \log v_m.
 \end{align}$$
 </div>
 
@@ -476,8 +477,8 @@ $$\begin{align}
 - \sum_i^{m-1} \log\left(\frac{n_i!}{n_i'!}\right)
 - n_m \log v_m\\[10pt]
 &= \log \left(\frac{(N + m - n_m')!\,n_m!}{(N + m - n_m)!\,n_m'!} \right)
-+ \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)
-+ n_m' \log v_m' - n_m \log v_m
++ \sum_i^{m-1} \log\left(\frac{n_i'!}{n_i''!}\right)\\
+&~~~~~+~ n_m' \log v_m' - n_m \log v_m
 \end{align}$$
 
 where $n_i'$ and $n_i''$ are the updated symbol counts of a symbol $s_i$

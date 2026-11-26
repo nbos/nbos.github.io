@@ -71,22 +71,27 @@
   </section>
   <section>
     
-<p>One may encounter, in the field of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Formal_language">formal
-languages</a>, the language
-of balanced strings of brackets</p>
-<p><span class="math display">\[\epsilon,\,\texttt{()},\,\texttt{(())},\,\texttt{()()},
-\,\texttt{((()))},\,\texttt{(()())},\,...\]</span></p>
-<p>named the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dyck_language">Dyck language</a>.</p>
-<p>Strings from this language, called <strong>Dyck words</strong>, having the same
-length <span class="math inline">\(2n\)</span> always have a matching set of <span class="math inline">\(n\)</span> left-brackets and <span class="math inline">\(n\)</span>
-right-brackets.</p>
+<p>The <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Formal_language">formal language</a> of
+balanced strings of brackets</p>
+<p><span class="math display">\[\mathcal{D} = \{~\epsilon,\,\texttt{()},\,\texttt{(())},\,\texttt{()()},
+\,\texttt{((()))},\,\texttt{(()())},\,...~\}\]</span></p>
+<p>named the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dyck_language">Dyck language</a>,
+containing strings called <strong>Dyck words</strong>, always have, for a given
+length <span class="math inline">\(2n\)</span>, a matching set of <span class="math inline">\(n\)</span> opening brackets and <span class="math inline">\(n\)</span> closing
+brackets.</p>
+<p>Any string of brackets with more closing than opening brackets in any of
+its prefixes, like</p>
+<p><span class="math display">\[\texttt{)()(} ~\notin~ \mathcal{D}\]</span></p>
+<p>is excluded from this language.</p>
 <p>The number of Dyck words of a given length <span class="math inline">\(n\)</span> is given by the
 <span class="math inline">\(n\)</span><sup>th</sup> <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Catalan_number">Catalan
-number</a>, defined as:</p>
+number</a></p>
+<p><span class="math display">\[|\mathcal{D_n}| = C_n,\]</span></p>
+<p>defined as:</p>
 <p><span class="math display">\[\begin{align}
 C_n &amp;= \frac{1}{n+1}{2n \choose n}\\[5pt]
 	&amp;= \frac{1}{n+1}\frac{(2n)!}{n!\,n!}\\[5pt]
-	&amp;= \frac{(2n)!}{(n+1)!\,n!}
+	&amp;= \frac{(2n)!}{(n+1)!\,n!},
 \end{align}\]</span></p>
 <p>a function on integers <span class="math inline">\(n \ge 0\)</span>, making the rapidly growing
 <a target="_blank" rel="noopener" href="https://oeis.org/A000108">series</a>:</p>
@@ -99,6 +104,7 @@ C_n &amp;= \frac{1}{n+1}{2n \choose n}\\[5pt]
 mapping on different classes of trees. Being able to count them allows
 us to rank and unrank—and therefore efficiently serialize
 (i.e. compress)—tree data structures.</p>
+<p>We show three such mappings below.</p>
 
 <div class="toc">
 <div class="toc-title">Contents</div>
@@ -110,8 +116,8 @@ us to rank and unrank—and therefore efficiently serialize
 </ul>
 </div>
 <h2 data-number="1" id="rooted-ordered-trees"><span class="header-section-number">1</span> Rooted, Ordered Trees</h2>
-<p>Rooted (as usually expected of trees) and ordered (meaning node order is
-significant) trees map the most naturally onto Dyck words, by
+<p>Trees which are rooted (as is usually expected of trees) and ordered
+(meaning sibling order is significant) map naturally onto Dyck words, by
 interpreting the nesting of parentheses as parent and children in the
 tree, with empty sets <span class="math inline">\(\texttt{()}\)</span> corresponding to leaves.</p>
 <table>
@@ -171,15 +177,14 @@ implicit.</p>
 </table>
 <p>Which gives, for the class of ordered trees of <span class="math inline">\(n+1\)</span> nodes, a
 correspondance to Dyck words of length <span class="math inline">\(2n\)</span>, with cardinality given by
-the Catalan number:</p>
-<p><span class="math display">\[|\mathcal{D_n}| = C_n.\]</span></p>
+the Catalan number <span class="math inline">\(C_n\)</span>.</p>
 <h2 data-number="2" id="binary-trees"><span class="header-section-number">2</span> Binary Trees</h2>
 <p>Binary trees, in the simplest sense, have for each node either a left
 child, a right child, or both, unless the node is a leaf. This means
 that we differentiate between a left- or right-child even if that node
-has no siblings.</p>
-<p>This class of trees maps onto non-binary trees (from the previous
-section) through a so called <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Left-child_right-sibling_binary_tree">“left-child right-sibling
+has no siblings, unlike in the previous section.</p>
+<p>These binary trees map onto non-binary trees through a so called
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Left-child_right-sibling_binary_tree">“left-child right-sibling
 representation”</a>.</p>
 <p>Every first child connection is introduced as a node to the left (or
 root) of its parent and each successive sibling is introduced as a node
